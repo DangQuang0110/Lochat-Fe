@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <img src="" alt="" class="logo" />
+      <img src="../assets/lgo.jpg" alt="" class="logo" />
       <p>Hãy nhập mã xác thực được gửi tới email của bạn</p>
       <p>Mã OTP sẽ hết hạn trong vòng 2 phút</p>
 

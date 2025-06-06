@@ -1,27 +1,42 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <img src="../assets/logo.png" alt="LOPET" class="logo" />
+      <img src="../assets/lgo.jpg" alt="LOPET" class="logo" />
       <h1>Đăng Ký Tài Khoản</h1>
-      <!-- <p class="sub-text">Tham gia cộng đồng yêu thú cưng ngay hôm nay!</p> -->
 
       <!-- Email -->
-       <div class="input-group">
-    <input
-      type="text"
-      v-model="contact"
-      @focus="contactFocus = true"
-      @blur="() => { contactFocus = false; validateContact() }"
-      @input="validateContact"
-      placeholder=" "
-      :class="{ error: contactError }"
-    />
-    <!-- Đổi nhãn thành “Email hoặc SĐT” -->
-    <label :class="{ active: contactFocus || contact }">Email hoặc số điện thoại</label>
-    <div class="validation-message" :class="{ error: contactError }">
-      {{ contactError || '' }}
-    </div>
-  </div>
+      <div class="input-group">
+        <input
+          type="text"
+          v-model="contact"
+          @focus="contactFocus = true"
+          @blur="() => { contactFocus = false; validateContact() }"
+          @input="validateContact"
+          placeholder=" "
+          :class="{ error: contactError }"
+        />
+        <label :class="{ active: contactFocus || contact }">Email</label>
+        <div class="validation-message" :class="{ error: contactError }">
+          {{ contactError || '' }}
+        </div>
+      </div>
+
+      <!-- Số điện thoại -->
+      <div class="input-group">
+        <input
+          type="text"
+          v-model="phone"
+          @focus="phoneFocus = true"
+          @blur="() => { phoneFocus = false; validatePhone() }"
+          @input="validatePhone"
+          placeholder=" "
+          :class="{ error: phoneError }"
+        />
+        <label :class="{ active: phoneFocus || phone }">Số điện thoại</label>
+        <div class="validation-message" :class="{ error: phoneError }">
+          {{ phoneError || '' }}
+        </div>
+      </div>
 
       <!-- Tên Người dùng -->
       <div class="input-group">
@@ -165,6 +180,10 @@ const contact = ref('')
 const contactFocus = ref(false)
 const contactError = ref('')
 
+const phone = ref('')
+const phoneFocus = ref(false)
+const phoneError = ref('')
+
 const fullname = ref('')
 const fullnameFocus = ref(false)
 const fullnameError = ref('')
@@ -187,17 +206,20 @@ const toggleConfirm = () => {
   showConfirm.value = !showConfirm.value
 }
 
-/** Validate Email (cơ bản) **/
+/** Validate Email **/
+// === Validate Email ===
 const isValidEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return re.test(email)
 }
 const validateContact = () => {
   const val = contact.value.trim()
+  // Nếu rỗng, không báo lỗi (chỉ clear)
   if (!val) {
-    contactError.value = 'Vui lòng nhập email'
-    return false
+    contactError.value = ''
+    return true
   }
+  // Nếu không rỗng nhưng sai định dạng thì báo lỗi
   if (!isValidEmail(val)) {
     contactError.value = 'Email không đúng định dạng'
     return false
@@ -206,12 +228,36 @@ const validateContact = () => {
   return true
 }
 
-/** Validate Tên người dùng **/
+// === Validate Số điện thoại ===
+const isValidPhone = (phoneStr) => {
+  const cleaned = phoneStr.replace(/[\s-]/g, '')
+  const re0 = /^0\d{9}$/
+  const re84 = /^\+84\d{9}$/
+  return re0.test(cleaned) || re84.test(cleaned)
+}
+const validatePhone = () => {
+  const val = phone.value.trim()
+  // Nếu rỗng, không báo lỗi (chỉ clear)
+  if (!val) {
+    phoneError.value = ''
+    return true
+  }
+  // Nếu không rỗng nhưng sai định dạng thì báo lỗi
+  if (!isValidPhone(val)) {
+    phoneError.value = 'SĐT không đúng định dạng'
+    return false
+  }
+  phoneError.value = ''
+  return true
+}
+
+// === Validate Tên người dùng ===
 const validateFullname = () => {
   const name = fullname.value.trim()
+  // Nếu rỗng, không báo lỗi (chỉ clear)
   if (!name) {
-    fullnameError.value = 'Vui lòng nhập tên người dùng'
-    return false
+    fullnameError.value = ''
+    return true
   }
   if (name.length < 5) {
     fullnameError.value = 'Tên phải có ít nhất 5 ký tự'
@@ -237,12 +283,13 @@ const validateFullname = () => {
   return true
 }
 
-/** Validate Mật khẩu **/
+// === Validate Mật khẩu ===
 const validatePassword = () => {
   const pwd = password.value
+  // Nếu rỗng, không báo lỗi (chỉ clear)
   if (!pwd) {
-    passwordError.value = 'Vui lòng nhập mật khẩu'
-    return false
+    passwordError.value = ''
+    return true
   }
   if (pwd.length < 8 || pwd.length > 15) {
     passwordError.value = 'Mật khẩu phải từ 8 đến 15 ký tự'
@@ -271,12 +318,13 @@ const validatePassword = () => {
   return true
 }
 
-/** Validate Xác nhận mật khẩu **/
+// === Validate Xác nhận mật khẩu ===
 const validateConfirmPassword = () => {
   const confirm = confirmPassword.value
+  // Nếu rỗng, không báo lỗi (chỉ clear)
   if (!confirm) {
-    confirmPasswordError.value = 'Vui lòng xác nhận mật khẩu'
-    return false
+    confirmPasswordError.value = ''
+    return true
   }
   if (confirm !== password.value) {
     confirmPasswordError.value = 'Mật khẩu xác nhận không khớp'
@@ -286,10 +334,12 @@ const validateConfirmPassword = () => {
   return true
 }
 
+
 /** Computed để bật/tắt nút Đăng ký **/
 const isFormValid = computed(() => {
   return (
     validateContact() &&
+    validatePhone() &&
     validateFullname() &&
     validatePassword() &&
     validateConfirmPassword()
@@ -299,63 +349,82 @@ const isFormValid = computed(() => {
 /** Khi bấm Đăng ký (chỉ log ra console, không gọi API) **/
 const handleRegister = () => {
   const okEmail = validateContact()
+  const okPhone = validatePhone()
   const okName = validateFullname()
   const okPwd = validatePassword()
   const okConfirm = validateConfirmPassword()
-  if (okEmail && okName && okPwd && okConfirm) {
+  if (okEmail && okPhone && okName && okPwd && okConfirm) {
     console.log('Form đăng ký hợp lệ:', {
       email: contact.value,
+      phone: phone.value,
       username: fullname.value,
       password: password.value,
     })
-    alert('Đăng ký thành công (ví dụ) — hiển thị thông báo hoặc chuyển trang tùy ý')
-    // Nếu muốn redirect sau khi đăng ký, dùng router.push(...) ở đây
+    alert('Đăng ký thành công (demo giao diện)')
+    // Nếu muốn redirect, dùng router.push(...) tại đây
   }
 }
 </script>
 
 <style scoped>
-/* 1. Toàn màn hình, background rõ nét */
 .auth-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: url('../assets/background.jpg') no-repeat center/cover;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden; /* Ẩn phần thừa khi scale ảnh */
 }
 
-/* 2. Hộp đăng ký */
+/* Pseudo-element ::before chịu trách nhiệm hiển thị và làm mờ hình nền */
+.auth-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('../assets/background.jpg') no-repeat center/cover;
+  background-size: cover;
+  filter: blur(8px);     /* Điều chỉnh độ mờ theo ý bạn */
+  transform: scale(1.1); /* Phóng to 10% để blur không bị viền cắt */
+  z-index: 0;             /* Đặt nằm sau form */
+}
+
+/* Phần hộp form (auth-box) nằm ở trên lớp blur */
 .auth-box {
+  position: relative;
+  z-index: 1;               /* Luôn luôn “trên” pseudo-element */
   background-color: #ffffff;
-  border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;
   width: 400px;
+  /* Nếu muốn form hơi “nổi” hơn, có thể thêm backdrop hoặc border:
+     border: 1px solid rgba(0,0,0,0.05);
+  */
 }
 
-/* Logo */
 .logo {
   width: 120px;
   margin: 0 auto 1rem;
   display: block;
 }
 
-/* Tiêu đề & sub-text */
 h1 {
   font-size: 1.6rem;
   color: #333;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-.sub-text {
+/* Giữ khoảng cách giữa các đoạn chữ */
+.auth-box p {
   font-size: 0.95rem;
   color: #666;
-  margin-bottom: 1.5rem;
+  margin: 0.5rem 0 1rem;
 }
 
 /* Input-group chung */
@@ -365,25 +434,26 @@ h1 {
   margin-bottom: 1.25rem;
 }
 
+/* Input khung cao 45px, bo góc 4px */
 .input-group input {
   width: 100%;
-  height: 45px;               /* Cao 45px giống form Đăng ký */
-  padding: 0 10px;            /* Padding trái/phải 10px, bỏ padding trên/dưới để giữ height cố định */
+  height: 45px;
+  padding: 0 10px;
   font-size: 1rem;
-  border: 1px solid #000000;  /* Màu border #f4ae18 giống bên Đăng ký */
+  border: 1px solid #000;
   border-radius: 4px;
-  background: #FFFFFF;
+  background: #f9f9f9;
   outline: none;
   transition: border-color 0.3s ease;
-  box-sizing: border-box;     /* Đảm bảo padding không làm tăng kích thước vượt 45px */
+  box-sizing: border-box;
 }
 
 .input-group input:focus {
-  border-color: #000000;      /* Nếu muốn giống bên Đăng ký khi focus */
+  border-color: #ffa726;
 }
 
 .input-group input.error {
-  border-color: #f44336;
+  border-color: #ef4444;
 }
 
 .input-group label {
@@ -402,25 +472,26 @@ h1 {
   top: -10px;
   left: 8px;
   font-size: 0.75rem;
-  color: #000000;
+  color: #ffa726;
   font-weight: 600;
 }
 
-/* Password-group */
+/* Password-group để padding-right đủ chỗ toggle */
 .password-group input {
   padding-right: 45px !important;
 }
 
+/* Ẩn autofill icon */
 .password-group input::-ms-reveal,
 .password-group input::-ms-clear {
   display: none;
 }
-
 .password-group input::-webkit-credentials-auto-fill-button,
 .password-group input::-webkit-strong-password-auto-fill-button {
   display: none !important;
 }
 
+/* Toggle (icon mắt) */
 .toggle-password {
   position: absolute;
   top: 14px;
@@ -442,11 +513,7 @@ h1 {
 }
 
 .validation-message.error {
-  color: #f44336;
-}
-
-.validation-message:not(.error) {
-  color: #666;
+  color: #ef4444;
 }
 
 /* Nút Đăng ký */
@@ -455,7 +522,7 @@ h1 {
   padding: 12px;
   border: none;
   border-radius: 8px;
-  background-color: #ffa726;
+  background-color: #000;
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
@@ -482,14 +549,9 @@ h1 {
   font-size: 0.9rem;
   text-decoration: none;
   text-align: center;
-  background-color: transparent !important;
-  outline: none;
-  border: none;
-  transition: color 0.3s ease;
 }
 
 .back:hover {
   text-decoration: underline;
-  color: #1565c0;
 }
 </style>
