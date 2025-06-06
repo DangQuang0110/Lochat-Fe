@@ -1,4 +1,8 @@
+// src/main.js
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from './router'    // <-- CHỈ NHƯ NÀY
 
-createApp(App).mount('#app')
+createApp(App)
+  .use(router)
+  .mount('#app')
