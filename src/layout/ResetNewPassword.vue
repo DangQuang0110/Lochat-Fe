@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <img src="../assets/logo.png" alt="" class="logo" />
+      <img src="../assets/lgo.jpg" alt="" class="logo" />
       <h1>Đặt lại mật khẩu</h1>
       <p class="sub-text">Vui lòng nhập mật khẩu cũ và mật khẩu mới để cập nhật tài khoản</p>
 
@@ -256,20 +256,40 @@ const handleReset = () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url('../assets/background.jpg');
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden; /* Ẩn phần thừa khi scale ảnh */
 }
 
+/* Pseudo-element ::before chịu trách nhiệm hiển thị và làm mờ hình nền */
+.auth-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('../assets/background.jpg') no-repeat center/cover;
+  background-size: cover;
+  filter: blur(8px);     /* Điều chỉnh độ mờ theo ý bạn */
+  transform: scale(1.1); /* Phóng to 10% để blur không bị viền cắt */
+  z-index: 0;             /* Đặt nằm sau form */
+}
+
+/* Phần hộp form (auth-box) nằm ở trên lớp blur */
 .auth-box {
-  background-color: #FFFFFF; /* nền trắng */
+  position: relative;
+  z-index: 1;               /* Luôn luôn “trên” pseudo-element */
+  background-color: #ffffff;
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;
-  width: 100%;
-  max-width: 400px;
+  width: 400px;
+  /* Nếu muốn form hơi “nổi” hơn, có thể thêm backdrop hoặc border:
+     border: 1px solid rgba(0,0,0,0.05);
+  */
 }
 
 .logo {
