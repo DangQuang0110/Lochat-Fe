@@ -449,7 +449,7 @@ h1 {
 }
 
 .input-group input:focus {
-  border-color: #ffa726;
+  border-color: #000;
 }
 
 .input-group input.error {
@@ -460,10 +460,10 @@ h1 {
   position: absolute;
   left: 10px;
   top: 14px;
-  color: #999;
+  
   pointer-events: none;
   transition: all 0.2s ease;
-  background-color: #ffffff;
+  
   padding: 0 4px;
   font-size: 1rem;
 }
@@ -472,7 +472,7 @@ h1 {
   top: -10px;
   left: 8px;
   font-size: 0.75rem;
-  color: #ffa726;
+  color: #000;
   font-weight: 600;
 }
 
