@@ -192,7 +192,7 @@ const handleLogin = () => {
   overflow: hidden;
   width: 800px;
   max-width: 95%;
-  height: 560px;
+  height: 500px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -302,7 +302,7 @@ const handleLogin = () => {
   margin-top: -0.5rem;
   margin-bottom: 1rem;
   color: #1e88e5;
-  font-size: 0.85rem;
+  font-size: 1rem;
   text-align: right;
   width: 100%;
   max-width: 320px;
@@ -355,7 +355,7 @@ const handleLogin = () => {
 
 /* Footer dưới form */
 .footer {
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   text-align: center;
   width: 100%;
   max-width: 320px;
