@@ -10,9 +10,6 @@ import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
 
 
-// Nếu bạn có thêm component khác (ví dụ HomeView.vue) hãy import ở đây.
-// import HomeView from '@/layout/HomeView.vue'
-
 const routes = [
   {
     path: '/',
@@ -49,12 +46,6 @@ const routes = [
     component: ResetPassword
   },
 
-  // Ví dụ nếu thêm HomeView:
-  // {
-  //   path: '/home',
-  //   name: 'home',
-  //   component: HomeView
-  // }
 ]
 
 const router = createRouter({
