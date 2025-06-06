@@ -30,7 +30,6 @@ const routes = [
     name: 'register',
     component: RegisterView
   },
-
    {
     path: '/verification-code',
     name: 'verification-code',
