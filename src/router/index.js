@@ -8,7 +8,7 @@ import RegisterView from '@/layout/RegisterView.vue'
 import VerificationCode from '@/layout/VerificationCode.vue'
 import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
-
+import ComMessage from '@/components/ComMessage.vue'
 
 // Nếu bạn có thêm component khác (ví dụ HomeView.vue) hãy import ở đây.
 // import HomeView from '@/layout/HomeView.vue'
@@ -31,8 +31,8 @@ const routes = [
     component: RegisterView
   },
    {
-    path: '/verification-code',
-    name: 'verification-code',
+    path: '/verificationCode',
+    name: 'verificationCode',
     component: VerificationCode
   },
   {
@@ -48,10 +48,16 @@ const routes = [
     component: ResetPassword
   },
 
+  {
+    path: '/message',
+    name: 'message',
+    component: ComMessage
+  },
+
   // Ví dụ nếu thêm HomeView:
   // {
   //   path: '/home',
-  //   name: 'home',
+  //   name: 'home',      S
   //   component: HomeView
   // }
 ]
