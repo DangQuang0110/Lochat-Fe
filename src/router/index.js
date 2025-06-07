@@ -9,6 +9,7 @@ import RegisterView from '@/layout/RegisterView.vue'
 import VerificationCode from '@/layout/VerificationCode.vue'
 import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
+import ComMessage from '@/components/ComMessage.vue'
 import FriendRequestPage from '@/components/FriendRequestPage.vue'
 
 
@@ -35,8 +36,8 @@ const routes = [
     component: RegisterView
   },
    {
-    path: '/verification-code',
-    name: 'verification-code',
+    path: '/verificationCode',
+    name: 'verificationCode',
     component: VerificationCode
   },
   {
@@ -54,7 +55,18 @@ const routes = [
     name: 'FriendRequestPage',
     component: FriendRequestPage
   },
+  {
+    path: '/message',
+    name: 'message',
+    component: ComMessage
+  },
 
+  // Ví dụ nếu thêm HomeView:
+  // {
+  //   path: '/home',
+  //   name: 'home',      S
+  //   component: HomeView
+  // }
 ]
 
 const router = createRouter({
