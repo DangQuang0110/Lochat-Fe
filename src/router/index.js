@@ -9,10 +9,8 @@ import RegisterView from '@/layout/RegisterView.vue'
 import VerificationCode from '@/layout/VerificationCode.vue'
 import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
+import FriendRequestPage from '@/components/FriendRequestPage.vue'
 
-
-// Nếu bạn có thêm component khác (ví dụ HomeView.vue) hãy import ở đây.
-// import HomeView from '@/layout/HomeView.vue'
 
 const routes = [
   // {
@@ -51,13 +49,12 @@ const routes = [
     name: 'reset-password',
     component: ResetPassword
   },
+  {
+    path: '/friend',
+    name: 'FriendRequestPage',
+    component: FriendRequestPage
+  },
 
-  // Ví dụ nếu thêm HomeView:
-  // {
-  //   path: '/home',
-  //   name: 'home',
-  //   component: HomeView
-  // }
 ]
 
 const router = createRouter({
