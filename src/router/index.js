@@ -8,6 +8,7 @@ import RegisterView from '@/layout/RegisterView.vue'
 import VerificationCode from '@/layout/VerificationCode.vue'
 import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
+import FriendRequestPage from '@/components/FriendRequestPage.vue'
 
 
 const routes = [
@@ -43,6 +44,11 @@ const routes = [
     path: '/reset-password',
     name: 'reset-password',
     component: ResetPassword
+  },
+  {
+    path: '/friend',
+    name: 'FriendRequestPage',
+    component: FriendRequestPage
   },
 
 ]
