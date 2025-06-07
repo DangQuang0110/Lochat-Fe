@@ -15,7 +15,7 @@ export default {
 </script>
 
 <style>
-#app { text-align: center; margin-top: 40px; }
-nav a { margin: 0 10px; color: #42b983; }
-nav a.router-link-active { font-weight: bold; }
+/* #app { text-align: center; margin-top: 40px; } */
+/* nav a { margin: 0 10px; color: #42b983; }
+nav a.router-link-active { font-weight: bold; } */
 </style>

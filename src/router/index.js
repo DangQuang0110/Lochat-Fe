@@ -1,8 +1,9 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 
+// import Home from '@/components/ComHome.vue'
+import FriendList from '@/components/FriendList.vue'
 // Đường dẫn đúng đến các component trong src/layout/
-import HelloWorld from '@/layout/HelloWorld.vue'
 import LoginView  from '@/layout/LoginView.vue'
 import RegisterView from '@/layout/RegisterView.vue'
 import VerificationCode from '@/layout/VerificationCode.vue'
@@ -14,10 +15,15 @@ import ResetPassword from '@/layout/ResetPassword.vue'
 // import HomeView from '@/layout/HomeView.vue'
 
 const routes = [
+  // {
+  //   path: '/',
+  //   name: 'home',
+  //   component: Home
+  // },
   {
-    path: '/',
-    name: 'hello',
-    component: HelloWorld
+    path:'/friendlist',
+    name: 'FriendList',
+    component: FriendList
   },
   {
     path: '/login',
@@ -40,8 +46,6 @@ const routes = [
     name: 'resetnewpassword',
     component: ResetNewPassword
   },
-
-
   {
     path: '/reset-password',
     name: 'reset-password',
