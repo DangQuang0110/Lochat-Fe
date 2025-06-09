@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <img src="../assets/lgo.jpg" alt="LOPET" class="logo" />
+      <img src="@/assets/lgo.png" alt="LOPET" class="logo" />
       <h1>Đăng Ký Tài Khoản</h1>
 
       <!-- Email -->
@@ -387,9 +387,9 @@ const handleRegister = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('../assets/background.jpg') no-repeat center/cover;
+  background: url('@/assets/background(1).png') no-repeat center/cover;
   background-size: cover;
-  filter: blur(8px);     /* Điều chỉnh độ mờ theo ý bạn */
+       /* Điều chỉnh độ mờ theo ý bạn */
   transform: scale(1.1); /* Phóng to 10% để blur không bị viền cắt */
   z-index: 0;             /* Đặt nằm sau form */
 }
@@ -398,7 +398,7 @@ const handleRegister = () => {
 .auth-box {
   position: relative;
   z-index: 1;               /* Luôn luôn “trên” pseudo-element */
-  background-color: #ffffff;
+  background-color: #5b5b5b;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;

@@ -11,7 +11,7 @@
       <!-- BÊN PHẢI: FORM ĐĂNG NHẬP -->
       <div class="right-side">
         <!-- Nếu bạn muốn logo ở đầu form, thay src thành logo thực -->
-        <img src="../assets/lgo.jpg" alt="LOCHAT" class="logo" />
+        <img src="@/assets/lgo.png" alt="LOCHAT" class="logo" />
         <h2>Đăng nhập</h2>
 
         <!-- Username -->
@@ -176,10 +176,8 @@ const handleLogin = () => {
   position: absolute;
   inset: 0;
   /* Thay background.jpg thành file ảnh thực trong thư mục assets */
-  background: url('@/assets/background.jpg') no-repeat center/cover;
-  filter: blur(16px);           /* Giá trị blur tùy ý: 8px */
-  transform: scale(1.1);       /* Scale >1 để khi blur không lộ viền */
-  z-index: -1;                 /* Đặt phía sau mọi nội dung của auth-container */
+  background: url('@/assets/background(1).png') no-repeat center/cover;
+                 /* Đặt phía sau mọi nội dung của auth-container */
 }
 
 /* Phần chứa chính (auth-box) */
@@ -199,21 +197,17 @@ const handleLogin = () => {
 /* LEFT SIDE: hiển thị ảnh cover full */
 .left-side {
   flex: 1;
-  /* Dùng CSS background để cover toàn phần bên trái */
-  background: url('../assets/background.jpg') no-repeat center/cover;
+  background: url('@/assets/background(1).png') no-repeat center/cover;
 }
 
-/* RIGHT SIDE: form login */
+
 .right-side {
   flex: 1;
-  position: relative;   /* cần để chứa ::before */
-  overflow: hidden;     /* Ẩn phần mờ tràn ra ngoài */
-  /* Tạm thời giữ background-color, nhưng pseudo sẽ che lại */
-  background-color: white;
+  background-color: #6E6E6E; /* Màu xám tương tự mockup */
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.5rem;
+  padding: 1.5rem 1rem;
 }
 
 /* Pseudo-element này nằm ngay bên trong .right-side, phủ kín toàn bộ */
@@ -221,8 +215,8 @@ const handleLogin = () => {
   content: "";
   position: absolute;
   inset: 0;                  /* top:0; right:0; bottom:0; left:0; */
-  background-color: white;   /* nền trắng bị blur */
-  filter: blur(0px);         /* điều chỉnh độ mờ tùy thích */
+  background-color: #5b5b5b;   /* nền trắng bị blur */
+  filter: blur(440px);         /* điều chỉnh độ mờ tùy thích */
   z-index: 0;                /* nằm dưới các nội dung con */
 }
 
@@ -236,7 +230,7 @@ const handleLogin = () => {
 .logo {
   width: 80px;
   height: auto;
-  margin-bottom: 1rem;
+ 
 }
 
 /* Input group (username/password) */
@@ -258,8 +252,7 @@ const handleLogin = () => {
   padding: 0 10px;        /* Bỏ padding top/bottom để cố định height */
   font-size: 1rem;
   border: 1px solid #000; /* Theo yêu cầu */
-  border-radius: 4px;
-  background: transparent;
+  border-radius: 4px; 
   outline: none;
   box-sizing: border-box; /* Đảm bảo padding không phá vỡ height */
 }
@@ -320,7 +313,7 @@ const handleLogin = () => {
 .forgot {
   margin-top: -0.5rem;
   margin-bottom: 1rem;
-  color: #1e88e5;
+  color: #FFFFFF;
   font-size: 1rem;
   text-align: right;
   width: 100%;
@@ -347,14 +340,14 @@ const handleLogin = () => {
 }
 
 .btn:disabled {
-  background-color: #ccc;
+  background-color: #000;
   cursor: not-allowed;
 }
 /* Divider “Hoặc” */
 .or-divider {
   margin: 1rem 0;
   font-size: 0.8rem;
-  color: #565656;
+  color: #FFFFFF;
   position: relative;
   display: flex;
   align-items: center;
@@ -382,7 +375,7 @@ const handleLogin = () => {
 }
 
 .footer a {
-  color: #1e88e5;
+  color: #FFFFFF;
   text-decoration: none;
 }
 
@@ -439,4 +432,4 @@ const handleLogin = () => {
     font-size: 0.7rem;
   }
 }
-</style>
+</style>   

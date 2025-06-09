@@ -57,19 +57,34 @@
   </div>
   <div class="header-right">
     <!-- nút thêm bạn/chat -->
-    <button class="btn icon-btn search-btn">
-    <img src="@/assets/search_icon.png" alt="" />
-  </button>
+      <button class="btn icon-btn search-btn" @click="toggleSearch">
+            <img src="@/assets/search_icon.png" alt="Tìm trong cuộc trò chuyện" />
+          </button>
+          <!-- Message search input -->
+      <div v-if="showSearch" class="message-search">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Tìm tin nhắn"
+          class="search-message-input"
+        />
+      </div>
+
       <!-- nếu có SVG thì import, ở đây tạm dùng dấu + -->
       
     <!-- nút menu (3 gạch) -->
-    <button class="btn icon-btn menu-btn">
-      <img src="@/assets/menu.png" alt="Menu" />
-    </button>
+   <button class="btn icon-btn menu-btn" @click="toggleProfilePanel">
+            <img src="@/assets/menu.png" alt="Menu" />
+          </button>
   </div>
 </header>
 
       <div class="chat-body">
+         <div
+          v-for="msg in filteredMessages"
+          :key="msg.id"
+          :class="['msg-wrapper', msg.fromMe ? 'align-right' : 'align-left']"
+        ></div>
         <div v-for="msg in messages" :key="msg.id" :class="['msg-wrapper', msg.fromMe ? 'align-right' : 'align-left']">
           <div class="msg-block">
             <div :class="['msg', msg.fromMe ? 'from-me' : 'from-other']">
@@ -89,62 +104,215 @@
 
      <footer class="chat-input">
     <div class="input-container">
-      <button class="icon-btn attach-btn">
-        <img src="@/assets/clip.png" alt="Đính kèm" />
-      </button>
+       <button class="icon-btn attach-btn" @click="triggerFileDialog">
+            <img src="@/assets/clip.png" alt="Đính kèm" />
+          </button>
+          <!-- input file ẩn -->
+          <input
+            ref="fileInput"
+            type="file"
+            style="display:none"
+            @change="handleFileSelect"
+            accept="*/*"
+          />
 
-      <input type="text" placeholder="Nhập tin nhắn" />
+        <input
+            ref="textInput"
+            v-model="messageInput"
+            @keydown.enter="sendMessage"
+            type="text"
+            placeholder="Nhập tin nhắn"
+          />
 
-      <button class="icon-btn emoji-btn">
+     <button class="icon-btn emoji-btn" @click="toggleEmojiPicker">
         <img src="@/assets/happy-face.png" alt="Emoji" />
       </button>
 
-      <button class="icon-btn send-btn">
-        <img src="@/assets/send.png" alt="Gửi" />
-      </button>
+       <div v-if="showEmojiPicker" class="emoji-picker">
+        <div class="picker-header">Cảm xúc</div>
+        <div class="emoji-grid">
+          <span
+            v-for="emoji in emojis"
+            :key="emoji"
+            class="emoji-item"
+            @click="addEmoji(emoji)"
+          >
+            {{ emoji }}
+          </span>
+        </div>
+      </div>
+
+      <button class="icon-btn send-btn" @click="sendMessage">
+            <img src="@/assets/send.png" alt="Gửi" />
+          </button>
     </div>
   </footer>
     </section>
+
+  <!-- Right Profile Panel -->
+    <aside v-if="showProfilePanel" class="profile-panel">
+      <header class="panel-header">
+        <button class="close-btn" @click="toggleProfilePanel">✕</button>
+      </header>
+      <div class="panel-content">
+        <!-- Ảnh và tên chính giữa -->
+        <div class="profile-info">
+          <img :src="current.avatar" class="profile-avatar" />
+          <h3 class="profile-name">{{ current.name }}</h3>
+        </div>
+
+        <!-- Thông tin cá nhân với icon -->
+        <div class="personal-details">
+          <h4 class="section-title">Thông tin cá nhân</h4>
+          <div class="detail-item">
+            <i class="icon-phone"></i>
+            <span>{{ current.phone || 'Chưa cập nhật' }}</span>
+          </div>
+          <div class="detail-item">
+            <i class="icon-location"></i>
+            <span>{{ current.location || 'Chưa cập nhật' }}</span>
+          </div>
+        </div>
+
+        <!-- Danh sách file -->
+        <div class="file-list">
+          <h4 class="section-title">Files</h4>
+          <ul>
+            <li v-for="msg in messages.filter(m => m.file)" :key="msg.id" class="file-item">
+              <i class="icon-file"></i>
+              <span class="file-name">{{ msg.file.name }}</span>
+              <a :href="msg.file.url" download class="icon-download"></a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Nút đỏ ở dưới cùng -->
+        <button class="delete-btn">Xóa đoạn tin nhắn</button>
+      </div>
+    </aside>
+
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ChatAppUI',
-  data() {
-    return {
-      friends: [
-        { id: 1, name: 'Nhân', avatar: require('@/assets/nhan.jpg'),   desc: 'Nhân muốn gửi tin nhắn', online: true },
-        { id: 2, name: 'Cầu',  avatar: require('@/assets/cau.jpg'),    desc: 'Cầu muốn gửi tin nhắn', online: true },
-        { id: 3, name: 'Trường', avatar: require('@/assets/truong.jpg'), desc: 'Trường muốn gửi tin nhắn', online: true },
-        { id: 4, name: 'Quang', avatar: require('@/assets/quang.jpg'),  desc: 'Bạn : )',               online: true },
-      ],
-      selectedId: 4,
-      messages: [
-        { id: 1, fromMe: false, text: 'Hi bạn nha' },
-        { id: 2, fromMe: true, text: 'Hi bạn nha' },
-        { id: 3, fromMe: false, file: { name: 'Báo cáo.pdf', size: '9mb' } },
-        { id: 4, fromMe: false, file: { name: 'Báo cáo.docx', size: '9mb' } },
-        { id: 5, fromMe: false, file: { name: 'Xem chó.mp4', size: '8mb' } },
-        { id: 6, fromMe: false, text: 'Đây nè bạn ơi' },
-        { id: 7, fromMe: true, text: 'Cảm ơn nha' }
-      ]
-    }
-  },
-  computed: {
-    current() {
-      return this.friends.find(f => f.id === this.selectedId) || {}
-    }
-  },
-  methods: {
-    selectFriend(id) {
-      this.selectedId = id;
-    }
-  }
+<script setup>
+import { ref, computed ,} from 'vue'
+
+// existing state imports
+
+
+// Danh sách bạn bè
+const friends = ref([
+  { id: 1, name: 'Nhân',   avatar: require('@/assets/nhan.jpg'),   desc: 'Nhân muốn gửi tin nhắn', online: true },
+  { id: 2, name: 'Cầu',    avatar: require('@/assets/cau.jpg'),   desc: 'Cầu muốn gửi tin nhắn', online: true },
+  { id: 3, name: 'Trường', avatar: require('@/assets/truong.jpg'),desc: 'Trường muốn gửi tin nhắn', online: true },
+  { id: 4, name: 'Quang',  avatar: require('@/assets/quang.jpg'), desc: 'Bạn : )',              online: true },
+])
+
+// State
+const selectedId = ref(4)
+const messages = ref([
+  { id: 1, fromMe: false, text: 'Hi bạn nha' },
+  { id: 2, fromMe: true,  text: 'Hi bạn nha' },
+  { id: 3, fromMe: false, file: { name: 'Báo cáo.pdf', size: '9mb' } },
+  { id: 4, fromMe: false, file: { name: 'Báo cáo.docx', size: '9mb' } },
+  { id: 5, fromMe: false, file: { name: 'Xem chó.mp4', size: '8mb' } },
+  { id: 6, fromMe: false, text: 'Đây nè bạn ơi' },
+  { id: 7, fromMe: true,  text: 'Cảm ơn nha' }
+])
+// const searchText = ref('')
+const messageInput = ref('')
+const showEmojiPicker = ref(false)
+const showProfilePanel = ref(false)
+const emojis = ref([
+  '😊','😂','😍','🤣','😎','😢','😡','👍','👎','🎉','😴','🤔','😘','🥰','🤩','😇',
+  '🤤','😱','😷','🥳','🤯','🧐','🤮','🤗','🤫','🤭','👏','🙌','🦄','💩','👻','💀',
+  '👽','🤖','🎃','😺','😼','🙈','🙉','🙊','🐶','🐱','🐻','🦊','🐼','🐨','🐯','🦁'
+])
+
+const showSearch = ref(false)
+const searchQuery = ref('')
+function toggleSearch() {
+  showSearch.value = !showSearch.value
+  if (!showSearch.value) searchQuery.value = ''
 }
+const filteredMessages = computed(() => {
+  if (!searchQuery.value) return messages.value
+  const q = searchQuery.value.toLowerCase()
+  return messages.value.filter(m => m.text && m.text.toLowerCase().includes(q))
+})
+
+// Computed
+const current = computed(() => {
+  return friends.value.find(f => f.id === selectedId.value) || {}
+})
+
+// Methods
+function selectFriend(id) {
+  selectedId.value = id
+}
+// Ref cho input file
+const fileInput = ref(null)
+
+// Mở dialog chọn file
+function triggerFileDialog() {
+  fileInput.value && fileInput.value.click()
+}
+
+// Xử lý sau khi chọn file
+function handleFileSelect(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // format size
+  function formatSize(bytes) {
+    const kb = 1024
+    const mb = kb * 1024
+    if (bytes >= mb) return (bytes / mb).toFixed(2) + ' MB'
+    if (bytes >= kb) return (bytes / kb).toFixed(2) + ' KB'
+    return bytes + ' B'
+  }
+
+   const url = URL.createObjectURL(file)
+  messages.value.push({
+    id: Date.now(),
+    fromMe: true,
+    file: { name: file.name, size: formatSize(file.size), url }
+  })
+
+  // reset
+  event.target.value = ''
+}
+
+function toggleEmojiPicker() {
+  showEmojiPicker.value = !showEmojiPicker.value
+}
+
+// thêm emoji vào input
+function addEmoji(emoji) {
+  messageInput.value += emoji
+  showEmojiPicker.value = false
+}
+
+// Gửi tin nhắn văn bản
+function sendMessage() {
+  const text = messageInput.value.trim()
+  if (!text) return
+  messages.value.push({ id: Date.now(), fromMe: true, text })
+  messageInput.value = ''
+}
+
+function toggleProfilePanel() {
+  showProfilePanel.value = !showProfilePanel.value
+}
+
 </script>
 
 <style scoped>
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: content-box ;
+}
 .chat-app {
   display: flex;
   height: 100%;
@@ -248,12 +416,13 @@ export default {
 
 /* Input bo tròn, có padding-left chừa chỗ icon */
 .search-bar input {
-  width: 100%;
+  width: 94%;
   padding: 8px 12px 8px 36px; /* top/right/bottom/left */
   border: 1px solid #000;     /* viền đen */
   border-radius: 20px;
   font-size: 14px;
   outline: none;
+  
 }
 
 /* Nút + tròn */
@@ -271,6 +440,7 @@ export default {
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
+  margin-left: -16px;
 }
 .search-bar .add-btn:hover {
   background: #335bcc;
@@ -570,6 +740,168 @@ export default {
   border-radius: 50%;
 }
 
+.input-container {
+  position: relative;
+}
 
+/* Popup emoji-picker */
+.emoji-picker {
+  position: absolute;
+  bottom: 60px;       /* nâng lên trên nút input */
+  right: 0;           /* canh sát phải */
+  width: 300px;
+  max-height: 240px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 8px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+/* Header của picker */
+.picker-header {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Lưới hiển thị emoji */
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+/* Mỗi ô emoji */
+.emoji-item {
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  text-align: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.emoji-item:hover {
+  background: #f0f0f0;
+} 
+
+.profile-panel {
+  width: 320px;
+  background: #fff;
+  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  border-left: none;
+}
+.panel-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+.panel-content {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.profile-info {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+.profile-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+.personal-details {
+  margin-bottom: 16px;
+}
+.personal-details .detail-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.detail-item i {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  background-size: contain;
+}
+.icon-phone { background-image: url('@/assets/phone.png'); }
+.icon-location { background-image: url('@/assets/trangchu.png'); }
+
+.file-list {
+  flex: 1;
+}
+.section-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+.file-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.icon-file {
+  width: 20px;
+  height: 20px;
+  background-image: url('@/assets/file-pdf.png');
+  background-size: contain;
+  margin-right: 8px;
+}
+.file-name {
+  flex: 1;
+  font-size: 13px;
+  color: #555;
+}
+.icon-download {
+  width: 20px;
+  height: 20px;
+  background-image: url('@/assets/download.png');
+  background-size: contain;
+}
+
+.delete-btn {
+  margin-top: auto;
+  background: #ff3b30;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.message-search {
+  padding: 0.5rem 1rem;
+}
+.search-message-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+  margin-left: -12px;
+}
 
 </style>
