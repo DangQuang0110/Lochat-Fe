@@ -11,9 +11,15 @@ import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
 import ComMessage from '@/components/ComMessage.vue'
 import FriendRequestPage from '@/components/FriendRequestPage.vue'
+
 import AddFriend from '@/components/AddFriend.vue'
 import MessageNewDetail from '@/components/MessageNewDetail.vue'
 import EditProfileForm from '@/components/EditProfileForm.vue'
+
+import InvitationSent from '@/components/InvitationSent.vue'
+import FriendSuggest from '@/components/FriendSuggest.vue'
+
+
 const routes = [
   // {
   //   path: '/',
@@ -62,6 +68,7 @@ const routes = [
     component: ComMessage
   },
   {
+
     path: '/addfriend',
     name: 'AddFriend',
     component: AddFriend
@@ -76,8 +83,20 @@ const routes = [
     name: 'EditProfileForm',
     component: EditProfileForm
   },
-
-  
+    path: '/',
+    name: 'message',
+    component: ComMessage
+  },
+  {
+    path :'/FriendSuggest',
+    name:'FriendSuggest',
+    component: FriendSuggest
+  },
+  {
+    path:'/InvitationSent',
+    name:'InvitationSent',
+    component:InvitationSent
+  }
 ]
 
 const router = createRouter({
