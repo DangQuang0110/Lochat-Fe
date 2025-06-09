@@ -15,7 +15,11 @@ export default {
 </script>
 
 <style>
-/* #app { text-align: center; margin-top: 40px; } */
-/* nav a { margin: 0 10px; color: #42b983; }
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}/* nav a { margin: 0 10px; color: #42b983; }
 nav a.router-link-active { font-weight: bold; } */
 </style>
