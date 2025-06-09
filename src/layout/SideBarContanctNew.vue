@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="header">
       <span class="dot"></span>
-      <h2>Quản lý liên hệ</h2>
+      <h2>Thêm bạn bè</h2>
       <button class="close-btn">✕</button>
     </header>
 
@@ -12,24 +12,14 @@
       <!-- Sidebar -->
       <aside class="sidebar">
         <ul class="menu">
-          <router-link to="/friendlist" custom v-slot="{ navigate, isActive }">
-            <li :class="{ active: isActive }" @click="navigate">
-              <img src="/icons/friends.png" class="icon" /> Bạn bè
+          <router-link to="/addfriend" custom v-slot="{ navigate, isActive }">
+            <li :class="{ active: isActive || isAddFriendActive }" @click="navigate">
+              <img src="/icons/add-friend.png" class="icon" /> Thêm bạn bè
             </li>
           </router-link>
-          <router-link to="/friend" custom v-slot="{ navigate, isActive }">
+          <router-link to="/add-to-group" custom v-slot="{ navigate, isActive }">
             <li :class="{ active: isActive }" @click="navigate">
-              <img src="/icons/sendFriend.png" class="icon" /> Lời mời kết bạn
-            </li>
-          </router-link>
-          <router-link to="/sent-requests" custom v-slot="{ navigate, isActive }">
-            <li :class="{ active: isActive }" @click="navigate">
-              <img src="/icons/sent.png" class="icon" /> Lời mời đã gửi
-            </li>
-          </router-link>
-          <router-link to="/suggestions" custom v-slot="{ navigate, isActive }">
-            <li :class="{ active: isActive }" @click="navigate">
-              <img src="/icons/suggest.png" class="icon" /> Gợi ý liên hệ
+              <img src="/icons/add-group.png" class="icon" /> Thêm bạn bè vào nhóm
             </li>
           </router-link>
         </ul>
@@ -45,7 +35,7 @@
 
 <script>
 export default {
-  name: 'ContactLayout'
+  name: 'ContactLayoutnew'
 }
 </script>
 

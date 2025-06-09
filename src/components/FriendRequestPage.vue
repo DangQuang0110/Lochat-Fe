@@ -1,111 +1,110 @@
 <template>
-  <div class="friend-management-page">
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Search Bar -->
-      <div class="search-container">
-        <div class="search-wrapper">
-          <input 
-            type="text" 
-            placeholder="Tìm bạn bè" 
-            class="search-input"
-            v-model="searchQuery"
-          />
+  <layout>
+    <div class="friend-management-page">
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Search Bar -->
+        <div class="search-container">
+          <div class="search-wrapper">
+            <img src="/icons/search.png" alt="Search Icon" class="search-icon" />
+            <input 
+              type="text" 
+              placeholder="Tìm bạn bè" 
+              class="search-input"
+              v-model="searchQuery"
+            />
+          </div>
         </div>
-      </div>
-      <!-- Content Area -->
-      <div class="content-area">
-        <h3 class="content-title">{{ getContentTitle() }}</h3>
-        
-        <!-- Friend Requests -->
-        <div v-if="activeTab === 'requests'" class="suggestions">
-          <div 
-            v-for="request in filteredRequests" 
-            :key="request.id"
-            class="suggestion-item"
-          >
-            <div class="profile-section">
-              <img 
-                :src="request.avatar" 
-                :alt="request.name"
-                class="avatar"
-              />
-              <div class="friend-info">
-                <span class="name">{{ request.name }}</span>
+        <!-- Content Area -->
+        <div class="content-area">
+          <h3 class="content-title">{{ getContentTitle() }}</h3>
+          
+          <!-- Friend Requests -->
+          <div v-if="activeTab === 'requests'" class="suggestions">
+            <div 
+              v-for="request in filteredRequests" 
+              :key="request.id"
+              class="suggestion-item"
+            >
+              <div class="profile-section">
+                <img 
+                  :src="request.avatar" 
+                  :alt="request.name"
+                  class="avatar"
+                />
+                <div class="friend-info">
+                  <span class="name">{{ request.name }}</span>
+                </div>
               </div>
-            </div>
-            
-            <div class="action-buttons">
-              <button 
-                class="btn btn-accept"
-                @click="acceptRequest(request.id)"
-              >
-                Chấp nhận
-              </button>
-              <button 
-                class="btn btn-cancel"
-                @click="cancelRequest(request.id)"
-              >
-                Hủy
-              </button>
+              
+              <div class="action-buttons">
+                <button 
+                  class="btn btn-accept"
+                  @click="acceptRequest(request.id)"
+                >
+                  Chấp nhận
+                </button>
+                <button 
+                  class="btn btn-cancel"
+                  @click="cancelRequest(request.id)"
+                >
+                  Hủy
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </layout>
 </template>
 
-<script>
-export default {
-  name: 'FriendManagementPage',
-  data() {
-    return {
-      activeTab: 'requests', // Set default to requests to match the image
-      searchQuery: '',
-      friendRequests: [
-        { id: 1, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop&crop=face' },
-        { id: 2, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=50&h=50&fit=crop&crop=face' },
-        { id: 3, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face' },
-        { id: 4, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=50&h=50&fit=crop&crop=face' },
-        { id: 5, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face' },
-        { id: 6, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face' },
-        { id: 7, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=50&h=50&fit=crop&crop=face' },
-        { id: 8, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50&h=50&fit=crop&crop=face' },
-        { id: 9, name: 'Quang', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face' },
-      ],
-    }
-  },
-  computed: {
-    filteredRequests() {
-      if (!this.searchQuery) return this.friendRequests;
-      return this.friendRequests.filter(request => 
-        request.name.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-    }
-  },
-  methods: {
-    setActiveTab(tab) {
-      this.activeTab = tab;
-    },
-    getContentTitle() {
-      const titles = {
-        'friends': 'Bạn bè',
-        'requests': 'Lời mời kết bạn',
-        'suggestions': 'Lời mời đã gửi',
-        'contact': 'Gợi ý liên hệ'
-      };
-      return titles[this.activeTab];
-    },
-    acceptRequest(requestId) {
-      this.friendRequests = this.friendRequests.filter(r => r.id !== requestId);
-      console.log('Accepted request for ID:', requestId);
-    },
-    cancelRequest(requestId) {
-      this.friendRequests = this.friendRequests.filter(r => r.id !== requestId);
-      console.log('Cancelled request for ID:', requestId);
-    }
+<script setup>
+import { ref, computed } from 'vue'
+import layout from '@/layout/SideBarContact.vue'
+
+// Reactive data
+const activeTab = ref('requests')
+const searchQuery = ref('')
+const friendRequests = ref([
+  { id: 1, name: 'Nguyễn Văn A', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop&crop=face' },
+  { id: 2, name: 'Trần Thị B', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=50&h=50&fit=crop&crop=face' },
+  { id: 3, name: 'Lê Văn C', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face' },
+  { id: 4, name: 'Phạm Thị D', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=50&h=50&fit=crop&crop=face' },
+  { id: 5, name: 'Hoàng Văn E', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face' },
+  { id: 6, name: 'Vũ Thị F', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face' },
+  { id: 7, name: 'Đặng Văn G', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=50&h=50&fit=crop&crop=face' },
+  { id: 8, name: 'Bùi Thị H', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50&h=50&fit=crop&crop=face' },
+  { id: 9, name: 'Dương Văn I', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face' },
+])
+
+// Computed properties
+const filteredRequests = computed(() => {
+  if (!searchQuery.value) return friendRequests.value
+  return friendRequests.value.filter(request => 
+    request.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
+
+// Methods
+const getContentTitle = () => {
+  const titles = {
+    'friends': 'Bạn bè',
+    'requests': 'Lời mời kết bạn',
+    'suggestions': 'Lời mời đã gửi',
+    'contact': 'Gợi ý liên hệ'
   }
+  return titles[activeTab.value]
+}
+
+const acceptRequest = (requestId) => {
+  friendRequests.value = friendRequests.value.filter(r => r.id !== requestId)
+  console.log('Accepted request for ID:', requestId)
+}
+
+const cancelRequest = (requestId) => {
+  friendRequests.value = friendRequests.value.filter(r => r.id !== requestId)
+  console.log('Cancelled request for ID:', requestId)
 }
 </script>
 
@@ -174,15 +173,29 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background-color: white;
+  height: 100vh; /* Constrain to viewport height */
+  overflow: hidden; /* Prevent overflow */
 }
 
 .search-container {
-  padding: 20px;
+  margin-top: 20px;
+  padding: 0 20px;
 }
 
 .search-wrapper {
   position: relative;
   max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #666;
 }
 
 .search-input {
@@ -194,14 +207,10 @@ export default {
   font-size: 14px;
   outline: none;
   box-sizing: border-box;
-  background-image: url('@/assets/search_icon.png');
-  background-position: 15px center;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
 }
 
 .search-input:focus {
-  border-color: #1976d2;
+  border-color: #090a0a;
   background-color: white;
 }
 
@@ -209,6 +218,27 @@ export default {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  scroll-behavior: smooth; /* Smooth scrolling */
+  max-height: calc(100vh - 100px); /* Account for search bar and padding */
+}
+
+/* Scrollbar customization */
+.content-area::-webkit-scrollbar {
+  width: 8px; /* Scrollbar width */
+}
+
+.content-area::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Scrollbar track color */
+  border-radius: 10px;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+  background: #888; /* Scrollbar thumb color */
+  border-radius: 10px;
+}
+
+.content-area::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Scrollbar thumb hover color */
 }
 
 .content-title {
@@ -216,13 +246,12 @@ export default {
   font-weight: 600;
   color: #333;
   margin: 0 0 20px 0;
-  margin-right: 1730px;
 }
 
 /* Updated Card Styles */
 .suggestions {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
   gap: 15px;
   max-width: 100%;
 }
@@ -263,7 +292,7 @@ export default {
 }
 
 .name {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #333;
   margin: 0;
@@ -271,7 +300,7 @@ export default {
 
 .action-buttons {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   width: 100%;
 }
 
@@ -310,11 +339,7 @@ export default {
 /* Responsive */
 @media (max-width: 1024px) {
   .suggestions {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .sidebar {
-    width: 200px;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns for smaller screens */
   }
 }
 
@@ -323,13 +348,8 @@ export default {
     flex-direction: column;
   }
   
-  .sidebar {
-    width: 100%;
-    height: auto;
-  }
-  
   .suggestions {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* 1 column for mobile */
   }
   
   .suggestion-item {
@@ -344,6 +364,10 @@ export default {
   .btn {
     padding: 8px 12px;
     font-size: 13px;
+  }
+  
+  .content-title {
+    font-size: 24px;
   }
 }
 </style>
