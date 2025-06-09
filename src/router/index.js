@@ -11,6 +11,8 @@ import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
 import ComMessage from '@/components/ComMessage.vue'
 import FriendRequestPage from '@/components/FriendRequestPage.vue'
+import InvitationSent from '@/components/InvitationSent.vue'
+import FriendSuggest from '@/components/FriendSuggest.vue'
 
 
 const routes = [
@@ -60,6 +62,22 @@ const routes = [
     name: 'message',
     component: ComMessage
   },
+  {
+    path: '/',
+    name: 'message',
+    component: ComMessage
+  },
+  {
+    path :'/FriendSuggest',
+    name:'FriendSuggest',
+    component: FriendSuggest
+  },
+  {
+    path:'/InvitationSent',
+    name:'InvitationSent',
+    component:InvitationSent
+  }
+
 
   // Ví dụ nếu thêm HomeView:
   // {

@@ -13,18 +13,18 @@
             <input type="text" v-model="searchText" placeholder="Tìm bạn bè" />
           </div>
 
-          <h2 class="section-title">Lời mời kết bạn</h2>
+          <h2 class="section-title">Gợi ý liên hệ</h2>
 
           <div class="grid-list">
-            <div class="request-card" v-for="friend in filteredFriends" :key="friend.name">
+            <div class="suggest-card" v-for="friend in filteredFriends" :key="friend.name">
               <div class="card-top">
                 <img :src="friend.avatar" class="avatar" />
                 <strong class="friend-name">{{ friend.name }}</strong>
-                <span class="time-label">{{ friend.time }}</span>
               </div>
+
               <div class="action-buttons">
-                <button class="btn-accept">Chấp nhận</button>
-                <button class="btn-decline">Xóa</button>
+                <button class="btn-skip">Bỏ qua</button>
+                <button class="btn-add">Kết bạn</button>
               </div>
             </div>
           </div>
@@ -40,18 +40,16 @@ import layout from '@/layout/SideBarContact.vue'
 import quangImg from '@/assets/quang.png'
 
 const searchText = ref('')
-const requests = ref([
-  { name: 'Quang', avatar: quangImg, time: '4 năm trước' },
-  { name: 'Quang', avatar: quangImg, time: '2 giờ trước' },
-  { name: 'Quang', avatar: quangImg, time: '2 giờ trước' },
-  { name: 'Quang', avatar: quangImg, time: '2 giờ trước' }
+const friends = ref([
+  { name: 'Quang', avatar: quangImg },
+  { name: 'Quang', avatar: quangImg },
+  { name: 'Quang', avatar: quangImg },
+{ name: 'Quang', avatar: quangImg }
 ])
 
 const filteredFriends = computed(() => {
   const keyword = searchText.value.toLowerCase()
-  return requests.value.filter(friend =>
-    friend.name.toLowerCase().includes(keyword)
-  )
+  return friends.value.filter(friend => friend.name.toLowerCase().includes(keyword))
 })
 </script>
 
@@ -80,6 +78,7 @@ const filteredFriends = computed(() => {
   width: 300px;
   margin-bottom: 20px;
 }
+
 .search-bar input {
   width: 100%;
   padding: 10px 15px 10px 40px;
@@ -87,6 +86,7 @@ const filteredFriends = computed(() => {
   border-radius: 25px;
   font-size: 14px;
 }
+
 .search-icon {
   position: absolute;
   top: 50%;
@@ -109,7 +109,7 @@ const filteredFriends = computed(() => {
   gap: 30px;
 }
 
-.request-card {
+.suggest-card {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -117,13 +117,13 @@ const filteredFriends = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  align-items: flex-start;
 }
 
 .card-top {
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: space-between;
 }
 
 .avatar {
@@ -136,22 +136,16 @@ const filteredFriends = computed(() => {
 .friend-name {
   font-weight: bold;
   font-size: 16px;
-  flex: 1;
-}
-
-.time-label {
-  font-size: 12px;
-  color: #888;
-  white-space: nowrap;
 }
 
 .action-buttons {
   display: flex;
-  gap: 82px;
+  gap: 80px;
+  width: 100%;
   justify-content: center;
 }
 
-.btn-accept {
+.btn-skip {
   background: #ccc;
   border: none;
   border-radius: 6px;
@@ -160,12 +154,12 @@ const filteredFriends = computed(() => {
   cursor: pointer;
 }
 
-.btn-decline {
-  background: red;
-  color: white;
-  border: none;
+.btn-add {
+  background: white;
+  color: blue;
+  border: 2px solid blue;
   border-radius: 6px;
-  padding: 8px 20px;
+  padding: 6px 16px;
   font-size: 14px;
   cursor: pointer;
 }

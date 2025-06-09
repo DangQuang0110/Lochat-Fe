@@ -17,17 +17,17 @@
               <img src="/icons/friends.png" class="icon" /> Bạn bè
             </li>
           </router-link>
-          <router-link to="/friend-requests" custom v-slot="{ navigate, isActive }">
+          <router-link to="/friend" custom v-slot="{ navigate, isActive }">
             <li :class="{ active: isActive }" @click="navigate">
               <img src="/icons/sendFriend.png" class="icon" /> Lời mời kết bạn
             </li>
           </router-link>
-          <router-link to="/sent-requests" custom v-slot="{ navigate, isActive }">
+          <router-link to="/InvitationSent" custom v-slot="{ navigate, isActive }">
             <li :class="{ active: isActive }" @click="navigate">
               <img src="/icons/sent.png" class="icon" /> Lời mời đã gửi
             </li>
           </router-link>
-          <router-link to="/suggestions" custom v-slot="{ navigate, isActive }">
+          <router-link to="/FriendSuggest" custom v-slot="{ navigate, isActive }">
             <li :class="{ active: isActive }" @click="navigate">
               <img src="/icons/suggest.png" class="icon" /> Gợi ý liên hệ
             </li>
@@ -100,7 +100,7 @@ export default {
   width: 180px;
   border-right: 1px solid #ddd;
   padding: 16px 8px;
-  height:600px;
+  /* height:600px; */
   /* Bóng đổ sang phải */
   box-shadow: 4px 0 6px rgba(0, 0, 0, 0.1);
 }
@@ -119,17 +119,19 @@ export default {
   display: flex;
   align-items: center;
   transition: background 0.3s ease, transform 0.1s ease;
-  border-radius: 8px;
 }
 .menu li:hover {
   background: #eee;
   transform: scale(1.02);
 }
 .menu li.active {
-  color: red;
-  font-weight: bold;
-  background: #ffeaea;
+  color: black; /* hoặc giữ nguyên nếu muốn */
+  font-weight: normal; /* nếu không muốn đậm */
+  background: none;
+  border-bottom: 2px solid red; /* gạch chân đỏ */
+  padding-bottom: 2px; /* tạo khoảng cách đẹp */
 }
+
 .icon {
   width: 18px;
   height: 18px;
