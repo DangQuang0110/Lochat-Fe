@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <img src="../assets/lgo.jpg" alt="" class="logo" />
+      <img src="@/assets/lgo.png" alt="" class="logo" />
       <p>Gặp sự cố khi đăng nhập?</p>
       <p>Nhập email đã liên kết để đăng nhập vào tài khoản.</p>
 
@@ -82,18 +82,15 @@ const sendLink = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('../assets/background.jpg') no-repeat center/cover;
+  background: url('@/assets/background(1).png') no-repeat center/cover;
   background-size: cover;
-  filter: blur(8px);     /* Điều chỉnh độ mờ theo ý bạn */
-  transform: scale(1.1); /* Phóng to 10% để blur không bị viền cắt */
-  z-index: 0;             /* Đặt nằm sau form */
 }
 
 /* Phần hộp form (auth-box) nằm ở trên lớp blur */
 .auth-box {
   position: relative;
   z-index: 1;               /* Luôn luôn “trên” pseudo-element */
-  background-color: #ffffff;
+  background-color: #5b5b5b;
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -111,7 +108,7 @@ const sendLink = () => {
 
 .auth-box p {
   font-size: 0.875rem;
-  color: #374151;
+  color: #FFF;
   margin-top: 0.5rem;
   margin-bottom: 1rem;
 }

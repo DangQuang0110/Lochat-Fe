@@ -20,6 +20,7 @@ html, body, #app {
   padding: 0;
   height: 100%;
   width: 100%;
-}/* nav a { margin: 0 10px; color: #42b983; }
+}
+/* nav a { margin: 0 10px; color: #42b983; }
 nav a.router-link-active { font-weight: bold; } */
 </style>

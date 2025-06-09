@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <img src="../assets/lgo.jpg" alt="" class="logo" />
+      <img src="@/assets/lgo.png" alt="" class="logo" />
       <h1>Đặt lại mật khẩu</h1>
       <p class="sub-text">Vui lòng nhập mật khẩu cũ và mật khẩu mới để cập nhật tài khoản</p>
 
@@ -270,18 +270,15 @@ const handleReset = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('../assets/background.jpg') no-repeat center/cover;
+  background: url('@/assets/background(1).png') no-repeat center/cover;
   background-size: cover;
-  filter: blur(8px);     /* Điều chỉnh độ mờ theo ý bạn */
-  transform: scale(1.1); /* Phóng to 10% để blur không bị viền cắt */
-  z-index: 0;             /* Đặt nằm sau form */
 }
 
 /* Phần hộp form (auth-box) nằm ở trên lớp blur */
 .auth-box {
   position: relative;
   z-index: 1;               /* Luôn luôn “trên” pseudo-element */
-  background-color: #ffffff;
+  background-color: #5b5b5b;
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -307,7 +304,7 @@ h1 {
 
 .sub-text {
   font-size: 0.95rem;
-  color: #666;
+  color: #FFFFFF;
   margin-bottom: 1.5rem;
 }
 
@@ -315,7 +312,7 @@ label {
   display: block;
   text-align: left;
   font-size: 0.9rem;
-  color: #333;
+  color: #FFF;
   margin-bottom: 0.3rem;
 }
 
@@ -384,7 +381,7 @@ label {
 }
 
 .btn:disabled {
-  background-color: #CCC;
+  background-color: #000;
   cursor: not-allowed;
 }
 

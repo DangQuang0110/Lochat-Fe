@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <img src="../assets/lgo.jpg" alt="" class="logo" />
+      <img src="@/assets/lgo.png" alt="" class="logo" />
       <p>Hãy nhập mã xác thực được gửi tới email của bạn</p>
       <p>Mã OTP sẽ hết hạn trong vòng 2 phút</p>
 
@@ -129,7 +129,7 @@ const formatCountdown = () => {
 }
 
 .auth-box {
-  background-color: #FFFFFF;
+  background-color: #5b5b5b;
   /* border-radius: 12px; */
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -146,7 +146,7 @@ const formatCountdown = () => {
 
 .auth-box p {
   font-size: 0.875rem;
-  color: #374151;
+  color: #FFFFFF;
   margin-top: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -175,7 +175,7 @@ const formatCountdown = () => {
 }
 
 .auth-box a {
-  color: #3b82f6;
+  color: #FFFFFF;
   font-size: 0.875rem;
   margin-top: 1rem;
   display: block;
