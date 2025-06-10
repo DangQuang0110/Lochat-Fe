@@ -11,13 +11,12 @@ import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
 import ComMessage from '@/components/ComMessage.vue'
 import FriendRequestPage from '@/components/FriendRequestPage.vue'
-
 import AddFriend from '@/components/AddFriend.vue'
 import MessageNewDetail from '@/components/MessageNewDetail.vue'
 
 import InvitationSent from '@/components/InvitationSent.vue'
 import FriendSuggest from '@/components/FriendSuggest.vue'
-
+import GroupManagement from '@/components/GroupManagement.vue'
 
 const routes = [
   // {
@@ -90,7 +89,12 @@ const routes = [
     path:'/InvitationSent',
     name:'InvitationSent',
     component:InvitationSent
-  }
+  },
+  {
+    path :'/groupnew',
+    name:'GroupManagement',
+    component: GroupManagement
+  },
 ]
 
 const router = createRouter({
