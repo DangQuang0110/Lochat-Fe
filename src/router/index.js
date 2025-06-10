@@ -14,7 +14,6 @@ import FriendRequestPage from '@/components/FriendRequestPage.vue'
 
 import AddFriend from '@/components/AddFriend.vue'
 import MessageNewDetail from '@/components/MessageNewDetail.vue'
-import EditProfileForm from '@/components/EditProfileForm.vue'
 
 import InvitationSent from '@/components/InvitationSent.vue'
 import FriendSuggest from '@/components/FriendSuggest.vue'
@@ -68,7 +67,6 @@ const routes = [
     component: ComMessage
   },
   {
-
     path: '/addfriend',
     name: 'AddFriend',
     component: AddFriend
@@ -79,13 +77,9 @@ const routes = [
     component: MessageNewDetail
   },
   {
-    path: '/edit',
-    name: 'EditProfileForm',
-    component: EditProfileForm
-  },
     path: '/',
-    name: 'message',
-    component: ComMessage
+    name: 'login',
+    component: LoginView
   },
   {
     path :'/FriendSuggest',
