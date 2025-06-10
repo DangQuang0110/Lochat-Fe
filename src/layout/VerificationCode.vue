@@ -34,6 +34,8 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { verifyOTP } from '@/service/otpService';
+import { registerUser } from '@/service/authService';
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -93,18 +95,47 @@ const resendOtp = () => {
 }
 
 // Khi bấm Xác nhận
-const sendLink = () => {
+const sendLink = async () => {
   const otpString = otp.value.join('')
   if (otpString.length !== 6) {
-    alert('Vui lòng nhập đủ 6 chữ số!')
+    alert('⚠️ Vui lòng nhập đủ 6 chữ số OTP!')
     return
   }
-  // Giả lập thành công
-  alert(`Mã OTP bạn nhập là: ${otpString}\nXác thực thành công!`)
-  // Ví dụ: chuyển về trang đăng nhập
-  router.push('/')
-}
 
+  // Lấy thông tin từ localStorage
+  const email = localStorage.getItem('register_email')
+  const phone = localStorage.getItem('register_phone')
+  const username = localStorage.getItem('register_username')
+  const password = localStorage.getItem('register_password')
+  const confirmPassword = localStorage.getItem('register_confirm')
+
+  try {
+    // 1. Gửi OTP xác minh
+    await verifyOTP({ email, otp: otpString })
+
+    // 2. OTP hợp lệ => Gửi API tạo tài khoản
+    await registerUser({
+      email,
+      phoneNumber: phone,
+      username,
+      password,
+      confirmPassword
+    })
+
+    // 3. Xóa localStorage
+    localStorage.removeItem('register_email')
+    localStorage.removeItem('register_phone')
+    localStorage.removeItem('register_username')
+    localStorage.removeItem('register_password')
+    localStorage.removeItem('register_confirm')
+    localStorage.removeItem('register_flow')
+
+    alert('✅ Đăng ký và xác thực thành công! Mời bạn đăng nhập.')
+    router.push('/login')
+  } catch (err) {
+    alert('❌ Xác thực thất bại: ' + (err?.response?.data?.message || 'OTP sai hoặc hết hạn'))
+  }
+}
 // Format đếm ngược thành mm:ss
 const formatCountdown = () => {
   const min = String(Math.floor(countdown.value / 60)).padStart(2, '0')
