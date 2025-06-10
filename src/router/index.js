@@ -12,6 +12,7 @@ import ResetPassword from '@/layout/ResetPassword.vue'
 import ComMessage from '@/components/ComMessage.vue'
 import FriendRequestPage from '@/components/FriendRequestPage.vue'
 
+
 import AddFriend from '@/components/AddFriend.vue'
 import MessageNewDetail from '@/components/MessageNewDetail.vue'
 import EditProfileForm from '@/components/EditProfileForm.vue'
@@ -57,6 +58,8 @@ const routes = [
     name: 'reset-password',
     component: ResetPassword
   },
+
+
   {
     path: '/friend',
     name: 'FriendRequestPage',
@@ -83,6 +86,7 @@ const routes = [
     name: 'EditProfileForm',
     component: EditProfileForm
   },
+  {
     path: '/',
     name: 'message',
     component: ComMessage

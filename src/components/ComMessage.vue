@@ -2,7 +2,30 @@
   <div class="chat-app">
          <aside class="sidebar icons-sidebar">
       <div class="sidebar-top">
-        <img src="@/assets/quang.jpg" alt="Logo" class="sidebar-logo" />
+       <img
+  :src="current.avatar"
+  class="avatar"
+  @click.stop="toggleUserSidebar"
+/>
+          <!-- <div v-if="showAvatarMenu" class="avatar-menu">
+      <ul>
+        <li @click="goToUserProfile">Hồ sơ người dùng</li>
+        <li @click="goToChangePassword">Đổi mật khẩu</li>
+        <li @click="logout">Đăng xuất</li>
+      </ul>
+    </div> -->
+    <aside
+  v-if="showUserSidebar"
+  class="user-sidebar"
+  ref="avatarWrapper"
+>
+  <ul class="user-sidebar-menu">
+    <li @click="goToUserProfile">Hồ sơ người dùng</li>
+    <li @click="goToChangePassword">Đổi mật khẩu</li>
+    <li @click="logout">Đăng xuất</li>
+  </ul>
+</aside>
+
       </div>
       <nav class="sidebar-nav">
         <ul>
@@ -195,7 +218,7 @@
 </template>
 
 <script setup>
-import { ref, computed ,} from 'vue'
+import { ref, computed , onMounted, onBeforeUnmount} from 'vue'
 
 // existing state imports
 
@@ -228,6 +251,31 @@ const emojis = ref([
   '🤤','😱','😷','🥳','🤯','🧐','🤮','🤗','🤫','🤭','👏','🙌','🦄','💩','👻','💀',
   '👽','🤖','🎃','😺','😼','🙈','🙉','🙊','🐶','🐱','🐻','🦊','🐼','🐨','🐯','🦁'
 ])
+
+const showUserSidebar = ref(false)
+const avatarWrapper = ref(null)
+
+function toggleUserSidebar() {
+  showUserSidebar.value = !showUserSidebar.value
+}
+
+// click ngoài để đóng
+function handleClickOutside(e) {
+  if (
+    avatarWrapper.value &&
+    !avatarWrapper.value.contains(e.target) &&
+    !e.target.closest('.user-sidebar')
+  ) {
+    showUserSidebar.value = false
+  }
+}
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
+
+// action
+function goToUserProfile()   { console.log('Hồ sơ người dùng') }
+function goToChangePassword(){ console.log('Đổi mật khẩu') }
+function logout()            { console.log('Đăng xuất') }
 
 const showSearch = ref(false)
 const searchQuery = ref('')
@@ -903,5 +951,32 @@ function toggleProfilePanel() {
   font-size: 14px;
   margin-left: -12px;
 }
+
+.user-sidebar {
+  width: 200px;
+  background: #fff;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative;   /* nếu bạn để nó nằm trong .chat-app flex container */
+  z-index: 150;
+   margin-right: -200px;
+}
+
+.user-sidebar-menu {
+  list-style: none;
+  margin: 0;
+  padding: 1rem 0;
+}
+
+.user-sidebar-menu li {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+}
+
+.user-sidebar-menu li:hover {
+  background: #f5f5f5;
+}
+
 
 </style>
