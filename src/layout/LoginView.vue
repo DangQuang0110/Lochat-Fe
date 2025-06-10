@@ -95,6 +95,11 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
+import { loginUser } from '@/service/authService'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
 
 const email = ref('')
 const password = ref('')
@@ -148,12 +153,33 @@ const togglePassword = () => {
   showPassword.value = !showPassword.value
 }
 
-const handleLogin = () => {
+const handleLogin = async () => {
   validateEmail()
   validatePassword()
   if (!isFormValid.value) return
-  console.log('Form hợp lệ, sẵn sàng submit (chưa tích hợp API)')
+
+  try {
+    const res = await loginUser({
+      username: email.value,
+      password: password.value
+    })
+
+    console.log('✅ Đăng nhập thành công:', res)
+    // Lưu thông tin người dùng nếu cần
+    localStorage.setItem('user', JSON.stringify({
+      id: res.userId,
+      username: res.username,
+      roles: res.roles
+    }))
+    
+    // Chuyển trang sau đăng nhập
+    router.push('/message')
+  } catch (err) {
+    console.error('❌ Lỗi đăng nhập:', err)
+    errors.password = err?.message || 'Tên đăng nhập hoặc mật khẩu sai'
+  }
 }
+
 </script>
 
 <style scoped>

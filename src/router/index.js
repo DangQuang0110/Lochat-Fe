@@ -13,6 +13,7 @@ import ComMessage from '@/components/ComMessage.vue'
 import FriendRequestPage from '@/components/FriendRequestPage.vue'
 import AddFriend from '@/components/AddFriend.vue'
 import MessageNewDetail from '@/components/MessageNewDetail.vue'
+
 import InvitationSent from '@/components/InvitationSent.vue'
 import FriendSuggest from '@/components/FriendSuggest.vue'
 import GroupManagement from '@/components/GroupManagement.vue'
@@ -65,7 +66,6 @@ const routes = [
     component: ComMessage
   },
   {
-
     path: '/addfriend',
     name: 'AddFriend',
     component: AddFriend
@@ -77,8 +77,8 @@ const routes = [
   },
   {
     path: '/',
-    name: 'message',
-    component: ComMessage
+    name: 'login',
+    component: LoginView
   },
   {
     path :'/FriendSuggest',

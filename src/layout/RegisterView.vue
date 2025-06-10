@@ -175,7 +175,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-
+import { sendOTP } from '@/service/otpService';
+import router from '@/router';
 const contact = ref('')
 const contactFocus = ref(false)
 const contactError = ref('')
@@ -347,21 +348,31 @@ const isFormValid = computed(() => {
 })
 
 /** Khi bấm Đăng ký (chỉ log ra console, không gọi API) **/
-const handleRegister = () => {
+const handleRegister = async () => {
   const okEmail = validateContact()
   const okPhone = validatePhone()
   const okName = validateFullname()
   const okPwd = validatePassword()
   const okConfirm = validateConfirmPassword()
+
   if (okEmail && okPhone && okName && okPwd && okConfirm) {
-    console.log('Form đăng ký hợp lệ:', {
-      email: contact.value,
-      phone: phone.value,
-      username: fullname.value,
-      password: password.value,
-    })
-    alert('Đăng ký thành công (demo giao diện)')
-    // Nếu muốn redirect, dùng router.push(...) tại đây
+    try {
+      // 1. Gửi OTP đến email (chưa tạo tài khoản vội)
+      await sendOTP(contact.value)
+
+      // 2. Lưu thông tin đăng ký vào localStorage để dùng lại sau khi xác minh OTP
+      localStorage.setItem('register_email', contact.value)
+      localStorage.setItem('register_phone', phone.value)
+      localStorage.setItem('register_username', fullname.value)
+      localStorage.setItem('register_password', password.value)
+      localStorage.setItem('register_confirm', confirmPassword.value)
+      localStorage.setItem('register_flow', 'true')
+
+      // 3. Chuyển sang trang nhập OTP
+      router.push({ path: '/verificationCode' })
+    } catch (error) {
+      alert('❌ Gửi OTP thất bại: ' + (error?.response?.data?.message || 'Lỗi không xác định'))
+    }
   }
 }
 </script>
