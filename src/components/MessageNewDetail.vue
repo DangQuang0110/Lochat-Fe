@@ -115,57 +115,109 @@
 </template>
 
 <script>
+import { getAccountDetail, updateProfile } from '@/service/profileService'
+
 export default {
   name: 'ProfileModal',
+  props: {
+    accountId: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
       isEditing: false,
       profile: {
-        name: 'Gia Phong',
-        avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&h=150&fit=crop&crop=face',
-        cover: null,
-        bio: 'Tôi là một nhà phát triển phần mềm đam mê công nghệ và học hỏi những điều mới mỗi ngày. Thích khám phá các framework mới, xây dựng ứng dụng web hiện đại và chia sẻ kiến thức với cộng đồng.',
-        phone: '0369620631'
+        name: '',
+        avatar: '',
+        cover: '',
+        bio: '',
+        phone: '',
+        profileId: ''
       },
-      editData: {}
+      editData: {},
+      avatarFile: null,
+      coverFile: null
     }
   },
+  mounted() {
+    this.loadProfile()
+  },
   methods: {
+    async loadProfile() {
+      try {
+        const data = await getAccountDetail(this.accountId)
+        const profile = data.profile || {}
+        this.profile = {
+          name: profile.fullname || data.username,
+          avatar: profile.avatarUrl || '',
+          cover: profile.coverUrl || '',
+          bio: profile.bio || '',
+          phone: data.phoneNumber || '',
+          profileId: profile.id || ''
+        }
+      } catch (err) {
+        console.error('Không thể tải hồ sơ:', err)
+      }
+    },
     closeModal() {
-      this.$emit('close');
+      this.$emit('close')
     },
     startEditing() {
-      this.isEditing = true;
-      // Copy current profile data to edit data
-      this.editData = { ...this.profile };
+      this.isEditing = true
+      this.editData = { ...this.profile }
     },
     cancelEdit() {
-      this.isEditing = false;
-      this.editData = {};
+      this.isEditing = false
+      this.editData = {}
+      this.avatarFile = null
+      this.coverFile = null
     },
-    handleAvatarUpload(event) {
-      const file = event.target.files[0];
+    handleAvatarUpload(e) {
+      const file = e.target.files[0]
       if (file) {
-        this.editData.avatar = URL.createObjectURL(file);
+        this.avatarFile = file
+        this.editData.avatar = URL.createObjectURL(file)
       }
     },
-    handleCoverUpload(event) {
-      const file = event.target.files[0];
+    handleCoverUpload(e) {
+      const file = e.target.files[0]
       if (file) {
-        this.editData.cover = URL.createObjectURL(file);
+        this.coverFile = file
+        this.editData.cover = URL.createObjectURL(file)
       }
     },
-    saveChanges() {
-      // Update profile with edited data
-      this.profile = { ...this.editData };
-      this.isEditing = false;
-      
-      // Emit save event to parent component
-      this.$emit('save', this.profile);
+    async saveChanges() {
+      try {
+        const result = await updateProfile(
+          this.profile.profileId,
+          this.editData,
+          this.avatarFile,
+          this.coverFile
+        )
+
+        this.profile = {
+          name: result.fullname,
+          avatar: result.avatarUrl,
+          cover: result.coverUrl,
+          bio: result.bio,
+          phone: this.editData.phone,
+          profileId: result.profileId
+        }
+
+        this.isEditing = false
+        this.avatarFile = null
+        this.coverFile = null
+        this.$emit('save', this.profile)
+      } catch (err) {
+        console.error('Lỗi khi cập nhật hồ sơ:', err)
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .modal-overlay {
@@ -183,10 +235,9 @@ export default {
 
 .profile-modal {
   background: white;
-  
   width: 100%;
-  max-width: 600px;
-  max-height: 95vh;
+  max-width: 500px;
+  max-height: 100vh;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   overflow-y: auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

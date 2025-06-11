@@ -165,21 +165,24 @@ const handleLogin = async () => {
     })
 
     console.log('✅ Đăng nhập thành công:', res)
-    // Lưu thông tin người dùng nếu cần
+
+    // ✅ Lưu accountId riêng biệt
+    localStorage.setItem('accountId', res.userId)
+
+    // (tuỳ chọn) Lưu thêm thông tin user nếu cần
     localStorage.setItem('user', JSON.stringify({
       id: res.userId,
       username: res.username,
       roles: res.roles
     }))
-    
-    // Chuyển trang sau đăng nhập
+
+    // Điều hướng sang trang message
     router.push('/message')
   } catch (err) {
     console.error('❌ Lỗi đăng nhập:', err)
     errors.password = err?.message || 'Tên đăng nhập hoặc mật khẩu sai'
   }
 }
-
 </script>
 
 <style scoped>
