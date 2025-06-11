@@ -16,7 +16,7 @@
           <h2 class="section-title">Lời mời đã gửi</h2>
 
           <div class="grid-list">
-            <div class="invite-card" v-for="friend in filteredFriends" :key="friend.name">
+            <div class="invite-card" v-for="friend in filteredFriends" :key="friend.id">
               <div class="card-top">
                 <img :src="friend.avatar" class="avatar" />
                 <strong class="friend-name">{{ friend.name }}</strong>
@@ -32,22 +32,38 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import layout from '@/layout/SideBarContact.vue'
-import quangImg from '@/assets/quang.png'
+import { getSentFriendRequests } from '@/service/friendService'
 
 const searchText = ref('')
-const friends = ref([
-  { name: 'Quang', avatar: quangImg },
-  { name: 'Quang', avatar: quangImg },
-  { name: 'Quang', avatar: quangImg },
-  { name: 'Quang', avatar: quangImg }
-])
+const friends = ref([])
+const accountId = localStorage.getItem('accountId')
+
+// Gọi API
+const fetchSentRequests = async () => {
+  try {
+    const data = await getSentFriendRequests(accountId)
+    console.log('📦 Đã gửi:', data)
+    friends.value = data.map(friend => ({
+      id: friend.id,
+      name: friend.username,
+      avatar: friend.imageUrl || '/default-avatar.png'
+    }))
+  } catch (err) {
+    console.error('❌ Lỗi khi fetch:', err)
+  }
+}
+
+onMounted(fetchSentRequests)
 
 const filteredFriends = computed(() => {
   const keyword = searchText.value.toLowerCase()
-  return friends.value.filter(friend => friend.name.toLowerCase().includes(keyword))
+  return friends.value.filter(friend =>
+    friend.name.toLowerCase().includes(keyword)
+  )
 })
+
 </script>
 
 <style scoped>
