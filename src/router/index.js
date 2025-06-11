@@ -21,11 +21,6 @@ import FriendSuggest from '@/components/FriendSuggest.vue'
 import GroupManagement from '@/components/GroupManagement.vue'
 
 const routes = [
-  // {
-  //   path: '/',
-  //   name: 'home',
-  //   component: Home
-  // },
   {
     path:'/friendlist',
     name: 'FriendList',
@@ -36,7 +31,6 @@ const routes = [
     name: 'login',
     component: LoginView
   },
-
   {
     path: '/register',
     name: 'register',
@@ -57,8 +51,6 @@ const routes = [
     name: 'reset-password',
     component: ResetPassword
   },
-
-
   {
     path: '/friend',
     name: 'FriendRequestPage',
@@ -102,7 +94,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(), // Dùng HTML5 history mode
+  history: createWebHistory(),
   routes
 })
 

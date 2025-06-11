@@ -222,23 +222,31 @@
         <button class="delete-btn">Xóa đoạn tin nhắn</button>
       </div>
     </aside>
-
+    <ProfileModal 
+      v-if="showProfileModal" 
+      :accountId="loggedInAccountId" 
+      @close="closeProfileModal" 
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed , onMounted, onBeforeUnmount} from 'vue'
+import ProfileModal from './MessageNewDetail.vue'
 
 // existing state imports
-const user = ref({
-  avatar: require('@/assets/quang.png'),
-  name: 'Quang'
-});
 
-const currentMessages = computed(() => {
-  return messages.value.filter(m => m.chatId === selectedId.value)
-})
+const loggedInAccountId = ref(localStorage.getItem('accountId'))
+const showProfileModal = ref(false)
 
+
+function openProfileModal() {
+  showProfileModal.value = true
+}
+
+function closeProfileModal() {
+  showProfileModal.value = false
+}
 
 // Danh sách bạn bè
 const friends = ref([
@@ -290,7 +298,9 @@ onMounted(() => document.addEventListener('click', handleClickOutside))
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
 // action
-function goToUserProfile()   { console.log('Hồ sơ người dùng') }
+function goToUserProfile() {
+  openProfileModal()
+}
 function goToChangePassword(){ console.log('Đổi mật khẩu') }
 function logout()            { console.log('Đăng xuất') }
 
