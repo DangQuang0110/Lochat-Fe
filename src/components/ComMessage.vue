@@ -2,11 +2,11 @@
   <div class="chat-app">
          <aside class="sidebar icons-sidebar">
       <div class="sidebar-top">
-       <img
-  :src="current.avatar"
-  class="avatar"
-  @click.stop="toggleUserSidebar"
-/>
+        <img
+    :src="user.avatar"
+    class="avatar"
+    @click.stop="toggleUserSidebar"
+  />
           <!-- <div v-if="showAvatarMenu" class="avatar-menu">
       <ul>
         <li @click="goToUserProfile">Hồ sơ người dùng</li>
@@ -75,7 +75,7 @@
     <img :src="current.avatar" class="avatar" />
     <div class="info">
       <div class="name">{{ current.name }}</div>
-      <div class="status">{{ current.online ? 'Đang hoạt động' : 'Offline' }}</div>
+      <div class="status">{{ current.online ? 'Đang hoạt động' : 'Offline' }}<span v-if="current.online" class="online-dot"></span></div>
     </div>
   </div>
   <div class="header-right">
@@ -102,28 +102,37 @@
   </div>
 </header>
 
-      <div class="chat-body">
-         <div
-          v-for="msg in filteredMessages"
-          :key="msg.id"
-          :class="['msg-wrapper', msg.fromMe ? 'align-right' : 'align-left']"
-        ></div>
-        <div v-for="msg in messages" :key="msg.id" :class="['msg-wrapper', msg.fromMe ? 'align-right' : 'align-left']">
-          <div class="msg-block">
-            <div :class="['msg', msg.fromMe ? 'from-me' : 'from-other']">
-              <div v-if="msg.file" class="file-attach">
-                <span class="file-icon">📎</span>
-                <div class="file-info">
-                  <p class="file-name">{{ msg.file.name }}</p>
-                  <p class="file-size">{{ msg.file.size }}</p>
-                </div>
-                <button class="download-btn">⬇️</button>
-              </div>
-              <p v-if="msg.text" class="msg-text">{{ msg.text }}</p>
+     <div class="chat-body">
+  <!-- Khi không có tin nào cho cuộc hội thoại này -->
+  <div v-if="currentMessages.length === 0" class="no-message">
+    Chưa có tin nhắn mới
+  </div>
+
+  <!-- Khi có ít nhất 1 tin, render duy nhất 1 vòng lặp -->
+  <template v-else>
+    <div
+      v-for="msg in filteredMessages"
+      :key="msg.id"
+      :class="['msg-wrapper', msg.fromMe ? 'align-right' : 'align-left']"
+    >
+      <div class="msg-block">
+        <div :class="['msg', msg.fromMe ? 'from-me' : 'from-other']">
+          <!-- nếu có file thì hiển thị -->
+          <div v-if="msg.file" class="file-attach">
+            <span class="file-icon">📎</span>
+            <div class="file-info">
+              <p class="file-name">{{ msg.file.name }}</p>
+              <p class="file-size">{{ msg.file.size }}</p>
             </div>
+            <button class="download-btn">⬇️</button>
           </div>
+          <!-- nếu có text thì hiển thị -->
+          <p v-if="msg.text" class="msg-text">{{ msg.text }}</p>
         </div>
       </div>
+    </div>
+  </template>
+</div>
 
      <footer class="chat-input">
     <div class="input-container">
@@ -221,6 +230,14 @@
 import { ref, computed , onMounted, onBeforeUnmount} from 'vue'
 
 // existing state imports
+const user = ref({
+  avatar: require('@/assets/quang.png'),
+  name: 'Quang'
+});
+
+const currentMessages = computed(() => {
+  return messages.value.filter(m => m.chatId === selectedId.value)
+})
 
 
 // Danh sách bạn bè
@@ -232,7 +249,7 @@ const friends = ref([
 ])
 
 // State
-const selectedId = ref(4)
+const selectedId = ref(1)
 const messages = ref([
   { id: 1, fromMe: false, text: 'Hi bạn nha' },
   { id: 2, fromMe: true,  text: 'Hi bạn nha' },
@@ -284,11 +301,11 @@ function toggleSearch() {
   if (!showSearch.value) searchQuery.value = ''
 }
 const filteredMessages = computed(() => {
-  if (!searchQuery.value) return messages.value
+  const cm = currentMessages.value
+  if (!searchQuery.value) return cm
   const q = searchQuery.value.toLowerCase()
-  return messages.value.filter(m => m.text && m.text.toLowerCase().includes(q))
+  return cm.filter(m => m.text && m.text.toLowerCase().includes(q))
 })
-
 // Computed
 const current = computed(() => {
   return friends.value.find(f => f.id === selectedId.value) || {}
@@ -324,6 +341,7 @@ function handleFileSelect(event) {
   messages.value.push({
     id: Date.now(),
     fromMe: true,
+    chatId: selectedId.value,
     file: { name: file.name, size: formatSize(file.size), url }
   })
 
@@ -345,7 +363,7 @@ function addEmoji(emoji) {
 function sendMessage() {
   const text = messageInput.value.trim()
   if (!text) return
-  messages.value.push({ id: Date.now(), fromMe: true, text })
+  messages.value.push({ id: Date.now(), fromMe: true, chatId: selectedId.value, text })
   messageInput.value = ''
 }
 
@@ -356,6 +374,7 @@ function toggleProfilePanel() {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
 *{
   margin: 0;
   padding: 0;
@@ -365,6 +384,7 @@ function toggleProfilePanel() {
   display: flex;
   height: 100%;
   margin: 0;
+  font-family: 'Roboto', sans-serif;
 }
 /* Sidebar */
 .icons-sidebar {
@@ -475,8 +495,8 @@ function toggleProfilePanel() {
 
 /* Nút + tròn */
 .search-bar .add-btn {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: 50%;
   background: #3b6eee;        /* đổi màu theo theme */
@@ -549,12 +569,12 @@ function toggleProfilePanel() {
   cursor: pointer;
   transition: background 0.2s;
 }
-/* .friend-item:hover {
-  background: #ffe0b2;
-}
+.friend-item:hover {
+  background: #d5dbdb;
+} 
 .friend-item.active {
-  background: #ffc107;
-} */
+  background: #d3f0f3;
+} 
 .avatar {
   width: 36px;
   height: 36px;
@@ -578,7 +598,7 @@ function toggleProfilePanel() {
   background: #4caf50;
   border-radius: 50%;
   margin-left: 6px;
-  margin-top : 8px;
+  margin-top : 5px;
 }
 .desc {
   font-size: 12px;
@@ -978,5 +998,12 @@ function toggleProfilePanel() {
   background: #f5f5f5;
 }
 
-
+.no-message {
+  flex: 1;               /* chiếm toàn vùng chat-body */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 14px;
+}
 </style>

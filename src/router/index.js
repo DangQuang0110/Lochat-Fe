@@ -12,6 +12,7 @@ import ResetPassword from '@/layout/ResetPassword.vue'
 import ComMessage from '@/components/ComMessage.vue'
 import FriendRequestPage from '@/components/FriendRequestPage.vue'
 
+
 import AddFriend from '@/components/AddFriend.vue'
 import MessageNewDetail from '@/components/MessageNewDetail.vue'
 
@@ -77,11 +78,6 @@ const routes = [
     path: '/messagenew',
     name: 'MessageNewDetail',
     component: MessageNewDetail
-  },
-  {
-    path: '/edit',
-    name: 'EditProfileForm',
-    component: EditProfileForm
   },
   {
     path: '/',
