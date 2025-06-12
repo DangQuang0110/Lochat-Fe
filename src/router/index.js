@@ -1,9 +1,6 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-
-// import Home from '@/components/ComHome.vue'
 import FriendList from '@/components/FriendList.vue'
-// Đường dẫn đúng đến các component trong src/layout/
 import LoginView  from '@/layout/LoginView.vue'
 import RegisterView from '@/layout/RegisterView.vue'
 import VerificationCode from '@/layout/VerificationCode.vue'
@@ -15,7 +12,6 @@ import FriendRequestPage from '@/components/FriendRequestPage.vue'
 
 import AddFriend from '@/components/AddFriend.vue'
 import MessageNewDetail from '@/components/MessageNewDetail.vue'
-
 import InvitationSent from '@/components/InvitationSent.vue'
 import FriendSuggest from '@/components/FriendSuggest.vue'
 import GroupManagement from '@/components/GroupManagement.vue'
@@ -91,6 +87,7 @@ const routes = [
     name:'GroupManagement',
     component: GroupManagement
   },
+  
 ]
 
 const router = createRouter({
