@@ -348,6 +348,7 @@ const showProfileModal = ref(false)
 const user = ref({
   avatar: 'image/avatar.jpg', 
 })
+
 function getSender(msg) {
   return friends.value.find(f => f.id === msg.senderId) || null
 }
@@ -358,7 +359,6 @@ const groupMembers = ref([
   { id: 4, name: 'Quang', avatar: require('@/assets/quang.jpg') },
   // { id: 5, name: 'Vũ', avatar: require('@/assets/vu.jpg') },
 ])
-
 
 function openProfileModal() {
   showProfileModal.value = true
@@ -433,7 +433,6 @@ function toggleSearch() {
 const currentMessages = computed(() => {
   return messages.value.filter(msg => msg.chatId === selectedId.value)
 })
-
 const filteredMessages = computed(() => {
   const cm = currentMessages.value
   if (!searchQuery.value) return cm
