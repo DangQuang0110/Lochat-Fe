@@ -302,17 +302,90 @@
           <div class="group-actions-horizontal">
             <p class="admin-label">Bạn là quản trị viên</p>
             <div class="group-buttons-horizontal">
-              <button class="group-btn-icon">
-                <img src="@/assets/sendFriend.png" alt="Thêm" />
-                Thêm bạn bè vào nhóm
-              </button>
-              <button class="group-btn-icon">
-                <img src="@/assets/setting.png" alt="Quản lý" />
-                Quản lí nhóm
-              </button>
+                  <button class="group-btn-icon" @click="showAddModal = true">
+              <img src="@/assets/sendFriend.png" alt="Thêm" />
+              Thêm bạn bè vào nhóm
+            </button>
+                <button class="group-btn-icon" @click="showGroupModal = true">
+              <img src="@/assets/setting.png" alt="Quản lý" />
+              Quản lí nhóm
+            </button>
             </div>
           </div>
         </div>
+<!-- Modal “Thêm bạn bè vào nhóm” -->
+      <div
+  v-if="showAddModal"
+  class="group-modal-overlay"
+  @click.self="showAddModal = false"
+>
+  <div class="group-modal">
+    <!-- Header -->
+    <div class="group-modal-header">
+      <h3>Thêm vào nhóm</h3>
+      <button class="close-btn" @click="showAddModal = false">×</button>
+    </div>
+
+    <!-- Body: search + list -->
+    <div class="group-modal-body">
+      <div class="search-wrapper">
+        <span class="list-title">Danh sách bạn bè</span>
+        <input
+          type="text"
+          v-model="addSearch"
+          placeholder="Tìm theo tên hoặc số"
+        />
+      </div>
+      <ul class="member-list">
+        <li
+          v-for="friend in filteredFriendsToAdd"
+          :key="friend.id"
+          class="member-item"
+        >
+          <img :src="friend.avatar" class="avatar" alt="" />
+          <span class="name">{{ friend.name }}</span>
+          <button
+            class="add-btn"
+            @click="addToGroup(friend.id)"
+          >
+            Thêm vào nhóm
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+        <!-- Modal overlay + nội dung -->
+ <div v-if="showGroupModal" class="group-modal-overlay" @click.self="showGroupModal = false">
+    <div class="group-modal">
+      <!-- Header & nút đóng -->
+      <div class="group-modal-header">
+        <h3>Quản lí nhóm</h3>
+        <button class="close-btn" @click="showGroupModal = false">×</button>
+      </div>
+
+      <!-- Body: search + list thành viên -->
+      <div class="group-modal-body">
+        <input
+          type="text"
+          v-model="searchText"
+          placeholder="Quản lí nhóm"
+          class="group-search"
+        />
+
+        <ul class="member-list">
+          <li v-for="member in filteredMembers" :key="member.id" class="member-item">
+            <img :src="member.avatar" class="avatar" />
+            <span class="name">{{ member.name }}</span>
+            <button class="remove-btn" @click="removeFromGroup(member.id)">
+              Xóa khỏi nhóm
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
         <div class="file-list">
           <h4 class="section-title">Files</h4>
           <ul>
@@ -358,12 +431,49 @@ const groupMembers = ref([
   // { id: 5, name: 'Vũ', avatar: require('@/assets/vu.jpg') },
 ])
 
+const members = ref([
+  { id:1, name:'Quang',  avatar:require('@/assets/cau.jpg') },
+  { id:2, name:'Nhân',   avatar:require('@/assets/nhan.jpg') },
+  { id:3, name:'Cầu',    avatar:require('@/assets/truong.jpg') },
+  /* ... */
+])
+
+const showGroupModal = ref(false)
+const searchText      = ref('')
+
+// Lọc theo tên
+const filteredMembers = computed(() => 
+  members.value.filter(m => 
+    m.name.toLowerCase().includes(searchText.value.toLowerCase())
+  )
+)
+
+function removeFromGroup(id) {
+  members.value = members.value.filter(m => m.id !== id)
+}
+
 function openProfileModal() {
   showProfileModal.value = true
 }
 
 function closeProfileModal() {
   showProfileModal.value = false
+}
+
+const showAddModal = ref(false)
+const addSearch    = ref('')
+// Lọc danh sách bạn bè để thêm
+const filteredFriendsToAdd = computed(() =>
+  friends.value.filter(f =>
+    f.name.toLowerCase().includes(addSearch.value.toLowerCase()) ||
+    String(f.id).includes(addSearch.value)
+  )
+)
+
+function addToGroup(id) {
+  // Ví dụ: remove bạn đó khỏi danh sách friends
+  friends.value = friends.value.filter(f => f.id !== id)
+  // TODO: đẩy lên API hoặc cập nhật group.members
 }
 
 // Danh sách bạn bè
@@ -641,8 +751,8 @@ const groups = ref([
 
 /* Nút + tròn */
 .search-bar .add-btn {
-  width: 24px;
-  height: 24px;
+  width: 8px;
+  height: 12px;
   border: none;
   border-radius: 50%;
   background: #3b6eee;        /* đổi màu theo theme */
@@ -1249,4 +1359,197 @@ const groups = ref([
   width: 16px;
   height: 16px;
 }
+
+/* 1) Overlay fullscreen */
+.group-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* 2) Khung modal */
+.group-modal {
+  background: #fff;
+  width: 500px;
+  max-width: 90%;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* 3) Header */
+.group-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.group-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* 4) Body: search + list */
+.group-modal-body {
+  padding: 1rem;
+}
+
+.group-search {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 0.75rem;
+}
+
+.name {
+  flex: 1;
+}
+
+.remove-btn {
+  background: #e02424;
+  border: none;
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.group-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.group-modal {
+  background: #fff;
+  width: 500px; max-width: 95%;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.group-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+.group-modal-header h3 { margin: 0; }
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.group-modal-body { padding: 1rem; }
+
+/* Search input */
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* hoặc space-between nếu muốn input giãn đều */
+  gap: 10rem;                    /* khoảng giữa text và input */
+  margin-bottom: 1rem;
+}
+
+.search-wrapper .list-title {
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;         /* để text không bị xuống dòng */
+}
+
+.search-wrapper input {
+  flex: 1;                      /* input chiếm phần còn lại */
+  max-width: 200px;             /* hoặc auto tuỳ ý */
+}
+
+.search-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+.search-wrapper input {
+  width: 200px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+}
+
+/* Danh sách bạn bè */
+.member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.member-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.member-item .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 0.75rem;
+}
+.member-item .name {
+  flex: 1;
+}
+
+/* Nút “Thêm vào nhóm” outline xanh */
+.add-btn {
+  background: transparent;
+  border: 1px solid #1d4ed8;
+  color: #1d4ed8;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.add-btn:hover {
+  background: #eff6ff;
+}
+
 </style>
