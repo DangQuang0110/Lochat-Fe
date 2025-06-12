@@ -1,4 +1,3 @@
-
 <template>
   <div class="modal-overlay" @click="closeModal">
     <div class="group-management" @click.stop>
@@ -16,26 +15,18 @@
       <!-- Members Section -->
       <div class="members-section">
         <h3 class="section-title">Thành viên nhóm</h3>
-        
-        <div class="members-list">
-          <div 
-            v-for="member in members" 
-            :key="member.id"
-            class="member-item"
-          >
+        <div v-if="loading" class="loading">Đang tải...</div>
+        <div v-else-if="error" class="error">{{ error }}</div>
+        <div v-else-if="members.length === 0" class="empty">Không có thành viên nào</div>
+        <div v-else class="members-list">
+          <div v-for="member in members" :key="member.id" class="member-item">
             <div class="member-info">
               <div class="avatar">
                 <img :src="member.avatar" :alt="member.name" />
               </div>
               <span class="member-name">{{ member.name }}</span>
             </div>
-            
-            <button 
-              class="remove-btn"
-              @click="removeMember(member.id)"
-            >
-              Xóa khỏi nhóm
-            </button>
+            <button class="remove-btn" @click="removeMember(member.id)">Xóa khỏi nhóm</button>
           </div>
         </div>
       </div>
@@ -47,7 +38,9 @@
           <p>Bạn có chắc chắn muốn xóa <strong>{{ memberToRemove?.name }}</strong> khỏi nhóm?</p>
           <div class="modal-actions">
             <button class="cancel-btn" @click="cancelRemove">Hủy</button>
-            <button class="confirm-btn" @click="confirmRemove">Xóa</button>
+            <button class="confirm-btn" :disabled="removing" @click="confirmRemove">
+              {{ removing ? 'Đang xóa...' : 'Xóa' }}
+            </button>
           </div>
         </div>
       </div>
@@ -55,69 +48,69 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'GroupManagement',
-  data() {
-    return {
-      showConfirmModal: false,
-      memberToRemove: null,
-      members: [
-        {
-          id: 1,
-          name: 'Quang',
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&auto=format'
-        },
-        {
-          id: 2,
-          name: 'Nhân',
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face&auto=format'
-        },
-        {
-          id: 3,
-          name: 'Cầu',
-          avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face&auto=format'
-        },
-        {
-          id: 4,
-          name: 'Trường',
-          avatar: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=40&h=40&fit=crop&crop=face&auto=format'
-        },
-        {
-          id: 5,
-          name: 'Vũ',
-          avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face&auto=format'
-        }
-      ]
-    }
-  },
-  methods: {
-    closeModal() {
-      this.$emit('close')
-    },
-    
-    removeMember(memberId) {
-      this.memberToRemove = this.members.find(member => member.id === memberId)
-      this.showConfirmModal = true
-    },
-    
-    confirmRemove() {
-      if (this.memberToRemove) {
-        this.members = this.members.filter(member => member.id !== this.memberToRemove.id)
-        this.showConfirmModal = false
-        this.memberToRemove = null
-        
-        // Emit event to parent component
-        this.$emit('member-removed', this.memberToRemove)
-      }
-    },
-    
-    cancelRemove() {
-      this.showConfirmModal = false
-      this.memberToRemove = null
-    }
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+// const emit = defineEmits(['close'])
+
+const members = ref([])
+const loading = ref(true)
+const error = ref(null)
+const showConfirmModal = ref(false)
+const memberToRemove = ref(null)
+const removing = ref(false)
+
+const apiBaseUrl = '/api' // Replace with your actual API base URL
+
+async function fetchMembers() {
+  try {
+    loading.value = true
+    error.value = null
+    const response = await axios.get(`${apiBaseUrl}/members`)
+    members.value = response.data
+  } catch (err) {
+    error.value = 'Không thể tải danh sách thành viên. Vui lòng thử lại sau.'
+    console.error('Error fetching members:', err)
+  } finally {
+    loading.value = false
   }
 }
+
+// function closeModal() {
+//   emit('close')
+// }
+
+function removeMember(memberId) {
+  memberToRemove.value = members.value.find(member => member.id === memberId)
+  showConfirmModal.value = true
+}
+
+async function confirmRemove() {
+  if (!memberToRemove.value) return
+
+  try {
+    removing.value = true
+    await axios.delete(`${apiBaseUrl}/members/${memberToRemove.value.id}`)
+    members.value = members.value.filter(member => member.id !== memberToRemove.value.id)
+    showConfirmModal.value = false
+    memberToRemove.value = null
+  } catch (err) {
+    error.value = 'Không thể xóa thành viên. Vui lòng thử lại sau.'
+    console.error('Error removing member:', err)
+  } finally {
+    removing.value = false
+  }
+}
+
+function cancelRemove() {
+  showConfirmModal.value = false
+  memberToRemove.value = null
+}
+
+onMounted(() => {
+  fetchMembers()
+})
 </script>
 
 <style scoped>
@@ -245,9 +238,8 @@ export default {
   transform: translateY(0);
 }
 
-/* Confirmation Modal Styles */
 .inner-modal {
-  z-index: 1100; /* Higher z-index for nested modal */
+  z-index: 1100;
 }
 
 .confirm-modal {
@@ -310,33 +302,46 @@ export default {
   background-color: #dc2626;
 }
 
-/* Responsive */
+.confirm-btn:disabled {
+  background-color: #f87171;
+  cursor: not-allowed;
+}
+
+.loading,
+.error,
+.empty {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  padding: 20px 0;
+}
+
 @media (max-width: 640px) {
   .group-management {
     width: calc(100% - 32px);
     margin: 16px;
   }
-  
+
   .header {
-    padding: 16px 20px;
+    padding: 16px;
   }
-  
+
   .members-section {
     padding: 20px;
   }
-  
+
   .member-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
     padding: 16px 0;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f6f4;
   }
-  
-  .member-item:last-child {
+
+  .member-item {
     border-bottom: none;
   }
-  
+
   .remove-btn {
     align-self: flex-end;
     width: 100%;
