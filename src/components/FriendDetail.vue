@@ -13,7 +13,6 @@
         <h3 class="name">{{ user.name }}</h3>
         <!-- <button class="friend-btn">{{ user.isFriend ? 'Bạn bè' : 'Kết bạn' }}</button> -->
       </div>
-
         <div class="info-section">
           <h4>Thông tin cá nhân</h4>
           <div class="info-item">
