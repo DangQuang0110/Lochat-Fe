@@ -238,7 +238,9 @@ import ProfileModal from './MessageNewDetail.vue'
 
 const loggedInAccountId = ref(localStorage.getItem('accountId'))
 const showProfileModal = ref(false)
-
+const user = ref({
+  avatar: 'image/avatar.jpg', 
+})
 
 function openProfileModal() {
   showProfileModal.value = true
@@ -310,6 +312,10 @@ function toggleSearch() {
   showSearch.value = !showSearch.value
   if (!showSearch.value) searchQuery.value = ''
 }
+
+const currentMessages = computed(() => {
+  return messages.value.filter(msg => msg.chatId === selectedId.value)
+})
 const filteredMessages = computed(() => {
   const cm = currentMessages.value
   if (!searchQuery.value) return cm
