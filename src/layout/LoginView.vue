@@ -242,7 +242,6 @@ const handleLogin = async () => {
   flex-direction: column;
   align-items: center;
   padding: 1.5rem 1rem;
-  
 }
 
 
