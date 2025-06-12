@@ -21,10 +21,9 @@
                 <strong class="friend-name">{{ friend.name }}</strong>
               </div>
               <div class="action-buttons">
-                <button class="btn-friend">Bạn bè</button>
+                <button class="btn-info" @click="openDetail(friend)">Xem thông tin</button>
                 <button class="btn-unfriend" @click="handleUnfriend(friend.id)">Hủy kết bạn</button>
               </div>
-              <button class="btn-info" @click="openDetail(friend)">Xem thông tin</button>
             </div>
           </div>
         </div>
@@ -166,13 +165,6 @@ const handleUnfriend = async (friendId) => {
   gap: 12px;
 }
 
-/* .card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-} */
-
 .info-row {
   display: flex;
   align-items: center;
@@ -193,21 +185,11 @@ const handleUnfriend = async (friendId) => {
   font-size: 16px;
 }
 
-.btn-friend {
-  font-size: 12px;
-  color: blue;
-  border: 1px solid blue;
-  background-color: white;
-  padding: 4px 10px;
-  border-radius: 8px;
-  white-space: nowrap;
-}
-
 .btn-info {
-  width: 80%;
   background: #ccc;
+  font-weight: bold;
   border: none;
-  padding: 8px 0;
+  padding: 10px 10px;
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
@@ -215,36 +197,16 @@ const handleUnfriend = async (friendId) => {
 
 .action-buttons {
   display: flex;
-  gap: 65px;
-}
-
-.btn-friend {
-  font-size: 12px;
-  color: white;
-  background-color: #2f64ff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
+  gap: 25px;
 }
 
 .btn-unfriend {
-  font-size: 12px;
+  font-size: 14px;
   color: white;
   background-color: #ff3d3d;
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
-  cursor: pointer;
-}
-
-.btn-info {
-  width: 100%;
-  background: #ccc;
-  border: none;
-  padding: 8px 0;
-  border-radius: 6px;
-  font-size: 14px;
   cursor: pointer;
 }
 </style>
