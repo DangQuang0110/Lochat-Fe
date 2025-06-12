@@ -313,7 +313,6 @@
             </div>
           </div>
         </div>
-
         <div class="file-list">
           <h4 class="section-title">Files</h4>
           <ul>
@@ -324,7 +323,6 @@
             </li>
           </ul>
         </div>
-
         <button class="delete-btn">Xóa đoạn tin nhắn</button>
       </div>
     </aside>
@@ -771,7 +769,6 @@ const groups = ref([
   background: #fff;
 }
 
-/* trái: avatar + info */
 .chat-header .header-left {
   display: flex;
   align-items: center;
@@ -1212,7 +1209,7 @@ const groups = ref([
 .profile-avatar {
   width: 100px;
   height: 100px;
-  border-radius: 16px; /* nhóm: bo nhẹ, user: 50% */
+  border-radius: 16px;
   object-fit: cover;
   margin-bottom: 8px;
 }
