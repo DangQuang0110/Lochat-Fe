@@ -16,17 +16,17 @@
           <h2 class="section-title">Lời mời kết bạn</h2>
 
           <div class="grid-list">
-            <div class="request-card" v-for="friend in filteredFriends" :key="friend.name">
-              <div class="card-top">
-                <img :src="friend.avatar" class="avatar" />
-                <strong class="friend-name">{{ friend.name }}</strong>
-                <span class="time-label">{{ friend.time }}</span>
-              </div>
-              <div class="action-buttons">
-                <button class="btn-accept">Chấp nhận</button>
-                <button class="btn-decline">Xóa</button>
-              </div>
+          <div class="request-card" v-for="friend in filteredFriends" :key="friend.id">
+            <div class="card-top">
+              <img :src="friend.avatar" class="avatar" />
+              <strong class="friend-name">{{ friend.name }}</strong>
+              <span class="time-label">{{ friend.time }}</span>
             </div>
+            <div class="action-buttons">
+              <button class="btn-accept" @click="acceptFriend(friend.id)">Chấp nhận</button>
+              <button class="btn-decline" @click="declineFriend(friend.id)">Xóa</button>
+            </div>
+          </div>
           </div>
         </div>
       </div>
@@ -35,17 +35,33 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import layout from '@/layout/SideBarContact.vue'
-import quangImg from '@/assets/quang.png'
+import { getReceivedFriendRequests, respondToFriendRequest,unfriend  } from '@/service/friendService'
+
 
 const searchText = ref('')
-const requests = ref([
-  { name: 'Quang', avatar: quangImg, time: '4 năm trước' },
-  { name: 'Quang', avatar: quangImg, time: '2 giờ trước' },
-  { name: 'Quang', avatar: quangImg, time: '2 giờ trước' },
-  { name: 'Quang', avatar: quangImg, time: '2 giờ trước' }
-])
+const requests = ref([])
+const accountId = localStorage.getItem('accountId')
+
+const fetchRequests = async () => {
+  try {
+    const data = await getReceivedFriendRequests(accountId)
+    console.log('✅ Dữ liệu từ API:', data) // <-- Thêm dòng này để kiểm tra dữ liệu thật
+    console.log('🧪 accountId:', accountId)
+
+    requests.value = data.map(user => ({
+      id: user.id,
+      name: user.username,
+      avatar: user.imageUrl || '/default-avatar.png',
+      time: 'vừa gửi'
+    }))
+  } catch (err) {
+    console.error('❌ Lỗi khi gọi API lời mời:', err)
+  }
+}
+
+onMounted(fetchRequests)
 
 const filteredFriends = computed(() => {
   const keyword = searchText.value.toLowerCase()
@@ -53,6 +69,33 @@ const filteredFriends = computed(() => {
     friend.name.toLowerCase().includes(keyword)
   )
 })
+
+const acceptFriend = async (senderId) => {
+  try {
+    await respondToFriendRequest({
+      senderId: String(senderId),
+      receiverId: String(accountId),
+      status: 'ACCEPTED'
+    })
+alert('Đã chấp nhận lời mời') // đơn giản
+    fetchRequests()
+  } catch {
+alert('Đã chấp tu choi nhận lời mời') // đơn giản
+  }
+}
+const declineFriend = async (senderId) => {
+  try {
+    await unfriend({
+      senderId: Number(senderId),
+      receiverId: Number(accountId)
+    })
+    alert('Đã xóa lời mời kết bạn') // đơn giản
+    fetchRequests()
+  } catch {
+    alert('Xóa lời mời thất bại') // đơn giản
+  }
+}
+
 </script>
 
 <style scoped>

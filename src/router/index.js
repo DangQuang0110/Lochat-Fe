@@ -8,6 +8,8 @@ import ResetNewPassword from '@/layout/ResetNewPassword.vue'
 import ResetPassword from '@/layout/ResetPassword.vue'
 import ComMessage from '@/components/ComMessage.vue'
 import FriendRequestPage from '@/components/FriendRequestPage.vue'
+
+
 import AddFriend from '@/components/AddFriend.vue'
 import MessageNewDetail from '@/components/MessageNewDetail.vue'
 import InvitationSent from '@/components/InvitationSent.vue'
@@ -25,7 +27,6 @@ const routes = [
     name: 'login',
     component: LoginView
   },
-
   {
     path: '/register',
     name: 'register',
@@ -90,7 +91,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(), 
+  history: createWebHistory(),
   routes
 })
 

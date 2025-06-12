@@ -12,7 +12,6 @@
             <img src="/icons/search.png" class="search-icon" />
             <input type="text" v-model="searchText" placeholder="Tìm bạn bè" />
           </div>
-
           <h2 class="section-title">Bạn Bè</h2>
 
           <div class="grid-list">
@@ -23,7 +22,7 @@
               </div>
               <div class="action-buttons">
                 <button class="btn-friend">Bạn bè</button>
-                <button class="btn-unfriend">Hủy kết bạn</button>
+                <button class="btn-unfriend" @click="handleUnfriend(friend.id)">Hủy kết bạn</button>
               </div>
               <button class="btn-info" @click="openDetail(friend)">Xem thông tin</button>
             </div>
@@ -37,23 +36,36 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import layout from '@/layout/SideBarContact.vue'
-import FriendDetail from './FriendDetail.vue' // Đã tạo riêng popup
-
-import quangImg from '@/assets/quang.png'
-import cauImg from '@/assets/cau.png'
-import nhanImg from '@/assets/nhan.png'
+import FriendDetail from './FriendDetail.vue'
+import { getAcceptedFriends,unfriend } from '@/service/friendService'
 import hinhImg from '@/assets/hinh.jpg'
 
+// State
 const searchText = ref('')
-const friends = ref([
-  { name: 'Quang', avatar: quangImg },
-  { name: 'Cau', avatar: cauImg },
-  { name: 'Quang', avatar: quangImg },
-  { name: 'Nhân', avatar: nhanImg }
-])
+const friends = ref([])
+const selectedUser = ref(null)
+const accountId = localStorage.getItem('accountId')
+// Hàm lấy danh sách bạn bè
+const fetchFriends = async () => {
+  try {
+    const accountId = localStorage.getItem('accountId') // hoặc inject từ context
+    const result = await getAcceptedFriends(accountId)
+    friends.value = result.map(friend => ({
+      id: friend.id,
+      name: friend.username,
+      avatar: friend.imageUrl
+    }))
+  } catch (e) {
+    // hiển thị toast hoặc console
+    console.error(e)
+  }
+}
 
+onMounted(fetchFriends)
+
+// Tìm kiếm
 const filteredFriends = computed(() => {
   const keyword = searchText.value.toLowerCase()
   return friends.value.filter(friend =>
@@ -61,7 +73,7 @@ const filteredFriends = computed(() => {
   )
 })
 
-const selectedUser = ref(null)
+// Mở chi tiết
 const openDetail = (friend) => {
   selectedUser.value = {
     ...friend,
@@ -73,8 +85,19 @@ const openDetail = (friend) => {
     isFriend: true
   }
 }
+const handleUnfriend = async (friendId) => {
+  try {
+    await unfriend({
+      senderId: Number(accountId),
+      receiverId: friendId
+    })
+    alert('Đã huỷ kết bạn')
+    fetchFriends() // refresh lại danh sách bạn bè
+  } catch {
+    alert('Huỷ kết bạn thất bại')
+  }
+}
 </script>
-
 <style scoped>
 .container {
   display: flex;

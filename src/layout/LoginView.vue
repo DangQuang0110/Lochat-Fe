@@ -77,11 +77,13 @@
           </span>
           <p v-if="errors.password" class="error">{{ errors.password }}</p>
         </div>
-
-        <a href="/reset-Password" class="forgot">Quên mật khẩu?</a>
-        <button class="btn" :disabled="!isFormValid" @click="handleLogin">
-          ĐĂNG NHẬP
-        </button>
+<!-- thêm 1 div.form-actions để gom Quên mật khẩu + nút Đăng nhập -->
+<div class="form-actions">
+  <a href="/reset-Password" class="forgot">Quên mật khẩu?</a>
+  <button class="btn" :disabled="!isFormValid" @click="handleLogin">
+    ĐĂNG NHẬP
+  </button>
+</div>
 
         <div class="or-divider">Hoặc</div>
         <p class="footer">
@@ -113,6 +115,8 @@ const errors = reactive({
   email: '',
   password: ''
 })
+
+
 
 const validateEmail = () => {
   const value = email.value.trim()
@@ -165,21 +169,24 @@ const handleLogin = async () => {
     })
 
     console.log('✅ Đăng nhập thành công:', res)
-    // Lưu thông tin người dùng nếu cần
+
+    // ✅ Lưu accountId riêng biệt
+    localStorage.setItem('accountId', res.userId)
+
+    // (tuỳ chọn) Lưu thêm thông tin user nếu cần
     localStorage.setItem('user', JSON.stringify({
       id: res.userId,
       username: res.username,
       roles: res.roles
     }))
-    
-    // Chuyển trang sau đăng nhập
+
+    // Điều hướng sang trang message
     router.push('/message')
   } catch (err) {
     console.error('❌ Lỗi đăng nhập:', err)
     errors.password = err?.message || 'Tên đăng nhập hoặc mật khẩu sai'
   }
 }
-
 </script>
 
 <style scoped>
@@ -229,12 +236,15 @@ const handleLogin = async () => {
 
 .right-side {
   flex: 1;
-  background-color: #6E6E6E; /* Màu xám tương tự mockup */
+  position: relative;
+  background-color: #6E6E6E; 
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 1.5rem 1rem;
+  
 }
+
 
 /* Pseudo-element này nằm ngay bên trong .right-side, phủ kín toàn bộ */
 .right-side::before {
@@ -254,21 +264,19 @@ const handleLogin = async () => {
 
 /* Logo ở đầu form */
 .logo {
-  width: 80px;
+  width: 120px;              /* hoặc tuỳ chỉnh 100–150px tuỳ mockup */
   height: auto;
- 
+  margin: -5rem 0; 
 }
-
 /* Input group (username/password) */
 .input-group {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;      /* để tách khỏi ô bên dưới */
   width: 100%;
-  max-width: 320px;   /* Đảm bảo input cùng width với button */
-  min-height: 60px;   /* Tăng min-height để chứa label + input */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  max-width: 320px;           
+  /* loại bỏ min-height, hoặc tăng lên ~90px */
+  /* min-height: 90px; */
+  padding-bottom: 0.5rem;     /* thêm khoảng trống bên dưới cho lỗi */
 }
 
 /* Chỉnh lại input cho cao = 45px, width full wrapper */
@@ -303,15 +311,17 @@ const handleLogin = async () => {
   font-weight: 500;
 }
 
+/* đảm bảo wrapper có position: relative */
 .password-group {
   position: relative;
 }
 
 .toggle-password {
   position: absolute;
-  top: 50%;
+  top: 0;
   right: 12px;
-  transform: translateY(-50%);
+  /* (45px input height − 20px icon height) / 2 = 12.5px */
+  margin-top: 12.5px;
   cursor: pointer;
   user-select: none;
   width: 24px;
@@ -320,20 +330,16 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   z-index: 2;
-   margin-top: -4px;
+  transform: none;   /* bỏ translateY */
 }
 
 .toggle-password svg {
   width: 20px;
   height: 20px;
   stroke: #888;
-  margin-top: -8px;
+  margin: 0;
 }
 
-.password-group input:focus ~ .toggle-password svg,
-.toggle-password:hover svg {
-  /* tùy chỉnh trạng thái khi hover/focus */
-}
 
 /* Link “Quên mật khẩu” */
 .forgot {
@@ -348,17 +354,14 @@ const handleLogin = async () => {
 
 /* Nút Đăng nhập */
 .btn {
-  margin-top: 0.5rem;
-  width: 100%;
-  max-width: 320px; /* Bằng với input */
-  height: 45px;     /* Bằng với input */
-  border: none;
+  width: 100%;               /* full trong wrapper 320px */
+  height: 45px;
+  max-width: none;           /* đã bị override nếu trước đó có */
   border-radius: 4px;
   background-color: #000;
-  color: white;
+  color: #fff;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
 .btn:hover:not(:disabled) {
@@ -389,6 +392,16 @@ const handleLogin = async () => {
   background: #ccc;
   flex: 1;
   margin: 0 10px;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 320px;          /* giống với .input-group */
+  gap: 0.5rem;               /* khoảng cách giữa link & button */
+  margin-bottom: 1rem;
 }
 
 /* Footer dưới form */

@@ -2,11 +2,11 @@
   <div class="chat-app">
          <aside class="sidebar icons-sidebar">
       <div class="sidebar-top">
-       <img
-  :src="current.avatar"
-  class="avatar"
-  @click.stop="toggleUserSidebar"
-/>
+        <img
+    :src="user.avatar"
+    class="avatar"
+    @click.stop="toggleUserSidebar"
+  />
           <!-- <div v-if="showAvatarMenu" class="avatar-menu">
       <ul>
         <li @click="goToUserProfile">Hồ sơ người dùng</li>
@@ -54,19 +54,38 @@
   <button class="add-btn">+</button>
 </div>
       <div class="tab-section">
-        <button class="tab-btn active">Bạn bè</button>
-        <button class="tab-btn">Nhóm</button>
-        <div class="tab-indicator"></div>
+        <button 
+          class="tab-btn" 
+          :class="{ active: activeTab === 'friends' }"
+          @click="activeTab = 'friends'"
+        >Bạn bè</button>
+        
+        <button 
+          class="tab-btn" 
+          :class="{ active: activeTab === 'groups' }"
+          @click="activeTab = 'groups'"
+        >Nhóm</button>
+        
+        <div 
+            class="tab-indicator"
+            :style="{ transform: activeTab === 'friends' ? 'translateX(0%)' : 'translateX(100%)' }"
+          />
       </div>
-      <div class="friend-section">
-        <div v-for="friend in friends" :key="friend.id" class="friend-item" :class="{ active: selectedId === friend.id }" @click="selectFriend(friend.id)">
-          <img :src="friend.avatar" class="avatar" />
-          <div class="friend-info">
-            <div class="name">{{ friend.name }}<span v-if="friend.online" class="online-dot"></span></div>
-            <div class="desc">{{ friend.desc }}</div>
+        <div class="friend-section">
+          <div 
+            v-for="item in activeTab === 'friends' ? friends : groups" 
+            :key="item.id" 
+            class="friend-item" 
+            :class="{ active: selectedId === item.id }"
+            @click="selectFriend(item.id)"
+          >
+            <img :src="item.avatar" class="avatar" />
+            <div class="friend-info">
+              <div class="name">{{ item.name }}<span v-if="item.online" class="online-dot"></span></div>
+              <div class="desc">{{ item.desc }}</div>
+            </div>
           </div>
         </div>
-      </div>
     </aside>
 
     <section class="main-chat">
@@ -75,7 +94,7 @@
     <img :src="current.avatar" class="avatar" />
     <div class="info">
       <div class="name">{{ current.name }}</div>
-      <div class="status">{{ current.online ? 'Đang hoạt động' : 'Offline' }}</div>
+      <div class="status">{{ current.online ? 'Đang hoạt động' : 'Offline' }}<span v-if="current.online" class="online-dot"></span></div>
     </div>
   </div>
   <div class="header-right">
@@ -102,28 +121,84 @@
   </div>
 </header>
 
-      <div class="chat-body">
-         <div
-          v-for="msg in filteredMessages"
-          :key="msg.id"
-          :class="['msg-wrapper', msg.fromMe ? 'align-right' : 'align-left']"
-        ></div>
-        <div v-for="msg in messages" :key="msg.id" :class="['msg-wrapper', msg.fromMe ? 'align-right' : 'align-left']">
-          <div class="msg-block">
-            <div :class="['msg', msg.fromMe ? 'from-me' : 'from-other']">
-              <div v-if="msg.file" class="file-attach">
-                <span class="file-icon">📎</span>
-                <div class="file-info">
-                  <p class="file-name">{{ msg.file.name }}</p>
-                  <p class="file-size">{{ msg.file.size }}</p>
-                </div>
-                <button class="download-btn">⬇️</button>
+     <div class="chat-body">
+  <!-- Khi không có tin nào cho cuộc hội thoại này -->
+  <div v-if="currentMessages.length === 0" class="no-message">
+    Chưa có tin nhắn mới
+  </div>
+
+  <!-- Khi có ít nhất 1 tin, render duy nhất 1 vòng lặp -->
+  <template v-else>
+    <div
+    v-for="msg in filteredMessages"
+    :key="msg.id"
+    class="msg-wrapper"
+    :class="{ 'align-right': msg.fromMe, 'align-left': !msg.fromMe }"
+  >
+    <!-- System Message -->
+    <div v-if="msg.system" class="system-text">
+      {{ msg.text }}
+    </div>
+
+    <!-- Tin nhắn nhóm -->
+    <template v-else-if="activeTab === 'groups'">
+      <!-- Tin nhắn từ người khác: hiện avatar + tên -->
+      <div v-if="!msg.fromMe" class="group-msg">
+        <img class="avatar" :src="getSender(msg)?.avatar" />
+        <div class="msg-block">
+          <div class="sender-name">{{ getSender(msg)?.name }}</div>
+          <div class="msg from-other">
+            <div v-if="msg.file" class="file-attach">
+              <span class="file-icon">📎</span>
+              <div class="file-info">
+                <p class="file-name">{{ msg.file.name }}</p>
+                <p class="file-size">{{ msg.file.size }}</p>
               </div>
-              <p v-if="msg.text" class="msg-text">{{ msg.text }}</p>
+              <button class="download-btn">⬇️</button>
             </div>
+            <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+            <p v-if="msg.text" class="msg-text">{{ msg.text }}</p>
           </div>
         </div>
       </div>
+
+      <!-- Tin nhắn của chính mình: dùng layout giống 1-1 -->
+      <div v-else class="msg-block align-right">
+        <div class="msg from-me">
+          <div v-if="msg.file" class="file-attach">
+            <span class="file-icon">📎</span>
+            <div class="file-info">
+              <p class="file-name">{{ msg.file.name }}</p>
+              <p class="file-size">{{ msg.file.size }}</p>
+            </div>
+            <button class="download-btn">⬇️</button>
+          </div>
+          <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+          <p v-if="msg.text">{{ msg.text }}</p>
+        </div>
+      </div>
+    </template>
+    <!-- Tin nhắn 1-1 -->
+<!-- Tin nhắn 1-1 -->
+    <template v-else>
+      <div v-if="!msg.fromMe" class="group-msg">
+        <img class="avatar" :src="getSender(msg)?.avatar" />
+        <div class="msg-block">
+          <div class="sender-name">{{ getSender(msg)?.name }}</div>
+          <div class="msg from-other">
+            <p v-if="msg.text">{{ msg.text }}</p>
+          </div>
+        </div>
+      </div>
+      <div v-else class="msg-block align-right">
+        <div class="msg from-me">
+          <p v-if="msg.text">{{ msg.text }}</p>
+        </div>
+      </div>
+    </template>
+  </div>
+  </template>
+</div>
 
      <footer class="chat-input">
     <div class="input-container">
@@ -177,14 +252,14 @@
       <header class="panel-header">
         <button class="close-btn" @click="toggleProfilePanel">✕</button>
       </header>
-      <div class="panel-content">
-        <!-- Ảnh và tên chính giữa -->
+
+      <!-- Nếu đang xem bạn bè -->
+      <div v-if="activeTab === 'friends'" class="panel-content">
         <div class="profile-info">
           <img :src="current.avatar" class="profile-avatar" />
           <h3 class="profile-name">{{ current.name }}</h3>
         </div>
 
-        <!-- Thông tin cá nhân với icon -->
         <div class="personal-details">
           <h4 class="section-title">Thông tin cá nhân</h4>
           <div class="detail-item">
@@ -197,7 +272,6 @@
           </div>
         </div>
 
-        <!-- Danh sách file -->
         <div class="file-list">
           <h4 class="section-title">Files</h4>
           <ul>
@@ -209,19 +283,90 @@
           </ul>
         </div>
 
-        <!-- Nút đỏ ở dưới cùng -->
+        <button class="delete-btn">Xóa đoạn tin nhắn</button>
+      </div>
+
+      <!-- Nếu đang xem nhóm -->
+<!-- Nếu đang xem nhóm -->
+      <div v-else class="panel-content">
+        <div class="profile-info">
+          <img :src="current.avatar" class="profile-avatar" />
+          <h3 class="profile-name">{{ current.name }} <span class="edit-icon">✎</span></h3>
+        </div>
+        <div class="group-info">
+          <h4 class="section-title">Thông tin nhóm</h4>
+          <p>{{ groupMembers.length }} thành viên</p>
+          <div class="member-avatars">
+            <img v-for="m in groupMembers" :src="m.avatar" class="avatar" :key="m.id" />
+          </div>
+          <div class="group-actions-horizontal">
+            <p class="admin-label">Bạn là quản trị viên</p>
+            <div class="group-buttons-horizontal">
+              <button class="group-btn-icon">
+                <img src="@/assets/sendFriend.png" alt="Thêm" />
+                Thêm bạn bè vào nhóm
+              </button>
+              <button class="group-btn-icon">
+                <img src="@/assets/setting.png" alt="Quản lý" />
+                Quản lí nhóm
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="file-list">
+          <h4 class="section-title">Files</h4>
+          <ul>
+            <li v-for="msg in messages.filter(m => m.file)" :key="msg.id" class="file-item">
+              <i class="icon-file"></i>
+              <span class="file-name">{{ msg.file.name }}</span>
+              <a :href="msg.file.url" download class="icon-download"></a>
+            </li>
+          </ul>
+        </div>
+
         <button class="delete-btn">Xóa đoạn tin nhắn</button>
       </div>
     </aside>
-
+    <ProfileModal 
+      v-if="showProfileModal" 
+      :accountId="loggedInAccountId" 
+      @close="closeProfileModal" 
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed , onMounted, onBeforeUnmount} from 'vue'
+import ProfileModal from './MessageNewDetail.vue'
+// const isGroupPanel = computed(() => activeTab.value === 'groups')
 
 // existing state imports
 
+const loggedInAccountId = ref(localStorage.getItem('accountId'))
+const showProfileModal = ref(false)
+const user = ref({
+  avatar: 'image/avatar.jpg', 
+})
+
+function getSender(msg) {
+  return friends.value.find(f => f.id === msg.senderId) || null
+}
+const groupMembers = ref([
+  { id: 1, name: 'Nhân', avatar: require('@/assets/nhan.jpg') },
+  { id: 2, name: 'Cầu', avatar: require('@/assets/cau.jpg') },
+  { id: 3, name: 'Trường', avatar: require('@/assets/truong.jpg') },
+  { id: 4, name: 'Quang', avatar: require('@/assets/quang.jpg') },
+  // { id: 5, name: 'Vũ', avatar: require('@/assets/vu.jpg') },
+])
+
+function openProfileModal() {
+  showProfileModal.value = true
+}
+
+function closeProfileModal() {
+  showProfileModal.value = false
+}
 
 // Danh sách bạn bè
 const friends = ref([
@@ -232,7 +377,7 @@ const friends = ref([
 ])
 
 // State
-const selectedId = ref(4)
+const selectedId = ref(1)
 const messages = ref([
   { id: 1, fromMe: false, text: 'Hi bạn nha' },
   { id: 2, fromMe: true,  text: 'Hi bạn nha' },
@@ -273,7 +418,9 @@ onMounted(() => document.addEventListener('click', handleClickOutside))
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
 // action
-function goToUserProfile()   { console.log('Hồ sơ người dùng') }
+function goToUserProfile() {
+  openProfileModal()
+}
 function goToChangePassword(){ console.log('Đổi mật khẩu') }
 function logout()            { console.log('Đăng xuất') }
 
@@ -283,17 +430,30 @@ function toggleSearch() {
   showSearch.value = !showSearch.value
   if (!showSearch.value) searchQuery.value = ''
 }
-const filteredMessages = computed(() => {
-  if (!searchQuery.value) return messages.value
-  const q = searchQuery.value.toLowerCase()
-  return messages.value.filter(m => m.text && m.text.toLowerCase().includes(q))
+const currentMessages = computed(() => {
+  return messages.value.filter(msg => msg.chatId === selectedId.value)
 })
-
+const filteredMessages = computed(() => {
+  const cm = currentMessages.value
+  if (!searchQuery.value) return cm
+  const q = searchQuery.value.toLowerCase()
+  return cm.filter(m => m.text && m.text.toLowerCase().includes(q))
+})
 // Computed
 const current = computed(() => {
-  return friends.value.find(f => f.id === selectedId.value) || {}
+  const list = activeTab.value === 'friends' ? friends.value : groups.value
+  return list.find(f => f.id === selectedId.value) || {}
 })
 
+messages.value.push(
+  // Cuộc trò chuyện 1vs1 với Nhân (id: 1)
+  { id: 201, chatId: 1, fromMe: false,senderId: 1, text: 'Bạn đang làm gì đó?' },
+  { id: 202, chatId: 1, fromMe: true, text: 'Tôi đang code Vue nha 😎' },
+  { id: 203, chatId: 1, fromMe: false,senderId: 1, text: 'Gửi file báo cáo cho tôi với!' },
+  { id: 204, chatId: 1, fromMe: true,  file: { name: 'BaoCao_Thang6.pdf', size: '5MB', url: '#' } },
+  { id: 205, chatId: 1, fromMe: false,senderId: 1, image: 'https://via.placeholder.com/200' },
+  { id: 206, chatId: 1, fromMe: true,  text: 'Đây là demo ảnh, bạn xem được chứ?' }
+)
 // Methods
 function selectFriend(id) {
   selectedId.value = id
@@ -324,6 +484,7 @@ function handleFileSelect(event) {
   messages.value.push({
     id: Date.now(),
     fromMe: true,
+    chatId: selectedId.value,
     file: { name: file.name, size: formatSize(file.size), url }
   })
 
@@ -345,17 +506,23 @@ function addEmoji(emoji) {
 function sendMessage() {
   const text = messageInput.value.trim()
   if (!text) return
-  messages.value.push({ id: Date.now(), fromMe: true, text })
+  messages.value.push({ id: Date.now(), fromMe: true, chatId: selectedId.value, text })
   messageInput.value = ''
 }
 
 function toggleProfilePanel() {
   showProfilePanel.value = !showProfilePanel.value
 }
+const activeTab = ref('friends') // 'friends' hoặc 'groups'
+const groups = ref([
+  { id: 100, name: 'Nhóm học Vue', avatar: require('@/assets/group1.png'), desc: '5 thành viên', online: true },
+  { id: 101, name: 'Cà phê cuối tuần', avatar: require('@/assets/group2.png'), desc: '8 thành viên', online: false },
+])
 
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
 *{
   margin: 0;
   padding: 0;
@@ -365,6 +532,7 @@ function toggleProfilePanel() {
   display: flex;
   height: 100%;
   margin: 0;
+  font-family: 'Roboto', sans-serif;
 }
 /* Sidebar */
 .icons-sidebar {
@@ -475,8 +643,8 @@ function toggleProfilePanel() {
 
 /* Nút + tròn */
 .search-bar .add-btn {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: 50%;
   background: #3b6eee;        /* đổi màu theo theme */
@@ -549,12 +717,12 @@ function toggleProfilePanel() {
   cursor: pointer;
   transition: background 0.2s;
 }
-/* .friend-item:hover {
-  background: #ffe0b2;
-}
+.friend-item:hover {
+  background: #d5dbdb;
+} 
 .friend-item.active {
-  background: #ffc107;
-} */
+  background: #d3f0f3;
+} 
 .avatar {
   width: 36px;
   height: 36px;
@@ -578,7 +746,7 @@ function toggleProfilePanel() {
   background: #4caf50;
   border-radius: 50%;
   margin-left: 6px;
-  margin-top : 8px;
+  margin-top : 5px;
 }
 .desc {
   font-size: 12px;
@@ -978,5 +1146,110 @@ function toggleProfilePanel() {
   background: #f5f5f5;
 }
 
+.no-message {
+  flex: 1;               /* chiếm toàn vùng chat-body */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 14px;
+}
+.system-message {
+  justify-content: center;
+  text-align: center;
+  padding: 4px 0;
+}
+.system-text {
+  font-size: 12px;
+  color: #888;
+  background: transparent;
+}
+.group-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.group-msg .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.sender-name {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.system-text {
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  padding: 4px 0;
+}
+.group-info .member-avatars {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0;
+}
+.group-info .avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.group-info .add-friend,
+.group-info .admin-label,
+.group-info .manage-group {
+  font-size: 13px;
+  margin: 4px 0;
+  color: #333;
+}
+.edit-icon {
+  font-size: 12px;
+  margin-left: 8px;
+  cursor: pointer;
+}
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 16px; /* nhóm: bo nhẹ, user: 50% */
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+.group-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
 
+.group-actions-horizontal {
+  margin-top: 12px;
+}
+
+.group-buttons-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.group-btn-icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  background-color: white;
+  border: 1px solid white;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.group-btn-icon img {
+  width: 16px;
+  height: 16px;
+}
 </style>
