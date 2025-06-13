@@ -13,7 +13,7 @@ import MessageNewDetail from '@/components/MessageNewDetail.vue'
 import InvitationSent from '@/components/InvitationSent.vue'
 import FriendSuggest from '@/components/FriendSuggest.vue'
 import GroupManagement from '@/components/GroupManagement.vue'
-import EditGroup from '@/components/EditGroup.vue'
+import GroupForm from '@/components/GroupForm.vue'
 const routes = [
   {
     path:'/friendlist',
@@ -87,8 +87,8 @@ const routes = [
   },
   {
     path :'/editgroup',
-    name:'EditGroup',
-    component: EditGroup
+    name:'GroupForm',
+    component: GroupForm
   },
   
 ]
