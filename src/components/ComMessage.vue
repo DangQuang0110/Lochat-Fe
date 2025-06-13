@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="chat-app">
     <!-- Icons Sidebar -->
@@ -254,7 +253,7 @@
       <div v-else class="panel-content">
         <div class="profile-info">
           <img :src="current.avatar" class="profile-avatar" />
-          <h3 class="profile-name">{{ current.name }} <span class="edit-icon">✎</span></h3>
+          <h3 class="profile-name">{{ current.name }} <span class="edit-icon" @click="openEditGroupModal">✎</span></h3>
         </div>
         <div class="group-info">
           <h4 class="section-title">Thông tin nhóm</h4>
@@ -358,6 +357,14 @@
       <GroupForm :friends="friends" @close="closeGroupForm" @group-created="handleGroupCreated" />
     </div>
 
+    <!-- GroupEditModal -->
+    <GroupEditModal
+      v-if="showEditGroupModal"
+      :group-name="current.name"
+      @close="closeEditGroupModal"
+      @confirm="handleGroupEdit"
+    />
+
     <!-- Profile Modal -->
     <ProfileModal 
       v-if="showProfileModal" 
@@ -370,11 +377,13 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import ProfileModal from './MessageNewDetail.vue';
-import GroupForm from './GroupForm.vue'; // Adjust the path as needed
+import GroupForm from './GroupForm.vue';
+import GroupEditModal from './GroupEditModal.vue'; // Import GroupEditModal
 
 const loggedInAccountId = ref(localStorage.getItem('accountId'));
 const showProfileModal = ref(false);
 const showGroupForm = ref(false);
+const showEditGroupModal = ref(false); // State for GroupEditModal
 const user = ref({
   avatar: 'image/avata.jpg',
 });
@@ -551,6 +560,23 @@ function handleGroupCreated(groupData) {
   selectedId.value = groups.value[groups.value.length - 1].id;
   activeTab.value = 'groups';
   showGroupForm.value = false;
+}
+function openEditGroupModal() {
+  showEditGroupModal.value = true;
+}
+function closeEditGroupModal() {
+  showEditGroupModal.value = false;
+}
+function handleGroupEdit(changes) {
+  const group = groups.value.find(g => g.id === selectedId.value);
+  if (group) {
+    if (changes.groupName) {
+      group.name = changes.groupName;
+    }
+    if (changes.imageFile) {
+      group.avatar = URL.createObjectURL(changes.imageFile);
+    }
+  }
 }
 
 onMounted(() => document.addEventListener('click', handleClickOutside));
@@ -1274,4 +1300,3 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   background: #eff6ff;
 }
 </style>
-```

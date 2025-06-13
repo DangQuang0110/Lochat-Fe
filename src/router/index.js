@@ -14,6 +14,7 @@ import InvitationSent from '@/components/InvitationSent.vue'
 import FriendSuggest from '@/components/FriendSuggest.vue'
 import GroupManagement from '@/components/GroupManagement.vue'
 import GroupForm from '@/components/GroupForm.vue'
+import GroupEditModal from '@/components/GroupEditModal.vue'
 const routes = [
   {
     path:'/friendlist',
@@ -86,13 +87,17 @@ const routes = [
     component: GroupManagement
   },
   {
-    path :'/editgroup',
+    path :'/groupform',
     name:'GroupForm',
     component: GroupForm
   },
+  {
+    path :'/editgroup',
+    name:'GroupEditModal',
+    component: GroupEditModal
+  },
   
 ]
-
 const router = createRouter({
   history: createWebHistory(),
   routes
