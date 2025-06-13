@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOPET</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+  <body>
+    <div id="app"></div>
+
+    <!-- Vite entry -->
+
+    <!-- Vite entry -->
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- Socket.io -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+      const socket = io('http://localhost:8082', {
+        auth: {
+          token: localStorage.getItem('accessToken'),
+        },
+      })
+      socket.on('connect', () => {
+        console.log('Connected socket id:', socket.id)
+        const userId = JSON.parse(localStorage.getItem('user')).id
+        socket.emit('join room', `user_${userId}`)
+
+      })
+      socket.on('chat messsage', (data) => {
+        console.log('Received message:', data)
+      })
+      // socket.emit("register")
+    </script>
+  </body>
+</html>

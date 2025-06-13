@@ -376,7 +376,7 @@ const loggedInAccountId = ref(localStorage.getItem('accountId'));
 const showProfileModal = ref(false);
 const showGroupForm = ref(false);
 const user = ref({
-  avatar: 'image/avatar.jpg',
+  avatar: 'image/avata.jpg',
 });
 const friends = ref([
   { id: 1, name: 'Nhân', avatar: require('@/assets/nhan.jpg'), desc: 'Nhân muốn gửi tin nhắn', online: true },
@@ -581,7 +581,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   border: none;
 }
 .icons-sidebar .sidebar-nav {
-  margin-top: 2rem;
+  margin-top:1.5rem;
 }
 .icons-sidebar .sidebar-nav ul {
   list-style: none;
@@ -618,6 +618,10 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   margin-left: auto;
   margin-right: 5px;
   margin-bottom: 5px;
+}
+.sidebar-top{
+  display: flex;
+  margin-top:20px;
 }
 .sidebar {
   background: #f9f9f9;
