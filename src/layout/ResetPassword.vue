@@ -23,7 +23,7 @@
         <button class="btn" @click="sendLink">Gửi mã OTP</button>
       </div>
 
-      <router-link to="/login" class="back">← Trở về trang đăng nhập</router-link>
+      <router-link to="/" class="back">← Trở về trang đăng nhập</router-link>
     </div>
   </div>
 </template>
@@ -62,6 +62,9 @@ const sendLink = () => {
 </script>
 
 <style scoped>
+* {
+  font-family: 'Roboto', sans-serif;
+}
 .auth-container {
   position: fixed;
   top: 0;
@@ -82,7 +85,7 @@ const sendLink = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('@/assets/background(1).png') no-repeat center/cover;
+  background: url('@/assets/background.jpg') no-repeat center/cover;
   background-size: cover;
 }
 
@@ -90,9 +93,9 @@ const sendLink = () => {
 .auth-box {
   position: relative;
   z-index: 1;               /* Luôn luôn “trên” pseudo-element */
-  background-color: #5b5b5b;
+  background-color: #EEEEEE;
   border-radius: 12px;
-  padding: 2rem;
+  padding: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;
   width: 400px;
@@ -102,13 +105,13 @@ const sendLink = () => {
 }
 .logo {
   width: 125px;
-  margin: 0 auto 1rem;
+  margin: 0 auto -4rem;
   display: block;
 }
 
 .auth-box p {
   font-size: 0.875rem;
-  color: #FFF;
+  color: #dc77b2;
   margin-top: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -160,7 +163,7 @@ const sendLink = () => {
   display: block;
   border: none;
   border-radius: 4px;  /* Bo góc 4px */
-  background-color: #000000;
+  background-color: #dc77b2;
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
@@ -168,7 +171,7 @@ const sendLink = () => {
 }
 
 .btn:hover {
-  background-color: #FB8C00;
+  background-color: #dc77b2;
 }
 
 /* Link Trở về */
@@ -176,7 +179,7 @@ const sendLink = () => {
   display: block;
   margin-top: 1rem;
   font-size: 0.9rem;
-  color: #1e88e5;
+  color: #dc77b2;
   text-decoration: none;
   text-align: center;
 }

@@ -27,7 +27,7 @@
 
       <!-- Nút xác nhận -->
       <button class="btn" @click="sendLink">Xác nhận</button>
-      <router-link to="/login" class="back">← Trở về trang đăng nhập</router-link>
+      <router-link to="/" class="back">← Trở về trang đăng nhập</router-link>
     </div>
   </div>
 </template>
@@ -145,13 +145,16 @@ const formatCountdown = () => {
 </script>
 
 <style scoped>
+* {
+  font-family: 'Roboto', sans-serif;
+}  
 .auth-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url('@/assets/background(1).png');
+  background-image: url('@/assets/background.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -160,7 +163,7 @@ const formatCountdown = () => {
 }
 
 .auth-box {
-  background-color: #5b5b5b;
+  background-color: #EEEEEE;
   /* border-radius: 12px; */
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -171,13 +174,13 @@ const formatCountdown = () => {
 
 .logo {
   width: 125px;
-  margin: 0 auto 1rem;
+  margin: 0 auto -4rem;
   display: block;
 }
 
 .auth-box p {
   font-size: 0.875rem;
-  color: #FFFFFF;
+  color: #dc77b2;
   margin-top: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -200,13 +203,13 @@ const formatCountdown = () => {
 }
 
 .otp-input:focus {
-  border-color: #fb8c00;
+  border-color: #dc77b2;
   outline: none;
-  box-shadow: 0 0 5px rgba(251, 140, 0, 0.5);
+  box-shadow: 0 0 5px rgba(147, 139, 130, 0.5);
 }
 
 .auth-box a {
-  color: #FFFFFF;
+  color: #dc77b2;
   font-size: 0.875rem;
   margin-top: 1rem;
   display: block;
@@ -223,7 +226,7 @@ const formatCountdown = () => {
   width: 100%;
   border: none;
   border-radius: 8px;
-  background-color: #000;
+  background-color: #dc77b2;
   color: white;
   font-size: 1rem;
   cursor: pointer;
@@ -231,14 +234,14 @@ const formatCountdown = () => {
 }
 
 .btn:hover {
-  background-color: #fb8c00;
+  background-color: #dc77b2;
 }
 
 .back {
   display: block;
   margin-top: 1rem;
   font-size: 0.9rem;
-  color: #1e88e5;
+  color: #dc77b2;
   text-decoration: none;
   text-align: center;
   background: transparent;
