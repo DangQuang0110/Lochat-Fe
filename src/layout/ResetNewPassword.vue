@@ -2,7 +2,7 @@
   <div class="auth-container">
     <div class="auth-box">
       <img src="@/assets/lgo.png" alt="" class="logo" />
-      <h1>Đặt lại mật khẩu</h1>
+      <h1>Thay đổi mật khẩu </h1>
       <p class="sub-text">Vui lòng nhập mật khẩu cũ và mật khẩu mới để cập nhật tài khoản</p>
 
       <label>Mật khẩu cũ</label>
@@ -140,7 +140,7 @@
       <button class="btn" @click="handleReset" :disabled="!isFormValid">
         Đặt lại
       </button>
-      <router-link to="/login" class="back">← Trở về trang đăng nhập</router-link>
+      <router-link to="/" class="back">← Trở về trang đăng nhập</router-link>
     </div>
   </div>
 </template>
@@ -250,6 +250,9 @@ const handleReset = () => {
 </script>
 
 <style scoped>
+* {
+  font-family: 'Roboto', sans-serif;
+}
 .auth-container {
   position: fixed;
   top: 0;
@@ -270,7 +273,7 @@ const handleReset = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('@/assets/background(1).png') no-repeat center/cover;
+  background: url('@/assets/background.jpg') no-repeat center/cover;
   background-size: cover;
 }
 
@@ -278,7 +281,7 @@ const handleReset = () => {
 .auth-box {
   position: relative;
   z-index: 1;               /* Luôn luôn “trên” pseudo-element */
-  background-color: #5b5b5b;
+  background-color: #EEEEEE;
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -291,20 +294,20 @@ const handleReset = () => {
 
 .logo {
   width: 100px;
-  margin: 0 auto 1rem;
+  margin: 0 auto -4rem;
   display: block;
 }
 
 h1 {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #333;
+  color: #dc77b2;
   margin-bottom: 0.5rem;
 }
 
 .sub-text {
   font-size: 0.95rem;
-  color: #FFFFFF;
+  color: #dc77b2;
   margin-bottom: 1.5rem;
 }
 
@@ -312,7 +315,7 @@ label {
   display: block;
   text-align: left;
   font-size: 0.9rem;
-  color: #FFF;
+  color: #dc77b2;
   margin-bottom: 0.3rem;
 }
 
@@ -320,6 +323,7 @@ label {
   position: relative;
   width: 100%;
   margin-bottom: 0.5rem;
+ 
 }
 
  .input-group input {
@@ -327,9 +331,10 @@ label {
   height: 45px;             /* Chiều cao bằng nút */
   padding: 0 10px;          /* Chỉ padding trái/phải để giữ height cố định */
   font-size: 1rem;
-  border: 1px solid #ABABAB;
+  color: #dc77b2;
+  border: 1px solid #FFFFFF;
   border-radius: 4px;
-  background: #f9f9f9;
+  background: #fFFFFF;
   outline: none;
   box-sizing: border-box;   /* Đảm bảo padding không làm input vượt 45px */
 }
@@ -337,7 +342,6 @@ label {
 .input-group input.error-input {
   border-color: #ef4444;
 }
-
 
 .password-group {
   position: relative;
@@ -368,7 +372,7 @@ label {
   display: block;      /* để max-width và margin:auto có hiệu lực */
   border: none;
   border-radius: 4px;  /* bo góc 4px */
-  background-color: #FFA726; /* giống màu cam Login */
+  background-color: #dc77b2; /* giống màu cam Login */
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
@@ -377,11 +381,11 @@ label {
 }
 
 .btn:hover:not(:disabled) {
-  background-color: #FB8C00; /* cam đậm hơn khi hover */
+  background-color: #dc77b2; /* cam đậm hơn khi hover */
 }
 
 .btn:disabled {
-  background-color: #000;
+  background-color: #dc77b2;
   cursor: not-allowed;
 }
 
@@ -389,7 +393,7 @@ label {
   display: block;
   margin-top: 1rem;
   font-size: 0.9rem;
-  color: #1e88e5;
+  color: #dc77b2;
   text-decoration: none;
   text-align: center;
 }

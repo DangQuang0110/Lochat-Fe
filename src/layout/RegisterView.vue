@@ -105,7 +105,7 @@
           </svg>
         </span>
         <div class="validation-message" :class="{ error: passwordError }">
-          {{ passwordError || 'Tối đa 15 ký tự, có ít nhất 1 chữ hoa, 1 ký tự đặc biệt và 1 số' }}
+          {{ passwordError || ' ' }}
         </div>
       </div>
 
@@ -168,7 +168,7 @@
       <button class="btn" @click="handleRegister" :disabled="!isFormValid">
         Đăng ký
       </button>
-      <router-link to="/login" class="back">← Trở về trang đăng nhập</router-link>
+      <router-link to="/" class="back">← Trở về trang đăng nhập</router-link>
     </div>
   </div>
 </template>
@@ -378,6 +378,9 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
+* {
+  font-family: 'Roboto', sans-serif;
+}
 .auth-container {
   position: fixed;
   top: 0;
@@ -398,7 +401,7 @@ const handleRegister = async () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('@/assets/background(1).png') no-repeat center/cover;
+  background: url('@/assets/background.jpg') no-repeat center/cover;
   background-size: cover;
        /* Điều chỉnh độ mờ theo ý bạn */
   transform: scale(1.1); /* Phóng to 10% để blur không bị viền cắt */
@@ -409,7 +412,7 @@ const handleRegister = async () => {
 .auth-box {
   position: relative;
   z-index: 1;               /* Luôn luôn “trên” pseudo-element */
-  background-color: #5b5b5b;
+  background-color: #EEEEEE;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;
@@ -421,13 +424,13 @@ const handleRegister = async () => {
 
 .logo {
   width: 120px;
-  margin: 0 auto 1rem;
+  margin: 0 auto -4rem;
   display: block;
 }
 
 h1 {
   font-size: 1.6rem;
-  color: #333;
+  color: #dc77b2;
   margin-bottom: 1rem;
 }
 
@@ -442,7 +445,7 @@ h1 {
 .input-group {
   position: relative;
   width: 100%;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 /* Input khung cao 45px, bo góc 4px */
@@ -460,7 +463,7 @@ h1 {
 }
 
 .input-group input:focus {
-  border-color: #000;
+  border-color: #dc77b2;
 }
 
 .input-group input.error {
@@ -471,7 +474,7 @@ h1 {
   position: absolute;
   left: 10px;
   top: 14px;
-  
+  color: #dc77b2;
   pointer-events: none;
   transition: all 0.2s ease;
   
@@ -480,10 +483,10 @@ h1 {
 }
 
 .input-group label.active {
-  top: -10px;
+  top: -16px;
   left: 8px;
   font-size: 0.75rem;
-  color: #000;
+  color: #dc77b2;
   font-weight: 600;
 }
 
@@ -533,7 +536,7 @@ h1 {
   padding: 12px;
   border: none;
   border-radius: 8px;
-  background-color: #000;
+  background-color: #dc77b2;
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
@@ -542,12 +545,12 @@ h1 {
 }
 
 .btn:hover:not(:disabled) {
-  background-color: #fb8c00;
+  background-color: #dc77b2;
   transform: translateY(-1px);
 }
 
 .btn:disabled {
-  background-color: #ccc;
+  background-color: #dc77b2;
   cursor: not-allowed;
   transform: none;
 }
@@ -556,7 +559,7 @@ h1 {
 .back {
   display: block;
   margin-top: 1rem;
-  color: #1e88e5;
+  color: #dc77b2;
   font-size: 0.9rem;
   text-decoration: none;
   text-align: center;
