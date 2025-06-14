@@ -11,32 +11,35 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
-  <body>
-    <div id="app"></div>
+<body>
+  <div id="app"></div>
 
-    <!-- Vite entry -->
+  <!-- Vite entry -->
 
-    <!-- Vite entry -->
-    <script type="module" src="/src/main.js"></script>
+  <!-- Vite entry -->
+  <script type="module" src="/src/main.js"></script>
 
-    <!-- Socket.io -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script>
-      const socket = io('http://localhost:8082', {
-        auth: {
-          token: localStorage.getItem('accessToken'),
-        },
+  <!-- Socket.io -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:8082', {
+      auth: {
+        token: localStorage.getItem('accessToken'),
+      },
+    })
+    socket.on('connect', () => {
+      console.log('Connected socket id:', socket.id)
+      const userId = JSON.parse(localStorage.getItem('user')).id
+      // socket.emit('join room', `user_${userId}`)
+      // socket.emit('join room by userId', `user_${userId}`)
+      socket.emit('join room', `conversation_1`)
+      socket.on('chat message', (data) => {
+        console.log('✅ Received message:', data)
       })
-      socket.on('connect', () => {
-        console.log('Connected socket id:', socket.id)
-        const userId = JSON.parse(localStorage.getItem('user')).id
-        socket.emit('join room', `user_${userId}`)
 
-      })
-      socket.on('chat messsage', (data) => {
-        console.log('Received message:', data)
-      })
-      // socket.emit("register")
-    </script>
-  </body>
+    })
+    // socket.emit("register")
+  </script>
+</body>
+
 </html>

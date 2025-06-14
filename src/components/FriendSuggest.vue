@@ -21,10 +21,9 @@
                 <img :src="friend.avatar" class="avatar" />
                 <strong class="friend-name">{{ friend.name }}</strong>
               </div>
-
               <div class="action-buttons">
-                <button class="btn-skip">Bỏ qua</button>
-                <button class="btn-add">Kết bạn</button>
+                <button class="btn-skip" @click="skipFriend(friend.id)">Bỏ qua</button>
+                <button class="btn-add"  @click="addFriend(friend.id)">Kết bạn</button>
               </div>
             </div>
           </div>
@@ -35,22 +34,59 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import layout from '@/layout/SideBarContact.vue'
-import quangImg from '@/assets/quang.png'
+import { ref, computed, onMounted } from 'vue'
+import layout                         from '@/layout/SideBarContact.vue'
+import { getRandomAccounts }         from '@/service/accountService'
+import { sendFriendRequest, getAcceptedFriends } from '@/service/friendService'
 
-const searchText = ref('')
-const friends = ref([
-  { name: 'Quang', avatar: quangImg },
-  { name: 'Quang', avatar: quangImg },
-  { name: 'Quang', avatar: quangImg },
-{ name: 'Quang', avatar: quangImg }
-])
+/* -------- state -------- */
+const searchText        = ref('')
+const friends           = ref([])
+const loggedInAccountId = Number(localStorage.getItem('accountId'))
+const currentFriends    = ref([]) // 🟡 danh sách đã là bạn
 
-const filteredFriends = computed(() => {
-  const keyword = searchText.value.toLowerCase()
-  return friends.value.filter(friend => friend.name.toLowerCase().includes(keyword))
+/* -------- fetch gợi ý -------- */
+onMounted(async () => {
+  try {
+    const [suggestions, accepted] = await Promise.all([
+      getRandomAccounts(20),            // lấy 20 người random
+      getAcceptedFriends(loggedInAccountId) // lấy danh sách bạn bè
+    ])
+
+    currentFriends.value = accepted.map(f => f.id)
+
+    friends.value = suggestions.filter(u =>
+      u.id !== loggedInAccountId && !currentFriends.value.includes(u.id)
+    )
+  } catch (err) {
+    console.error('Không load được gợi ý liên hệ:', err)
+  }
 })
+
+/* -------- lọc theo ô search -------- */
+const filteredFriends = computed(() => {
+  const kw = searchText.value.toLowerCase()
+  return friends.value.filter(f =>
+    (f.username || '').toLowerCase().includes(kw) ||
+    (f.profile?.fullname || '').toLowerCase().includes(kw)
+  )
+})
+
+/* -------- hành động -------- */
+async function addFriend(receiverId) {
+  try {
+    console.log('📤 Gửi request:', { senderId: loggedInAccountId, receiverId })
+    await sendFriendRequest(loggedInAccountId, receiverId)
+    friends.value = friends.value.filter(f => f.id !== receiverId)
+  } catch (err) {
+    console.error('Không thể gửi lời mời:', err)
+    alert('Gửi lời mời thất bại!')
+  }
+}
+
+function skipFriend(id) {
+  friends.value = friends.value.filter(f => f.id !== id)
+}
 </script>
 
 <style scoped>
