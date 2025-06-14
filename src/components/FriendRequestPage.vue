@@ -53,7 +53,7 @@ const fetchRequests = async () => {
     requests.value = data.map(user => ({
       id: user.id,
       name: user.username,
-      avatar: user.imageUrl || '/default-avatar.png',
+      avatar: user.imageUrl || 'image/avata.jpg',
       time: 'vừa gửi'
     }))
   } catch (err) {

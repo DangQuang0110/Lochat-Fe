@@ -49,3 +49,18 @@ export const unfriend = async ({ senderId, receiverId }) => {
     throw err
   }
 }
+export async function sendFriendRequest(senderId, receiverId) {
+  const payload = {
+    senderId: String(senderId),
+    receiverId: String(receiverId)
+  }
+  console.log('🔍 Payload gửi:', payload)
+
+  try {
+    const res = await apiService.post('/api/v1/friendShips/', payload)
+    return res.data
+  } catch (err) {
+    console.error('❌ API gửi kết bạn lỗi:', err.response?.data || err.message)
+    throw err
+  }
+}

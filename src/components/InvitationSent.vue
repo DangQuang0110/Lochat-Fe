@@ -16,15 +16,33 @@
           <h2 class="section-title">Lời mời đã gửi</h2>
 
           <div class="grid-list">
-            <div class="invite-card" v-for="friend in filteredFriends" :key="friend.id">
+            <div
+              class="invite-card"
+              v-for="friend in filteredFriends"
+              :key="friend.id"
+            >
               <div class="card-top">
                 <img :src="friend.avatar" class="avatar" />
                 <strong class="friend-name">{{ friend.name }}</strong>
                 <span class="time-label">1 phút trước</span>
               </div>
-              <button class="btn-cancel">Thu hồi lời mời</button>
+
+              <button class="btn-cancel" @click="openConfirm(friend.id)">
+                Thu hồi lời mời
+              </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal xác nhận thu hồi lời mời ===== -->
+    <div v-if="showConfirm" class="modal-overlay" @click.self="closeConfirm">
+      <div class="modal-content">
+        <h3>Bạn chắc chắn muốn thu hồi lời mời?</h3>
+        <div class="btn-group">
+          <button class="btn-yes" @click="confirmUnfriend">Có</button>
+          <button class="btn-no" @click="closeConfirm">Không</button>
         </div>
       </div>
     </div>
@@ -34,139 +52,95 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import layout from '@/layout/SideBarContact.vue'
-import { getSentFriendRequests } from '@/service/friendService'
+import { getSentFriendRequests, unfriend } from '@/service/friendService'
 
-const searchText = ref('')
-const friends = ref([])
-const accountId = localStorage.getItem('accountId')
+/* ------------ STATE ------------ */
+const searchText   = ref('')
+const friends      = ref([])
+const accountId    = Number(localStorage.getItem('accountId'))
 
-// Gọi API
+/* cho modal */
+const showConfirm        = ref(false)
+const selectedReceiverId = ref(null)
+
+/* ------------ API ------------ */
 const fetchSentRequests = async () => {
   try {
     const data = await getSentFriendRequests(accountId)
-    console.log('📦 Đã gửi:', data)
-    friends.value = data.map(friend => ({
-      id: friend.id,
-      name: friend.username,
-      avatar: friend.imageUrl || '/default-avatar.png'
+    friends.value = data.map(f => ({
+      id     : Number(f.id),
+      name   : f.username,
+      avatar : f.imageUrl || 'image/avata.jpg'
     }))
   } catch (err) {
-    console.error('❌ Lỗi khi fetch:', err)
+    console.error('❌ Lỗi khi lấy danh sách đã gửi:', err)
   }
 }
 
 onMounted(fetchSentRequests)
 
+/* ------------ FILTER ------------ */
 const filteredFriends = computed(() => {
-  const keyword = searchText.value.toLowerCase()
-  return friends.value.filter(friend =>
-    friend.name.toLowerCase().includes(keyword)
-  )
+  const kw = searchText.value.toLowerCase()
+  return friends.value.filter(f => f.name.toLowerCase().includes(kw))
 })
 
+/* ------------ CONFIRM FLOW ------------ */
+function openConfirm (receiverId) {
+  selectedReceiverId.value = receiverId
+  showConfirm.value        = true
+}
+
+function closeConfirm () {
+  showConfirm.value        = false
+  selectedReceiverId.value = null
+}
+
+async function confirmUnfriend () {
+  try {
+    await unfriend({ senderId: accountId, receiverId: selectedReceiverId.value })
+    friends.value = friends.value.filter(f => f.id !== selectedReceiverId.value)
+  } catch (err) {
+    console.error('❌ Lỗi khi thu hồi lời mời:', err)
+    alert('Không thể thu hồi lời mời.')
+  } finally {
+    closeConfirm()
+  }
+}
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  height: 100%;
-  overflow: hidden;
-}
+/* ---------- layout cũ ---------- */
 
-.main-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-}
+.container { display:flex; height:100%; overflow:hidden; }
+.main-panel{ flex:1; display:flex; flex-direction:column; background:#fff; }
+.scroll-content{ flex:1; overflow-y:auto; padding:30px; }
+.search-bar{ position:relative; width:300px; margin-bottom:20px; }
+.search-bar input{ width:100%; padding:10px 15px 10px 40px; border:1px solid #ccc; border-radius:25px; font-size:14px; }
+.search-icon{ position:absolute; top:50%; left:12px; transform:translateY(-50%); width:16px; height:16px; opacity:.6; }
+.section-title{ font-weight:normal; font-size:20px; margin-bottom:20px; }
+.grid-list{ display:grid; grid-template-columns:repeat(4,1fr); gap:30px; }
+.invite-card{ background:white; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.1); padding:16px; display:flex; flex-direction:column; gap:16px; align-items:flex-start; }
+.card-top{ display:flex; align-items:center; gap:10px; width:100%; justify-content:space-between; }
+.avatar{ width:40px; height:40px; border-radius:50%; object-fit:cover; }
+.friend-name{ font-weight:bold; font-size:16px; flex:1; }
+.time-label{ font-size:12px; color:#888; white-space:nowrap; }
+.btn-cancel{ background:#ccc; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; font-size:14px; align-self:center; }
 
-.scroll-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 30px;
+/* ---------- modal ---------- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,0.4);
+  display:flex; align-items:center; justify-content:center; z-index:1000;
 }
-
-.search-bar {
-  position: relative;
-  width: 300px;
-  margin-bottom: 20px;
+.modal-content{
+  background:#fff; width:320px; padding:24px; border-radius:8px; text-align:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.2);
 }
-
-.search-bar input {
-  width: 100%;
-  padding: 10px 15px 10px 40px;
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  font-size: 14px;
+.modal-content h3{ margin:0 0 20px; font-size:16px; }
+.btn-group{ display:flex; justify-content:center; gap:20px; }
+.btn-yes, .btn-no{
+  border:none; border-radius:6px; padding:8px 18px; cursor:pointer; font-size:14px;
 }
-
-.search-icon {
-  position: absolute;
-  top: 50%;
-  left: 12px;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  opacity: 0.6;
-}
-
-.section-title {
-  font-weight: normal;
-  font-size: 20px;
-  margin-bottom: 20px;
-}
-
-.grid-list {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 30px;
-}
-
-.invite-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.card-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  justify-content: space-between;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.friend-name {
-  font-weight: bold;
-  font-size: 16px;
-  flex: 1;
-}
-
-.time-label {
-  font-size: 12px;
-  color: #888;
-  white-space: nowrap;
-}
-
-.btn-cancel {
-  background: #ccc;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-size: 14px;
-  align-self: center;
-}
+.btn-yes{ background:#ff5252; color:#fff; }
+.btn-no { background:#e0e0e0; }
 </style>

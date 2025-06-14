@@ -54,7 +54,7 @@ const fetchFriends = async () => {
     friends.value = result.map(friend => ({
       id: friend.id,
       name: friend.username,
-      avatar: friend.imageUrl
+      avatar: friend.imageUrl|| 'image/avata.jpg'
     }))
   } catch (e) {
     // hiển thị toast hoặc console

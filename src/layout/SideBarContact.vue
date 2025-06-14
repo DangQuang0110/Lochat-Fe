@@ -4,7 +4,7 @@
     <header class="header">
       <span class="dot"></span>
       <h2>Quản lý liên hệ</h2>
-      <button class="close-btn">✕</button>
+      <button class="close-btn" @click="goToMessage">✕</button>
     </header>
 
     <!-- Main layout -->
@@ -45,9 +45,15 @@
 
 <script>
 export default {
-  name: 'ContactLayout'
+  name: 'ContactLayout',
+  methods: {
+    goToMessage() {
+      this.$router.push('/message')
+    }
+  }
 }
 </script>
+
 
 <style scoped>
 .contact-manager {

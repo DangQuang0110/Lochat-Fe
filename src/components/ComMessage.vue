@@ -25,7 +25,7 @@
           <li :class="{ active: true }">
             <img src="@/assets/message.png" alt="Nhắn tin" />
           </li>
-          <li :class="{ active: true }">
+          <li :class="{ active: true }" @click="goToFriendList">
             <img src="@/assets/contact-books.png" alt="Danh bạ" />
           </li>
         </ul>
@@ -108,7 +108,7 @@
       </header>
 
       <div class="chat-body">
-        <div v-if="currentMessages.length === 0" class="no-message">
+        <div v-if="currentMessages && currentMessages.length === 0" class="no-message">
           Chưa có tin nhắn mới
         </div>
         <template v-else>
@@ -136,7 +136,15 @@
                       <button class="download-btn">⬇️</button>
                     </div>
                     <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
-                    <p v-if="msg.text" class="msg-text">{{ msg.text }}</p>
+                    <div
+                      :class="[
+                        'msg',
+                        'from-other',
+                        isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
+                      ]"
+                    >
+                      <span v-if="msg.text">{{ msg.text }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -151,7 +159,15 @@
                     <button class="download-btn">⬇️</button>
                   </div>
                   <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
-                  <p v-if="msg.text">{{ msg.text }}</p>
+                  <div
+                    :class="[
+                      'msg',
+                      msg.fromMe ? 'from-me' : 'from-other',
+                      isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
+                    ]"
+                  >
+                    <span v-if="msg.text">{{ msg.text }}</span>
+                  </div>
                 </div>
               </div>
             </template>
@@ -160,19 +176,32 @@
                 <img class="avatar" :src="getSender(msg)?.avatar" />
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
-                  <div class="msg from-other">
-                    <p v-if="msg.text">{{ msg.text }}</p>
-                  </div>
+                    <div
+                      :class="[
+                        'msg',
+                        'from-other',
+                        isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
+                      ]"
+                    >
+                      <span v-if="msg.text">{{ msg.text }}</span>
+                    </div>
                 </div>
               </div>
               <div v-else class="msg-block align-right">
-                <div class="msg from-me">
-                  <p v-if="msg.text">{{ msg.text }}</p>
-                </div>
+              <div
+                :class="[
+                  'msg',
+                  msg.fromMe ? 'from-me' : 'from-other',
+                  isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
+                ]"
+              >
+                <span v-if="msg.text">{{ msg.text }}</span>
+              </div>
               </div>
             </template>
           </div>
         </template>
+        <div ref="bottomRef" />
       </div>
 
       <footer class="chat-input">
@@ -187,12 +216,14 @@
             @change="handleFileSelect"
             accept="*/*"
           />
-          <input
+          <textarea
             ref="textInput"
             v-model="messageInput"
-            @keydown.enter="sendMessage"
-            type="text"
+            @input="autoResize"
+            @keydown="handleKeydown"
             placeholder="Nhập tin nhắn"
+            rows="1"
+            class="chat-textarea"
           />
           <button class="icon-btn emoji-btn" @click="toggleEmojiPicker">
             <img src="@/assets/happy-face.png" alt="Emoji" />
@@ -375,213 +406,389 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import ProfileModal from './MessageNewDetail.vue';
-import GroupForm from './GroupForm.vue';
-import GroupEditModal from './GroupEditModal.vue'; // Import GroupEditModal
+import { ref, computed, onMounted, onBeforeUnmount,nextTick  } from 'vue'
+import ProfileModal   from './MessageNewDetail.vue'
+import GroupForm      from './GroupForm.vue'
+import GroupEditModal from './GroupEditModal.vue'
+import { getAccountDetail } from '@/service/profileService' 
+// import { sendMessageToConversation } from '@/service/messageService'
 
-const loggedInAccountId = ref(localStorage.getItem('accountId'));
-const showProfileModal = ref(false);
-const showGroupForm = ref(false);
-const showEditGroupModal = ref(false); // State for GroupEditModal
-const user = ref({
-  avatar: 'image/avatar.jpg',
-});
-const friends = ref([
-  { id: 1, name: 'Nhân', avatar: require('@/assets/nhan.jpg'), desc: 'Nhân muốn gửi tin nhắn', online: true },
-  { id: 2, name: 'Cầu', avatar: require('@/assets/cau.jpg'), desc: 'Cầu muốn gửi tin nhắn', online: true },
-  { id: 3, name: 'Trường', avatar: require('@/assets/truong.jpg'), desc: 'Trường muốn gửi tin nhắn', online: true },
-  { id: 4, name: 'Quang', avatar: require('@/assets/quang.jpg'), desc: 'Bạn : )', online: true },
-]);
-const groups = ref([
-  { id: 100, name: 'Nhóm học Vue', avatar: require('@/assets/group1.png'), desc: '5 thành viên', online: true },
-  { id: 101, name: 'Cà phê cuối tuần', avatar: require('@/assets/group2.png'), desc: '8 thành viên', online: false },
-]);
-const groupMembers = ref([
-  { id: 1, name: 'Nhân', avatar: require('@/assets/nhan.jpg') },
-  { id: 2, name: 'Cầu', avatar: require('@/assets/cau.jpg') },
-  { id: 3, name: 'Trường', avatar: require('@/assets/truong.jpg') },
-  { id: 4, name: 'Quang', avatar: require('@/assets/quang.jpg') },
-]);
-const members = ref([
-  { id: 1, name: 'Quang', avatar: require('@/assets/cau.jpg') },
-  { id: 2, name: 'Nhân', avatar: require('@/assets/nhan.jpg') },
-  { id: 3, name: 'Cầu', avatar: require('@/assets/truong.jpg') },
-]);
-const messages = ref([
-  { id: 1, fromMe: false, text: 'Hi bạn nha' },
-  { id: 2, fromMe: true, text: 'Hi bạn nha' },
-  { id: 3, fromMe: false, file: { name: 'Báo cáo.pdf', size: '9mb' } },
-  { id: 4, fromMe: false, file: { name: 'Báo cáo.docx', size: '9mb' } },
-  { id: 5, fromMe: false, file: { name: 'Xem chó.mp4', size: '8mb' } },
-  { id: 6, fromMe: false, text: 'Đây nè bạn ơi' },
-  { id: 7, fromMe: true, text: 'Cảm ơn nha' },
-  { id: 201, chatId: 1, fromMe: false, senderId: 1, text: 'Bạn đang làm gì đó?' },
-  { id: 202, chatId: 1, fromMe: true, text: 'Tôi đang code Vue nha 😎' },
-  { id: 203, chatId: 1, fromMe: false, senderId: 1, text: 'Gửi file báo cáo cho tôi với!' },
-  { id: 204, chatId: 1, fromMe: true, file: { name: 'BaoCao_Thang6.pdf', size: '5MB', url: '#' } },
-  { id: 205, chatId: 1, fromMe: false, senderId: 1, image: 'https://via.placeholder.com/200' },
-  { id: 206, chatId: 1, fromMe: true, text: 'Đây là demo ảnh, bạn xem được chứ?' },
-]);
-const activeTab = ref('friends');
-const selectedId = ref(1);
-const showGroupModal = ref(false);
-const showAddModal = ref(false);
-const showProfilePanel = ref(false);
-const showEmojiPicker = ref(false);
-const showUserSidebar = ref(false);
-const showSearch = ref(false);
-const messageInput = ref('');
-const searchText = ref('');
-const addSearch = ref('');
-const searchQuery = ref('');
-const avatarWrapper = ref(null);
-const fileInput = ref(null);
-const emojis = ref([
-  '😊', '😂', '😍', '🤣', '😎', '😢', '😡', '👍', '👎', '🎉', '😴', '🤔', '😘', '🥰', '🤩', '😇',
-  '🤤', '😱', '😷', '🥳', '🤯', '🧐', '🤮', '🤗', '🤫', '🤭', '👏', '🙌', '🦄', '💩', '👻', '💀',
-  '👽', '🤖', '🎃', '😺', '😼', '🙈', '🙉', '🙊', '🐶', '🐱', '🐻', '🦊', '🐼', '🐨', '🐯', '🦁',
-]);
+import { getAcceptedFriends } from '@/service/friendService'
+import { getMessages }        from '@/service/messageService'
+import { useRouter } from 'vue-router'
+import socket from '@/socket'
+const bottomRef = ref(null)
+function handleKeydown(e) {
+  // Shift để xuống dòng
+  if (e.key === 'Shift' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault()
+    messageInput.value += '\n'
+    autoResize()
+    return
+  }
 
-const current = computed(() => {
-  const list = activeTab.value === 'friends' ? friends.value : groups.value;
-  return list.find(f => f.id === selectedId.value) || {};
-});
-const filteredMembers = computed(() => 
-  members.value.filter(m => 
-    m.name.toLowerCase().includes(searchText.value.toLowerCase())
-  )
-);
-const filteredFriendsToAdd = computed(() =>
-  friends.value.filter(f =>
-    f.name.toLowerCase().includes(addSearch.value.toLowerCase()) ||
-    String(f.id).includes(addSearch.value)
-  )
-);
-const currentMessages = computed(() => {
-  return messages.value.filter(msg => msg.chatId === selectedId.value);
-});
-const filteredMessages = computed(() => {
-  const cm = currentMessages.value;
-  if (!searchQuery.value) return cm;
-  const q = searchQuery.value.toLowerCase();
-  return cm.filter(m => m.text && m.text.toLowerCase().includes(q));
-});
+  // Enter để gửi
+  if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault()
+    sendMessage()
+    return
+  }
+}
+function autoResize() {
+  nextTick(() => {
+    const el = textInput.value
+    if (el) {
+      const lineHeight = 22  
+      const minRows = 1
+      const maxRows = 4       // hoặc bao nhiêu dòng bạn cho phép tối đa
 
-function getSender(msg) {
-  return friends.value.find(f => f.id === msg.senderId) || null;
+      el.style.height = 'auto'             
+      const rows = Math.floor(el.scrollHeight / lineHeight)
+
+      const finalRows = Math.min(Math.max(rows, minRows), maxRows)
+      el.style.height = finalRows * lineHeight + 'px'
+    }
+  })
 }
-function removeFromGroup(id) {
-  members.value = members.value.filter(m => m.id !== id);
+
+function scrollToBottom() {
+  nextTick(() => {
+    bottomRef.value?.scrollIntoView({ behavior: 'smooth' })
+  })
 }
-function addToGroup(id) {
-  friends.value = friends.value.filter(f => f.id !== id);
-}
-function selectFriend(id) {
-  selectedId.value = id;
-}
-function triggerFileDialog() {
-  fileInput.value && fileInput.value.click();
-}
-function handleFileSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const formatSize = (bytes) => {
-    const kb = 1024;
-    const mb = kb * 1024;
-    if (bytes >= mb) return (bytes / mb).toFixed(2) + ' MB';
-    if (bytes >= kb) return (bytes / kb).toFixed(2) + ' KB';
-    return bytes + ' B';
-  };
-  const url = URL.createObjectURL(file);
-  messages.value.push({
-    id: Date.now(),
-    fromMe: true,
-    chatId: selectedId.value,
-    file: { name: file.name, size: formatSize(file.size), url },
-  });
-  event.target.value = '';
+const router = useRouter()
+
+function goToFriendList() {
+  router.push('/friendlist')
 }
 function toggleEmojiPicker() {
+  // bật / tắt
   showEmojiPicker.value = !showEmojiPicker.value;
 }
 function addEmoji(emoji) {
-  messageInput.value += emoji;
-  showEmojiPicker.value = false;
+  messageInput.value += emoji
 }
-function sendMessage() {
-  const text = messageInput.value.trim();
-  if (!text) return;
-  messages.value.push({ id: Date.now(), fromMe: true, chatId: selectedId.value, text });
-  messageInput.value = '';
+function isEmojiOnly(text = '') {
+  return text.trim() !== '' &&
+         /^[\p{Emoji_Presentation}\u200d\s]+$/u.test(text.trim());
 }
-function toggleProfilePanel() {
-  showProfilePanel.value = !showProfilePanel.value;
-}
-function toggleUserSidebar() {
-  showUserSidebar.value = !showUserSidebar.value;
-}
-function handleClickOutside(e) {
+function handleClickOutsideEmoji(e) {
   if (
-    avatarWrapper.value &&
-    !avatarWrapper.value.contains(e.target) &&
-    !e.target.closest('.user-sidebar')
+    showEmojiPicker.value &&
+    !e.target.closest('.emoji-picker') &&
+    !e.target.closest('.emoji-btn')
   ) {
-    showUserSidebar.value = false;
-  }
-}
-function goToUserProfile() {
-  showProfileModal.value = true;
-}
-function goToChangePassword() {
-  console.log('Đổi mật khẩu');
-}
-function logout() {
-  console.log('Đăng xuất');
-}
-function toggleSearch() {
-  showSearch.value = !showSearch.value;
-  if (!showSearch.value) searchQuery.value = '';
-}
-function closeProfileModal() {
-  showProfileModal.value = false;
-}
-function closeGroupForm() {
-  showGroupForm.value = false;
-}
-function handleGroupCreated(groupData) {
-  groups.value.push({
-    id: Date.now(),
-    name: groupData.name,
-    avatar: groupData.avatar || require('@/assets/group1.png'),
-    desc: `${groupData.members.length} thành viên`,
-    online: true,
-  });
-  selectedId.value = groups.value[groups.value.length - 1].id;
-  activeTab.value = 'groups';
-  showGroupForm.value = false;
-}
-function openEditGroupModal() {
-  showEditGroupModal.value = true;
-}
-function closeEditGroupModal() {
-  showEditGroupModal.value = false;
-}
-function handleGroupEdit(changes) {
-  const group = groups.value.find(g => g.id === selectedId.value);
-  if (group) {
-    if (changes.groupName) {
-      group.name = changes.groupName;
-    }
-    if (changes.imageFile) {
-      group.avatar = URL.createObjectURL(changes.imageFile);
-    }
+    showEmojiPicker.value = false;
   }
 }
 
-onMounted(() => document.addEventListener('click', handleClickOutside));
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
+onMounted(() => document.addEventListener('click', handleClickOutsideEmoji));
+onBeforeUnmount(() =>
+  document.removeEventListener('click', handleClickOutsideEmoji)
+);
+onMounted(() => socket.on('chat message', handleIncomingMessage))
+onBeforeUnmount(() => socket.off('chat message', handleIncomingMessage))
+function handleIncomingMessage(msg) {
+  console.log('🟢 Tin nhắn realtime:', msg)
+
+  // Bỏ qua nếu không thuộc cuộc trò chuyện đang chọn
+  if (String(msg.conversationId) !== String(selectedConversationId.value)) return
+
+  messages.value.push({
+    id:        Date.now(), // hoặc msg.id nếu backend trả
+    chatId:    Number(msg.conversationId),       // ✅ RẤT QUAN TRỌNG
+    senderId:  Number(msg.senderId),
+    fromMe:    String(msg.senderId) === String(loggedInAccountId.value),
+    text:      msg.content,
+    createdAt: new Date()
+  })
+  scrollToBottom()
+}
+function goToUserProfile() {
+  console.log('✅ Đã click Hồ sơ người dùng')
+  showProfileModal.value = true
+  showUserSidebar.value = false
+}
+
+
+const loggedInAccountId = ref(Number(localStorage.getItem('accountId')))
+const user              = ref({ avatar: 'image/avata.jpg' })
+const groupMembers = ref([])
+const friends   = ref([])               // lấy từ API
+const groups = ref([
+  { id: 100, name: 'Nhóm học Vue', avatar: require('@/assets/group1.png'),
+    desc: '5 thành viên', online: true,  conversationId: 900100 },
+
+  { id: 101, name: 'Cà phê cuối tuần', avatar: require('@/assets/group2.png'),
+    desc: '8 thành viên', online: false, conversationId: 900101 },
+])
+
+const messages  = ref([])               // load khi chọn cuộc trò chuyện
+const members   = ref([])               // danh sách thành viên nhóm (nếu cần)
+
+/* ---------- UI STATE ---------- */
+const activeTab           = ref('friends')
+const selectedId          = ref(null)
+const showProfileModal    = ref(false)
+const showProfilePanel    = ref(false)
+const showUserSidebar     = ref(false)
+const showGroupForm       = ref(false)
+const showEditGroupModal  = ref(false)
+const showGroupModal      = ref(false)
+const showAddModal        = ref(false)
+const showEmojiPicker     = ref(false)
+const showSearch          = ref(false)
+
+/* ---------- INPUT / SEARCH ---------- */
+const messageInput = ref('')
+const searchText   = ref('')
+const addSearch    = ref('')
+const searchQuery  = ref('')
+
+/* ---------- REFS DOM ---------- */
+const avatarWrapper = ref(null)
+const fileInput     = ref(null)
+const textInput = ref(null)
+
+const emojis = ref([
+  '😊','😂','😍','🤣','😎','😢','😡','👍','👎','🎉','😴','🤔','😘','🥰','🤩','😇',
+  '🤤','😱','😷','🥳','🤯','🧐','🤮','🤗','🤫','🤭','👏','🙌','🦄','💩','👻','💀',
+  '👽','🤖','🎃','😺','😼','🙈','🙉','🙊','🐶','🐱','🐻','🦊','🐼','🐨','🐯','🦁',
+])
+const current = computed(() => {
+  const list = activeTab.value === 'friends' ? friends.value : groups.value
+  return list.find(i => i.id === selectedId.value) || {}
+})
+
+const filteredMembers = computed(() =>
+  members.value.filter(m =>
+    m.name.toLowerCase().includes(searchText.value.toLowerCase()))
+)
+
+const filteredFriendsToAdd = computed(() =>
+  friends.value.filter(f =>
+    f.name.toLowerCase().includes(addSearch.value.toLowerCase()) ||
+    String(f.id).includes(addSearch.value))
+)
+
+const currentMessages = computed(() =>
+  messages.value.filter(m => m.chatId === Number(selectedConversationId.value))
+)
+
+const selectedConversationId = ref(null)
+
+
+const filteredMessages = computed(() => {
+  if (!searchQuery.value) return currentMessages.value
+  const q = searchQuery.value.toLowerCase()
+  return currentMessages.value.filter(m => m.text?.toLowerCase().includes(q))
+})
+
+/* ---------- METHODS ---------- */
+function getSender(msg) {
+  const friend = friends.value.find(f => f.id === msg.senderId)
+  return friend ? {
+    name: friend.profile?.fullname || friend.name || 'Không rõ',
+    avatar: friend.profile?.avatarUrl || friend.avatar
+  } : null
+}
+
+function toggleSearch()        { showSearch.value = !showSearch.value; if (!showSearch.value) searchQuery.value = '' }
+function toggleProfilePanel()  { showProfilePanel.value = !showProfilePanel.value }
+function toggleUserSidebar()   { showUserSidebar.value  = !showUserSidebar.value }
+function closeProfileModal()   { showProfileModal.value = false }
+function closeGroupForm()      { showGroupForm.value    = false }
+function openEditGroupModal()  { showEditGroupModal.value = true }
+function closeEditGroupModal() { showEditGroupModal.value = false }
+function selectFriend(id) {
+  // Xác định hiện đang ở tab nào
+  const source = activeTab.value === 'friends' ? friends.value : groups.value
+  const selected = source.find(item => item.id === id)
+
+  if (!selected) {
+    console.warn('⚠️ Không tìm thấy item với ID:', id)
+    return
+  }
+
+  selectedId.value = id
+
+  // Bảo đảm mọi item đều có conversationId
+  if (!selected.conversationId) {
+    // sinh tạm một ID hoặc gọi API tạo nhóm
+    selected.conversationId = Date.now()
+  }
+
+  selectedConversationId.value = Number(selected.conversationId)
+
+  // Tham gia phòng socket tương ứng
+  socket.emit('join room', `conversation_${selectedConversationId.value}`)
+  console.log('🟢 Join room:', `conversation_${selectedConversationId.value}`)
+
+  loadMessages()      // gọi API / hoặc tạo stub tin nhắn cho nhóm
+}
+
+
+
+function sendMessage() {
+  const text = messageInput.value.trim()
+  if (!text || !selectedConversationId.value) return
+
+  const payload = {
+    conversationId: Number(selectedConversationId.value),
+    senderId:       Number(loggedInAccountId.value),
+    content:        text,
+    type:           "text",
+  }
+
+  // // ✅ Push local ngay để không delay
+  // messages.value.push({
+  //   id:        Date.now(),
+  //   chatId:    payload.conversationId,
+  //   senderId:  String(payload.senderId),
+  //   fromMe:    true,
+  //   text:      payload.content,
+  //   createdAt: new Date()
+  // })
+
+  socket.emit("chat message", payload)
+  messageInput.value = ''
+  const el = textInput.value
+  if (el) el.style.height = 'auto'
+  nextTick(() => autoResize())
+  scrollToBottom()
+}
+function triggerFileDialog() { fileInput.value?.click() }
+
+function handleFileSelect(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const size = (b) => b > 1024*1024 ? (b/1024/1024).toFixed(2)+' MB'
+              : b > 1024      ? (b/1024).toFixed(2)+' KB' : b+' B'
+  messages.value.push({
+    id: Date.now(),
+    chatId: selectedId.value,
+    fromMe: true,
+    file: { name: file.name, size: size(file.size), url: URL.createObjectURL(file) }
+  })
+  e.target.value = ''
+}
+async function loadMessages() {
+    if (activeTab.value === 'groups') {
+    console.log('ℹ️ Chưa có API nhóm – tạo danh sách tin nhắn rỗng')
+    messages.value = []                      // <-- hoặc đẩy tin nhắn mẫu ở đây
+    await nextTick()
+    scrollToBottom()
+    return
+  }
+  try {
+    console.log('📥 Gọi API getMessages với conversationId:', selectedConversationId.value)
+
+    const res = await getMessages({
+      conversationId: selectedConversationId.value
+    })
+
+    if (res?.messages) {
+      const senderIds = [...new Set(res.messages.map(m => Number(m.senderId)))]
+
+      // Lọc ra những sender chưa có trong friends.value
+      const knownIds = new Set(friends.value.map(f => f.id))
+      const missingSenderIds = senderIds.filter(id => !knownIds.has(id))
+
+      // Gọi API lấy thông tin chi tiết cho từng sender thiếu
+      const newSenders = await Promise.all(
+        missingSenderIds.map(async (id) => {
+          try {
+            const profile = await getAccountDetail(id)
+            return {
+              id,
+              name: profile.username || 'Không rõ',
+              avatar: profile.imageUrl || require('@/assets/avata.jpg'),
+              desc: '',
+              online: false
+            }
+          } catch (err) {
+            console.warn(`⚠️ Không lấy được thông tin người dùng ${id}`, err)
+            return null
+          }
+        })
+      )
+
+      // Thêm vào friends.value
+            friends.value.push(
+       ...newSenders.filter(
+         s => s && s.id !== loggedInAccountId.value            // 🚫 self
+       )
+      )
+
+      // Parse lại messages
+      messages.value = res.messages.map(m => ({
+        id: m.id,
+        chatId: Number(selectedConversationId.value),
+        fromMe: String(m.senderId) === String(loggedInAccountId.value),
+        senderId: Number(m.senderId),
+        text: m.content,
+        createdAt: m.createdAt
+      }))
+
+      await nextTick()
+      scrollToBottom()
+    }
+  } catch (err) {
+    console.error('❌ Không thể tải tin nhắn:', err.response?.data || err.message)
+  }
+}
+function handleClickOutside(e) {
+  if (avatarWrapper.value &&
+      !avatarWrapper.value.contains(e.target) &&
+      !e.target.closest('.user-sidebar')) {
+    showUserSidebar.value = false
+  }
+}
+
+onMounted(async () => {
+  document.addEventListener('click', handleClickOutside)
+
+  try {
+    const rawFriends = await getAcceptedFriends(loggedInAccountId.value)
+    console.log('✅ Danh sách bạn bè từ API:', rawFriends)
+
+    // 🔁 Lấy thông tin profile chi tiết cho từng người bạn
+    const others = await Promise.all(
+      rawFriends.map(async f => {
+        try {
+          const detail = await getAccountDetail(f.id)
+          console.log(`📦 Profile của ${f.id}:`, detail.profile)
+          return { ...f, profile: detail.profile }
+        } catch (err) {
+          console.warn(`⚠️ Không thể lấy profile cho ID ${f.id}:`, err)
+          return { ...f, profile: null }
+        }
+      })
+    )
+    friends.value = others
+      .filter(f => String(f.id) !== String(loggedInAccountId.value))
+      .map(f => ({
+        id:    f.id,
+        name:  f.profile?.fullname || f.username,               // ✅ giờ fullname có giá trị
+        avatar: f.profile?.avatarUrl || require('@/assets/avata.jpg'),
+        desc:  '',
+        conversationId: f.conversationId,
+        online: Math.random() < 0.5
+      }))
+    if (friends.value.length) {
+      selectedId.value = friends.value[0].id
+      selectedConversationId.value = Number(friends.value[0].conversationId)
+      socket.emit('join room', `conversation_${selectedConversationId.value}`)
+      loadMessages()
+    }
+
+  } catch (err) {
+    console.error('❌ Không thể tải danh sách bạn bè:', err)
+  }
+})
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
@@ -607,7 +814,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   border: none;
 }
 .icons-sidebar .sidebar-nav {
-  margin-top: 2rem;
+  margin-top:1.5rem;
 }
 .icons-sidebar .sidebar-nav ul {
   list-style: none;
@@ -644,6 +851,10 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   margin-left: auto;
   margin-right: 5px;
   margin-bottom: 5px;
+}
+.sidebar-top{
+  display: flex;
+  margin-top:20px;
 }
 .sidebar {
   background: #f9f9f9;
@@ -857,17 +1068,37 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .align-left {
   justify-content: flex-start;
 }
-.msg-block {
-  position: relative;
-  max-width: 60%;
+.msg-block.align-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Đẩy nội dung bên trong về phải */
+  max-width: 50%;        /* Giới hạn chiều rộng khối tin nhắn */
+  margin-left: auto;     /* Căn cả block sang phải */
 }
+
 .msg {
+  display: inline-flex;
+  flex-direction: column;
+  max-width: 100%;
   padding: 10px 14px;
   border-radius: 12px;
-  word-wrap: break-word;
   font-size: 14px;
   line-height: 1.4;
+  background-color: #ececec;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
+
+/* .msg-block {
+  max-width: 80%;
+} */
+
+.msg-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .from-other {
   background: #ececec;
   color: #333;
@@ -1139,6 +1370,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  max-width: 50%;
 }
 .group-msg .avatar {
   width: 32px;
@@ -1232,7 +1464,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   padding: 1rem;
 }
 .group-search {
-  width: 100%;
+  width: 95%;
   padding: 0.5rem 0.75rem;
   margin-bottom: 1rem;
   border: 1px solid #ccc;
@@ -1271,6 +1503,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1rem;
+  gap:120px;
 }
 .search-wrapper input {
   width: 200px;
@@ -1295,4 +1528,35 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .add-btn:hover {
   background: #eff6ff;
 }
+.emoji-only {
+  font-size: 32px;
+  background: transparent !important;
+  border: none !important;
+  padding: 4px 8px;
+  line-height: 1.2;
+  animation: pop 0.2s ease;
+}
+
+@keyframes pop {
+  0%   { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.chat-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 8px;
+  font-size: 14px;
+  resize: none;
+  background: transparent;
+  line-height: 22px;            /* đảm bảo khớp với JS */
+  color: #333;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: 'Roboto', sans-serif;
+
+  height: 22px;                 /* 1 dòng */
+  max-height: calc(22px * 4);   /* tối đa 4 dòng */
+}
+
 </style>
