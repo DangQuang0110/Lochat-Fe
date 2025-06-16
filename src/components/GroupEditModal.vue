@@ -75,68 +75,84 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'GroupEditModal',
-  props: {
-    initialGroupName: {
-      type: String,
-      default: ''
-    }
+<script setup>
+import { ref, computed, watch, defineProps, defineEmits } from 'vue'
+import { updateGroup } from '@/service/conversationService'      // <-- path tới service
+const props = defineProps({
+  /* dữ liệu gốc đưa cho modal để hiển thị ngay khi mở */
+  ownerId:            { type: [String, Number], required: true },
+  conversationId:     { type: [String, Number], required: true },
+  initialGroupName:   { type: String,  default: ''  },
+  initialGroupAvatar: { type: String,  default: ''  }
+})
+
+const emit = defineEmits(['close', 'confirm'])
+
+const showModal          = ref(true)
+const localGroupName     = ref('')          // tên đang chỉnh
+const avatarPreview      = ref('')          // URL hiển thị <img>
+const avatarFile         = ref(null)        // File người dùng chọn
+const nameError          = ref('')
+
+/* khi props thay đổi => đồng bộ lại */
+watch(
+  () => [props.initialGroupName, props.initialGroupAvatar],
+  ([name, avatar]) => {
+    localGroupName.value = name
+    avatarPreview.value  = avatar
   },
-  data() {
-    return {
-      showModal: true,
-      localGroupName: this.initialGroupName,
-      selectedFile: null,
-      nameError: ''
-    }
-  },
-  computed: {
-    isValid() {
-      return this.localGroupName.trim().length > 0 && this.localGroupName.length <= 50;
-    }
-  },
-  methods: {
-    closeModal() {
-      this.showModal = false;
-      this.$emit('close');
-    },
-    triggerFileInput() {
-      this.$refs.fileInput.click();
-    },
-    handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
-          alert('File quá lớn! Vui lòng chọn file nhỏ hơn 5MB.');
-          this.$refs.fileInput.value = '';
-          return;
-        }
-        this.selectedFile = file;
-        console.log('File selected:', file.name);
-      }
-    },
-    confirmChanges() {
-      if (!this.isValid) {
-        this.nameError = 'Tên nhóm phải từ 1 đến 50 ký tự.';
-        return;
-      }
-      const changes = {
-        groupName: this.localGroupName.trim(),
-        imageFile: this.selectedFile
-      };
-      this.$emit('confirm', changes);
-      this.closeModal();
-    }
-  },
-  // beforeDestroy() {
-  //   // Clean up event listener
-  //   if (this.$refs.fileInput) {
-  //     this.$refs.fileInput.removeEventListener('change', this.handleFileSelect);
-  //   }
-  // }
+  { immediate: true }
+)
+
+const isValid = computed(() =>
+  localGroupName.value.trim().length > 0 && localGroupName.value.length <= 50
+)
+function closeModal() {
+  showModal.value = false
+  emit('close')
+}
+
+/* avatar */
+const fileInput = ref(null)
+const triggerFileInput = () => fileInput.value?.click()
+
+function handleFileSelect (e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Ảnh phải nhỏ hơn 5 MB')
+    e.target.value = ''
+    return
+  }
+  avatarFile.value  = file
+  avatarPreview.value = URL.createObjectURL(file)
+}
+
+/* xác nhận */
+async function confirmChanges () {
+  if (!isValid.value) {
+    nameError.value = 'Tên nhóm phải từ 1-50 ký tự.'
+    return
+  }
+
+  try {
+    await updateGroup({
+      ownerId:        props.ownerId,
+      conversationId: props.conversationId,
+      name:           localGroupName.value !== props.initialGroupName
+                        ? localGroupName.value.trim()
+                        : undefined,        
+      avatar:         avatarFile.value ?? undefined
+    })
+    emit('confirm', {
+      name:   localGroupName.value.trim(),
+      avatar: avatarFile.value ? avatarPreview.value : props.initialGroupAvatar
+    })
+    closeModal()
+  } catch (err) {
+    console.error('❌ Lỗi cập nhật nhóm:', err.response?.data || err)
+    alert(err.response?.data?.message || 'Cập nhật nhóm thất bại, vui lòng thử lại.')
+  }
 }
 </script>
 

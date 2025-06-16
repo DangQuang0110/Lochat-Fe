@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="mobile-form">
     <div class="form-header">
@@ -11,6 +10,7 @@
     </div>
 
     <div class="form-content">
+      <!-- Ảnh nhóm -->
       <div class="avatar-section">
         <div class="avatar-container">
           <img 
@@ -43,6 +43,7 @@
         </div>
       </div>
 
+      <!-- Tên nhóm -->
       <div class="input-section">
         <label class="input-label">
           Tên nhóm <span class="required">*</span>
@@ -54,32 +55,34 @@
         />
       </div>
 
+      <!-- Danh sách thành viên -->
       <div class="members-section">
         <div class="members-label">Danh sách thành viên</div>
         <div class="members-list">
           <div 
-            v-for="friend in friends" 
-            :key="friend.id"
+            v-for="member in members" 
+            :key="member.id"
             class="member-item"
           >
             <div class="member-info">
               <img 
-                :src="friend.avatar" 
-                :alt="friend.name"
+                :src="member.avatar" 
+                :alt="member.name"
                 class="member-avatar"
               />
-              <span class="member-name">{{ friend.name }}</span>
+              <span class="member-name">{{ member.name }}</span>
             </div>
             <button 
-              @click="toggleMember(friend.id)"
-              :class="friend.selected ? 'btn-remove' : 'btn-add'"
+              @click="toggleMember(member.id)"
+              :class="member.selected ? 'btn-remove' : 'btn-add'"
             >
-              {{ friend.selected ? 'Xóa khỏi nhóm' : 'Thêm vào nhóm' }}
+              {{ member.selected ? 'Xóa khỏi nhóm' : 'Thêm vào nhóm' }}
             </button>
           </div>
         </div>
       </div>
 
+      <!-- Nút tạo nhóm -->
       <div class="button-section">
         <button 
           @click="createGroup"
@@ -88,82 +91,106 @@
           :class="{ disabled: !groupName.trim() || selectedMembers.length === 0 }"
         >
           Tạo nhóm
+          <span v-if="selectedMembers.length"> ({{ selectedMembers.length }})</span>
         </button>
       </div>
     </div>
   </div>
 </template>
+<script setup>
+/* eslint-disable */
+import { ref, reactive, computed } from 'vue'
+import { createGroup as apiCreateGroup, addMembers } from '@/service/conversationService'
 
-<script>
-export default {
-  name: 'GroupForm',
-  props: {
-    friends: {
-      type: Array,
-      required: true,
-      default: () => []
-    }
-  },
-  data() {
-    return {
-      groupName: '',
-      groupAvatar: null,
-      members: []
-    }
-  },
-  created() {
-    this.members = this.friends.map(friend => ({
-      ...friend,
-      selected: false
-    }));
-  },
-  computed: {
-    selectedMembers() {
-      return this.members.filter(member => member.selected)
-    }
-  },
-  methods: {
-    triggerAvatarDialog() {
-      this.$refs.avatarInput.click();
-    },
-    handleAvatarSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.groupAvatar = URL.createObjectURL(file);
+const props = defineProps({ friends: { type: Array, default: () => [] } })
+const emit  = defineEmits(['group-created', 'close'])
+
+const groupName     = ref('')
+const avatarFile    = ref(null)
+const groupAvatar   = ref(null)
+const creating      = ref(false)
+
+const members = reactive(props.friends.map(f => ({ ...f, selected: false })))
+const selectedMembers = computed(() => members.filter(m => m.selected))
+const selectedIds     = computed(() => selectedMembers.value.map(m => String(m.id)))
+
+const avatarInput = ref(null)
+const triggerAvatarDialog = () => avatarInput.value?.click()
+
+function handleAvatarSelect(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  avatarFile.value = file
+  groupAvatar.value = URL.createObjectURL(file)
+}
+
+const toggleMember = id => {
+  const m = members.find(x => x.id === id)
+  if (m) m.selected = !m.selected
+}
+
+async function createGroup () {
+  if (creating.value) return
+  if (!groupName.value.trim() || selectedIds.value.length === 0) return
+  if (!avatarFile.value) {
+    alert('Vui lòng chọn ảnh nhóm!')
+    return
+  }
+
+  creating.value = true
+  try {
+    // 1 — Tạo nhóm
+    const fd = new FormData()
+    fd.append('name',    groupName.value.trim())
+    fd.append('ownerId', localStorage.getItem('accountId') || '0')
+    fd.append('avatar',  avatarFile.value)
+
+    const { data: createRes } = await apiCreateGroup(fd)
+    const convId       = String(createRes.conversationId ?? createRes.data?.conversationId ?? '')
+    const convName     = createRes.name ?? createRes.data?.name ?? groupName.value
+    const convAvatar   = createRes.groupAvatar ?? createRes.data?.groupAvatar
+
+    if (!convId) throw new Error('Không lấy được conversationId sau khi tạo nhóm.')
+
+    // 2 — Thêm thành viên
+    if (selectedIds.value.length) {
+      const addBody = {
+        conversationId: convId,
+        ownerId:        String(localStorage.getItem('accountId')),
+        ids:            selectedIds.value.map(String)
       }
-    },
-    toggleMember(memberId) {
-      const member = this.members.find(m => m.id === memberId);
-      if (member) {
-        member.selected = !member.selected;
-      }
-    },
-    createGroup() {
-      if (!this.groupName.trim() || this.selectedMembers.length === 0) {
-        return;
-      }
-      const groupData = {
-        name: this.groupName,
-        avatar: this.groupAvatar,
-        members: this.selectedMembers
-      };
-      this.$emit('group-created', groupData);
-      this.resetForm();
-    },
-    closeForm() {
-      this.$emit('close');
-      this.resetForm();
-    },
-    resetForm() {
-      this.groupName = '';
-      this.groupAvatar = null;
-      this.members.forEach(member => {
-        member.selected = false;
-      });
+      console.log('📦 Payload /conversations/members:', addBody)
+      await addMembers(addBody)
     }
+
+    // 3 — Emit lên component cha
+    emit('group-created', {
+      conversationId: convId,
+      name:           convName,
+      groupAvatar:    convAvatar || groupAvatar.value,
+      members:        selectedMembers.value
+    })
+
+    resetForm()
+    emit('close')
+  } catch (e) {
+    console.error('❌ Tạo nhóm hoặc thêm thành viên thất bại:', e.response?.data || e.message)
+    alert('Tạo nhóm không thành công. Vui lòng thử lại!')
+  } finally {
+    creating.value = false
   }
 }
+
+function closeForm () { resetForm(); emit('close') }
+
+function resetForm () {
+  groupName.value    = ''
+  avatarFile.value   = null
+  groupAvatar.value  = null
+  members.forEach(m => (m.selected = false))
+}
 </script>
+
 
 <style scoped>
 .mobile-form {
