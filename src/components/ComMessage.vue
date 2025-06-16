@@ -8,17 +8,20 @@
           class="avatar"
           @click.stop="toggleUserSidebar"
         />
-        <aside
-          v-if="showUserSidebar"
-          class="user-sidebar"
-          ref="avatarWrapper"
-        >
-          <ul class="user-sidebar-menu">
-            <li @click="goToUserProfile">Hồ sơ người dùng</li>
-            <li @click="goToChangePassword">Đổi mật khẩu</li>
-            <li @click="logout">Đăng xuất</li>
-          </ul>
-        </aside>
+      <aside
+        v-if="showUserSidebar"
+        class="user-sidebar"
+        ref="avatarWrapper"
+      >
+        <div class="user-sidebar-header">{{ user.name }}</div>
+        <div class="user-sidebar-divider"></div>
+        <ul class="user-sidebar-menu">
+          <li @click="goToUserProfile">Hồ sơ người dùng</li>
+          <li @click="goToChangePassword">Đổi mật khẩu</li>
+          <li @click="goToBlockedList">Quản lí chặn</li>
+          <li @click="logout">Đăng xuất</li>
+        </ul>
+      </aside>
       </div>
       <nav class="sidebar-nav">
         <ul>
@@ -31,9 +34,6 @@
         </ul>
       </nav>
       <div class="sidebar-spacer"></div>
-      <div class="sidebar-bottom">
-        <img src="@/assets/menu.png" alt="Menu" class="hamburger" />
-      </div>
     </aside>
 
     <!-- Sidebar Friends/Groups -->
@@ -247,7 +247,6 @@
         </div>
       </footer>
     </section>
-
     <!-- Right Profile Panel -->
     <aside v-if="showProfilePanel" class="profile-panel">
       <header class="panel-header">
@@ -440,7 +439,7 @@ function autoResize() {
     if (el) {
       const lineHeight = 22  
       const minRows = 1
-      const maxRows = 4       // hoặc bao nhiêu dòng bạn cho phép tối đa
+      const maxRows = 4 
 
       el.style.height = 'auto'             
       const rows = Math.floor(el.scrollHeight / lineHeight)
@@ -512,9 +511,9 @@ function goToUserProfile() {
 
 
 const loggedInAccountId = ref(Number(localStorage.getItem('accountId')))
-const user              = ref({ avatar: 'image/avata.jpg' })
+const user              = ref([])
 const groupMembers = ref([])
-const friends   = ref([])               // lấy từ API
+const friends   = ref([])               
 const groups = ref([
   { id: 100, name: 'Nhóm học Vue', avatar: require('@/assets/group1.png'),
     desc: '5 thành viên', online: true,  conversationId: 900100 },
@@ -749,15 +748,23 @@ onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
 
   try {
+    // 🔹 Gọi API lấy thông tin người dùng hiện tại
+    const res = await getAccountDetail(loggedInAccountId.value)
+    const profile = res?.profile || {}
+
+    user.value = {
+      avatar: profile.avatarUrl || require('@/assets/avata.jpg'),
+      name: profile.fullname || profile.username || 'Người dùng'
+    }
+
+    // 🔹 Gọi API lấy danh sách bạn bè
     const rawFriends = await getAcceptedFriends(loggedInAccountId.value)
     console.log('✅ Danh sách bạn bè từ API:', rawFriends)
 
-    // 🔁 Lấy thông tin profile chi tiết cho từng người bạn
     const others = await Promise.all(
       rawFriends.map(async f => {
         try {
           const detail = await getAccountDetail(f.id)
-          console.log(`📦 Profile của ${f.id}:`, detail.profile)
           return { ...f, profile: detail.profile }
         } catch (err) {
           console.warn(`⚠️ Không thể lấy profile cho ID ${f.id}:`, err)
@@ -765,16 +772,18 @@ onMounted(async () => {
         }
       })
     )
+
     friends.value = others
       .filter(f => String(f.id) !== String(loggedInAccountId.value))
       .map(f => ({
         id:    f.id,
-        name:  f.profile?.fullname || f.username,               // ✅ giờ fullname có giá trị
+        name:  f.profile?.fullname || f.username,
         avatar: f.profile?.avatarUrl || require('@/assets/avata.jpg'),
         desc:  '',
         conversationId: f.conversationId,
         online: Math.random() < 0.5
       }))
+
     if (friends.value.length) {
       selectedId.value = friends.value[0].id
       selectedConversationId.value = Number(friends.value[0].conversationId)
@@ -783,7 +792,7 @@ onMounted(async () => {
     }
 
   } catch (err) {
-    console.error('❌ Không thể tải danh sách bạn bè:', err)
+    console.error('❌ Không thể tải thông tin người dùng hoặc danh sách bạn bè:', err)
   }
 })
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
@@ -810,7 +819,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 12px rgba(0,0,0,0.4);
   border: none;
 }
 .icons-sidebar .sidebar-nav {
@@ -862,7 +871,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 12px rgba(0,0,0,0.1);
-  border: 1px solid #000;
+  border-right: 1px solid #000;
 }
 .sidebar:not(.icons-sidebar) {
   padding: 0;
@@ -872,6 +881,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   align-items: center;
   margin-top: 20px;
   gap: 60px;
+  margin-left:10px;
 }
 .search-bar .input-wrapper {
   position: relative;
@@ -1331,26 +1341,49 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   margin-left: -12px;
 }
 .user-sidebar {
+  position: absolute;
+  top: 20px;                 
+  left: 70px;              
   width: 200px;
   background: #fff;
-  box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  position: relative;
-  z-index: 150;
-  margin-right: -200px;
+  border-radius: 12px;
+  z-index: 1000;         
+  padding-top: 10px;
+}
+
+.user-sidebar-header {
+  font-size: 18px;
+  font-weight: bold;
+  color: red;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.user-sidebar-divider {
+  width: 80%;
+  height: 1px;
+  background-color: #ccc;
+  margin: 0 auto 12px auto;
 }
 .user-sidebar-menu {
   list-style: none;
-  margin: 0;
-  padding: 1rem 0;
+  padding: 0;
+  width: 100%;
 }
+
 .user-sidebar-menu li {
-  padding: 0.75rem 1rem;
+  text-align: center;
+  padding: 10px 0;
+  color: #666;
+  font-size: 14px;
   cursor: pointer;
+  transition: background 0.2s;
 }
+
 .user-sidebar-menu li:hover {
-  background: #f5f5f5;
+  background-color: #f5f5f5;
 }
 .no-message {
   flex: 1;
