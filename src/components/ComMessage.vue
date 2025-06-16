@@ -34,8 +34,10 @@
         </ul>
       </nav>
       <div class="sidebar-spacer"></div>
+      <!-- <div class="sidebar-bottom">
+        <img src="@/assets/menu.png" alt="Menu" class="hamburger" />
+      </div> -->
     </aside>
-
     <!-- Sidebar Friends/Groups -->
     <aside class="sidebar">
       <div class="search-bar">
@@ -126,7 +128,7 @@
                 <img class="avatar" :src="getSender(msg)?.avatar" />
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
-                  <div class="msg from-other">
+                  <!-- <div class="msg from-other"> -->
                     <div v-if="msg.file" class="file-attach">
                       <span class="file-icon">📎</span>
                       <div class="file-info">
@@ -145,11 +147,11 @@
                     >
                       <span v-if="msg.text">{{ msg.text }}</span>
                     </div>
-                  </div>
+                  <!-- </div> -->
                 </div>
               </div>
               <div v-else class="msg-block align-right">
-                <div class="msg from-me">
+                <!-- <div class="msg from-me"> -->
                   <div v-if="msg.file" class="file-attach">
                     <span class="file-icon">📎</span>
                     <div class="file-info">
@@ -168,7 +170,7 @@
                   >
                     <span v-if="msg.text">{{ msg.text }}</span>
                   </div>
-                </div>
+                <!-- </div> -->
               </div>
             </template>
             <template v-else>
@@ -291,7 +293,10 @@
           <div class="member-avatars">
             <img v-for="m in groupMembers" :src="m.avatar" class="avatar" :key="m.id" />
           </div>
-          <div class="group-actions-horizontal">
+          <div
+              class="group-actions-horizontal"
+              v-if="isGroupAdmin"                
+            >
             <p class="admin-label">Bạn là quản trị viên</p>
             <div class="group-buttons-horizontal">
               <button class="group-btn-icon" @click="showAddModal = true">
@@ -315,10 +320,25 @@
             </li>
           </ul>
         </div>
-        <button class="delete-btn">Xóa đoạn tin nhắn</button>
+        <!-- Nếu là admin -->
+        <button
+          v-if="isGroupAdmin"
+          class="delete-btn"
+          @click="handleDeleteChat"
+        >
+          Xóa đoạn tin nhắn
+        </button>
+
+        <!-- Nếu không phải admin -->
+        <button
+          v-else
+          class="delete-btn leave-btn"
+          @click="leaveGroup"
+        >
+          Rời nhóm
+        </button>
       </div>
     </aside>
-
     <!-- Add Members Modal -->
     <div v-if="showAddModal" class="group-modal-overlay" @click.self="showAddModal = false">
       <div class="group-modal">
@@ -337,7 +357,7 @@
           </div>
           <ul class="member-list">
             <li
-              v-for="friend in filteredFriendsToAdd"
+              v-for="friend in friendsToAdd"
               :key="friend.id"
               class="member-item"
             >
@@ -373,9 +393,7 @@
             <li v-for="member in filteredMembers" :key="member.id" class="member-item">
               <img :src="member.avatar" class="avatar" />
               <span class="name">{{ member.name }}</span>
-              <button class="remove-btn" @click="removeFromGroup(member.id)">
-                Xóa khỏi nhóm
-              </button>
+              <button class="remove-btn" @click="confirmRemoveMember(member)">Xóa khỏi nhóm</button>
             </li>
           </ul>
         </div>
@@ -390,11 +408,13 @@
     <!-- GroupEditModal -->
     <GroupEditModal
       v-if="showEditGroupModal"
-      :group-name="current.name"
+      :owner-id="loggedInAccountId"         
+      :conversation-id="selectedConversationId" 
+      :initial-group-name="current.name"
+      :initial-group-avatar="current.avatar"
       @close="closeEditGroupModal"
       @confirm="handleGroupEdit"
     />
-
     <!-- Profile Modal -->
     <ProfileModal 
       v-if="showProfileModal" 
@@ -402,14 +422,32 @@
       @close="closeProfileModal" 
     />
   </div>
+  <div v-if="showConfirmRemove" class="group-modal-overlay" @click.self="showConfirmRemove = false">
+  <div class="group-modal">
+    <div class="group-modal-header">
+      <h3>Xác nhận</h3>
+      <button class="close-btn" @click="showConfirmRemove = false">×</button>
+    </div>
+    <div class="group-modal-body">
+      <p>Bạn có chắc chắn muốn xóa <strong>{{ memberToRemove?.name }}</strong> khỏi nhóm không?</p>
+      <div class="group-buttons-horizontal" style="justify-content: flex-end; margin-top: 20px;">
+        <button @click="showConfirmRemove = false" class="group-btn-icon-delete">Huỷ</button>
+        <button @click="removeConfirmedMember" class="group-btn-icon-delete">Xoá</button>
+      </div>
+    </div>
+  </div>
+</div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount,nextTick  } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount,nextTick,watch   } from 'vue'
 import ProfileModal   from './MessageNewDetail.vue'
 import GroupForm      from './GroupForm.vue'
 import GroupEditModal from './GroupEditModal.vue'
 import { getAccountDetail } from '@/service/profileService' 
+import { getOwnedGroups, getJoinedGroups } from '@/service/conversationService'
+import { addMembers,removeMembers,getConversationDetail   } from '@/service/conversationService'
+
 // import { sendMessageToConversation } from '@/service/messageService'
 
 import { getAcceptedFriends } from '@/service/friendService'
@@ -417,6 +455,14 @@ import { getMessages }        from '@/service/messageService'
 import { useRouter } from 'vue-router'
 import socket from '@/socket'
 const bottomRef = ref(null)
+const showConfirmRemove = ref(false)
+const memberToRemove = ref(null)
+function confirmRemoveMember(member) {
+  memberToRemove.value = member
+  showConfirmRemove.value = true
+}
+
+const activeTab= ref('friends')
 function handleKeydown(e) {
   // Shift để xuống dòng
   if (e.key === 'Shift' && !e.ctrlKey && !e.altKey && !e.metaKey) {
@@ -448,6 +494,47 @@ function autoResize() {
       el.style.height = finalRows * lineHeight + 'px'
     }
   })
+}
+watch(activeTab, (newTab) => {
+  if (newTab === 'friends' && friends.value.length) {
+    const firstFriend = friends.value[0]
+    selectedId.value = firstFriend.id
+    selectedConversationId.value = Number(firstFriend.conversationId)
+    socket.emit('join room', `conversation_${selectedConversationId.value}`)
+    loadMessages()
+  }
+
+  if (newTab === 'groups' && groups.value.length) {
+    const firstGroup = groups.value[0]
+    selectedId.value = firstGroup.id
+    selectedConversationId.value = Number(firstGroup.conversationId)
+    socket.emit('join room', `conversation_${selectedConversationId.value}`)
+    loadMessages()
+  }
+})
+async function removeConfirmedMember() {
+  const member = memberToRemove.value
+  if (!member) return
+  try {
+    await removeMembers({
+      conversationId: selectedConversationId.value,
+      ownerId: loggedInAccountId.value,
+      ids: [member.id]
+    })
+
+    const grp = groups.value.find(g => g.id === selectedId.value)
+    if (grp) {
+      grp.members = grp.members.filter(m => Number(m.accountId) !== Number(member.id))
+    }
+
+    members.value = members.value.filter(m => Number(m.id) !== Number(member.id))
+    showConfirmRemove.value = false
+    memberToRemove.value = null
+  } catch (err) {
+    console.error('❌ Xoá thất bại:', err)
+    showConfirmRemove.value = false
+    memberToRemove.value = null
+  }
 }
 
 function scrollToBottom() {
@@ -485,7 +572,7 @@ onMounted(() => document.addEventListener('click', handleClickOutsideEmoji));
 onBeforeUnmount(() =>
   document.removeEventListener('click', handleClickOutsideEmoji)
 );
-onMounted(() => socket.on('chat message', handleIncomingMessage))
+// onMounted(() => socket.on('chat message', handleIncomingMessage))
 onBeforeUnmount(() => socket.off('chat message', handleIncomingMessage))
 function handleIncomingMessage(msg) {
   console.log('🟢 Tin nhắn realtime:', msg)
@@ -514,19 +601,12 @@ const loggedInAccountId = ref(Number(localStorage.getItem('accountId')))
 const user              = ref([])
 const groupMembers = ref([])
 const friends   = ref([])               
-const groups = ref([
-  { id: 100, name: 'Nhóm học Vue', avatar: require('@/assets/group1.png'),
-    desc: '5 thành viên', online: true,  conversationId: 900100 },
-
-  { id: 101, name: 'Cà phê cuối tuần', avatar: require('@/assets/group2.png'),
-    desc: '8 thành viên', online: false, conversationId: 900101 },
-])
+const groups = ref([])
 
 const messages  = ref([])               // load khi chọn cuộc trò chuyện
 const members   = ref([])               // danh sách thành viên nhóm (nếu cần)
 
 /* ---------- UI STATE ---------- */
-const activeTab           = ref('friends')
 const selectedId          = ref(null)
 const showProfileModal    = ref(false)
 const showProfilePanel    = ref(false)
@@ -548,6 +628,7 @@ const searchQuery  = ref('')
 const avatarWrapper = ref(null)
 const fileInput     = ref(null)
 const textInput = ref(null)
+const isGroupLoading = ref(false)
 
 const emojis = ref([
   '😊','😂','😍','🤣','😎','😢','😡','👍','👎','🎉','😴','🤔','😘','🥰','🤩','😇',
@@ -560,20 +641,38 @@ const current = computed(() => {
 })
 
 const filteredMembers = computed(() =>
-  members.value.filter(m =>
-    m.name.toLowerCase().includes(searchText.value.toLowerCase()))
+  members.value
+    .filter(m => m.role !== 'admin') // ⚠️ loại bỏ admin
+    .filter(m =>
+      m.name.toLowerCase().includes(searchText.value.toLowerCase()))
 )
 
-const filteredFriendsToAdd = computed(() =>
-  friends.value.filter(f =>
-    f.name.toLowerCase().includes(addSearch.value.toLowerCase()) ||
-    String(f.id).includes(addSearch.value))
-)
+
+// const filteredFriendsToAdd = computed(() =>
+//   friends.value.filter(f =>
+//     f.name.toLowerCase().includes(addSearch.value.toLowerCase()) ||
+//     String(f.id).includes(addSearch.value))
+// )
 
 const currentMessages = computed(() =>
   messages.value.filter(m => m.chatId === Number(selectedConversationId.value))
 )
+async function loadGroupMembers(conversationId) {
+  try {
+    const res = await getConversationDetail(conversationId)
+    const raw = res?.data?.data?.members || []
 
+    groupMembers.value = raw.map(m => ({
+      id: m.accountId,
+      name: m.username,
+      avatar: m.avatarUrl || require('@/assets/avata.jpg'),
+      role: m.role
+    }))
+  } catch (err) {
+    console.error('❌ Lỗi khi tải thành viên nhóm:', err)
+    groupMembers.value = []
+  }
+}
 const selectedConversationId = ref(null)
 
 
@@ -599,7 +698,7 @@ function closeProfileModal()   { showProfileModal.value = false }
 function closeGroupForm()      { showGroupForm.value    = false }
 function openEditGroupModal()  { showEditGroupModal.value = true }
 function closeEditGroupModal() { showEditGroupModal.value = false }
-function selectFriend(id) {
+async function selectFriend(id) {
   // Xác định hiện đang ở tab nào
   const source = activeTab.value === 'friends' ? friends.value : groups.value
   const selected = source.find(item => item.id === id)
@@ -618,6 +717,11 @@ function selectFriend(id) {
   }
 
   selectedConversationId.value = Number(selected.conversationId)
+  if (activeTab.value === 'groups') {
+  await loadGroupMembers(selected.conversationId)
+  members.value = [...groupMembers.value]
+}
+
 
   // Tham gia phòng socket tương ứng
   socket.emit('join room', `conversation_${selectedConversationId.value}`)
@@ -626,8 +730,56 @@ function selectFriend(id) {
   loadMessages()      // gọi API / hoặc tạo stub tin nhắn cho nhóm
 }
 
+async function addToGroup(friendId) {
+  const groupId = selectedConversationId.value
+  const ownerId = loggedInAccountId.value
 
+  const payload = {
+    conversationId: String(groupId),
+    ownerId:        String(ownerId),
+    ids:            [String(friendId)]
+  }
 
+  try {
+    console.log('📦 Gửi request thêm thành viên:', payload)
+
+    await addMembers(payload)
+
+    const grp = groups.value.find(g => g.id === selectedId.value)
+    const friend = friends.value.find(f => f.id === friendId)
+
+    if (grp && friend) {
+      grp.members.push({
+        accountId: friend.id,
+        avatarUrl: friend.avatar,
+        username:  friend.name,
+        role:      'member'
+      })
+    }
+
+    addSearch.value = ''
+  } catch (err) {
+    console.error('❌ Thêm thành viên thất bại:', err)
+    console.log('📨 Lỗi từ server:', err?.response?.data)
+    alert(`Không thể thêm thành viên: ${err?.response?.data?.message || 'Lỗi máy chủ'}`)
+  }
+}
+
+const friendsToAdd = computed(() => {
+  if (activeTab.value !== 'groups') return []
+
+  // nhóm đang mở
+  const grp = groups.value.find(g => g.id === selectedId.value)
+  const memberIds = new Set((grp?.members || []).map(m => Number(m.accountId)))
+
+  // chỉ lấy bạn bè chưa có trong memberIds + filter theo addSearch
+  return friends.value
+    .filter(f =>
+      !memberIds.has(f.id) &&
+      (f.name.toLowerCase().includes(addSearch.value.toLowerCase()) ||
+       String(f.id).includes(addSearch.value))
+    )
+})
 function sendMessage() {
   const text = messageInput.value.trim()
   if (!text || !selectedConversationId.value) return
@@ -639,23 +791,13 @@ function sendMessage() {
     type:           "text",
   }
 
-  // // ✅ Push local ngay để không delay
-  // messages.value.push({
-  //   id:        Date.now(),
-  //   chatId:    payload.conversationId,
-  //   senderId:  String(payload.senderId),
-  //   fromMe:    true,
-  //   text:      payload.content,
-  //   createdAt: new Date()
-  // })
-
-  socket.emit("chat message", payload)
+  socket.emit("chat message", payload)  // chỉ emit thôi
   messageInput.value = ''
   const el = textInput.value
   if (el) el.style.height = 'auto'
   nextTick(() => autoResize())
-  scrollToBottom()
 }
+
 function triggerFileDialog() { fileInput.value?.click() }
 
 function handleFileSelect(e) {
@@ -671,69 +813,39 @@ function handleFileSelect(e) {
   })
   e.target.value = ''
 }
-async function loadMessages() {
-    if (activeTab.value === 'groups') {
-    console.log('ℹ️ Chưa có API nhóm – tạo danh sách tin nhắn rỗng')
-    messages.value = []                      // <-- hoặc đẩy tin nhắn mẫu ở đây
+async function loadMessages () {
+  console.log('[loadMessages] tab =', activeTab.value, 'conversationId =', selectedConversationId.value)
+
+  try {
+    const res = await getMessages({ conversationId: selectedConversationId.value })
+    console.log('[loadMessages] raw response =', res)
+
+    const rawMessages = Array.isArray(res?.data?.messages)
+      ? res.data.messages
+      : []
+
+    if (!rawMessages.length) {
+      console.warn('[loadMessages] Không có message nào')
+      messages.value = []
+      return
+    }
+
+    // Chuẩn hoá messages
+    messages.value = rawMessages.map(m => ({
+      id:         m.id,
+      chatId:     Number(selectedConversationId.value),
+      senderId:   Number(m.senderId),
+      fromMe:     String(m.senderId) === String(loggedInAccountId.value),
+      text:       m.content,
+      createdAt:  m.createdAt,
+    }))
+
+    console.log('[loadMessages] mapped =', messages.value)
     await nextTick()
     scrollToBottom()
-    return
-  }
-  try {
-    console.log('📥 Gọi API getMessages với conversationId:', selectedConversationId.value)
-
-    const res = await getMessages({
-      conversationId: selectedConversationId.value
-    })
-
-    if (res?.messages) {
-      const senderIds = [...new Set(res.messages.map(m => Number(m.senderId)))]
-
-      // Lọc ra những sender chưa có trong friends.value
-      const knownIds = new Set(friends.value.map(f => f.id))
-      const missingSenderIds = senderIds.filter(id => !knownIds.has(id))
-
-      // Gọi API lấy thông tin chi tiết cho từng sender thiếu
-      const newSenders = await Promise.all(
-        missingSenderIds.map(async (id) => {
-          try {
-            const profile = await getAccountDetail(id)
-            return {
-              id,
-              name: profile.username || 'Không rõ',
-              avatar: profile.imageUrl || require('@/assets/avata.jpg'),
-              desc: '',
-              online: false
-            }
-          } catch (err) {
-            console.warn(`⚠️ Không lấy được thông tin người dùng ${id}`, err)
-            return null
-          }
-        })
-      )
-
-      // Thêm vào friends.value
-            friends.value.push(
-       ...newSenders.filter(
-         s => s && s.id !== loggedInAccountId.value            // 🚫 self
-       )
-      )
-
-      // Parse lại messages
-      messages.value = res.messages.map(m => ({
-        id: m.id,
-        chatId: Number(selectedConversationId.value),
-        fromMe: String(m.senderId) === String(loggedInAccountId.value),
-        senderId: Number(m.senderId),
-        text: m.content,
-        createdAt: m.createdAt
-      }))
-
-      await nextTick()
-      scrollToBottom()
-    }
   } catch (err) {
-    console.error('❌ Không thể tải tin nhắn:', err.response?.data || err.message)
+    console.error('❌ [loadMessages] Lỗi khi tải tin nhắn:', err)
+    messages.value = []
   }
 }
 function handleClickOutside(e) {
@@ -745,60 +857,136 @@ function handleClickOutside(e) {
 }
 
 onMounted(async () => {
-  document.addEventListener('click', handleClickOutside)
+  document.addEventListener('click', e => {
+    if (avatarWrapper.value &&
+        !avatarWrapper.value.contains(e.target) &&
+        !e.target.closest('.user-sidebar')) {
+      showUserSidebar.value = false
+    }
+  })
 
   try {
-    // 🔹 Gọi API lấy thông tin người dùng hiện tại
-    const res = await getAccountDetail(loggedInAccountId.value)
-    const profile = res?.profile || {}
-
+    /* USER + FRIENDS ----------------------------- */
+    const me = await getAccountDetail(loggedInAccountId.value)
+    const profile = me?.profile || {}
     user.value = {
       avatar: profile.avatarUrl || require('@/assets/avata.jpg'),
-      name: profile.fullname || profile.username || 'Người dùng'
+      name:   profile.fullname   || profile.username || 'Người dùng'
     }
 
-    // 🔹 Gọi API lấy danh sách bạn bè
     const rawFriends = await getAcceptedFriends(loggedInAccountId.value)
-    console.log('✅ Danh sách bạn bè từ API:', rawFriends)
-
-    const others = await Promise.all(
-      rawFriends.map(async f => {
-        try {
-          const detail = await getAccountDetail(f.id)
-          return { ...f, profile: detail.profile }
-        } catch (err) {
-          console.warn(`⚠️ Không thể lấy profile cho ID ${f.id}:`, err)
-          return { ...f, profile: null }
-        }
-      })
-    )
+    const others = await Promise.all(rawFriends.map(async f => {
+      try {
+        const d = await getAccountDetail(f.id)
+        return { ...f, profile: d.profile }
+      } catch { return { ...f, profile: null } }
+    }))
 
     friends.value = others
       .filter(f => String(f.id) !== String(loggedInAccountId.value))
       .map(f => ({
         id:    f.id,
         name:  f.profile?.fullname || f.username,
-        avatar: f.profile?.avatarUrl || require('@/assets/avata.jpg'),
+        avatar:f.profile?.avatarUrl || require('@/assets/avata.jpg'),
         desc:  '',
         conversationId: f.conversationId,
         online: Math.random() < 0.5
       }))
 
-    if (friends.value.length) {
-      selectedId.value = friends.value[0].id
-      selectedConversationId.value = Number(friends.value[0].conversationId)
-      socket.emit('join room', `conversation_${selectedConversationId.value}`)
-      loadMessages()
+    /* GROUPS ------------------------------------ */
+    const [owned, joined] = await Promise.all([
+      getOwnedGroups(loggedInAccountId.value),
+      getJoinedGroups(loggedInAccountId.value)
+    ])
+    const merged = [
+      ...(Array.isArray(owned?.data?.data) ? owned.data.data : []),
+      ...(Array.isArray(joined?.data?.data) ? joined.data.data : [])
+    ]
+    groups.value = merged.reduce((acc, g) => {
+      if (!acc.some(x => x.conversationId === g.conversationId))
+        acc.push({
+          id:             Number(g.conversationId),
+          name:           g.name,
+          avatar:         g.groupAvatar || require('@/assets/avata.jpg'),
+          desc:           `${g.members?.length || 0} thành viên`,
+          conversationId: g.conversationId,
+          online:         false,
+          members:        g.members 
+        })
+      return acc
+    }, [])
+    isGroupLoading.value = false
+    if (activeTab.value === 'friends' && friends.value.length) {
+      selectFriend(friends.value[0].id)
+    } else if (activeTab.value === 'groups' && groups.value.length) {
+      selectFriend(groups.value[0].id)
     }
+    /* AUTO SELECT FIRST FRIEND ------------------ */
+    if (friends.value.length) {
+      selectedId.value            = friends.value[0].id
+      selectedConversationId.value= Number(friends.value[0].conversationId)
+      socket.emit('join room', `conversation_${selectedConversationId.value}`)
+      await loadMessages()
+    }
+  } catch (err) {
+    console.error('❌ Không thể tải dữ liệu:', err)
+  }
+
+  socket.on('chat message', handleIncomingMessage)
+})
+const isGroupAdmin = computed(() => {
+  if (activeTab.value !== 'groups') return false
+
+  // tìm nhóm đang mở
+  const grp = groups.value.find(g => g.id === selectedId.value)
+  if (!grp || !Array.isArray(grp.members)) return false
+
+  // tìm chính mình trong mảng members của nhóm
+  return grp.members.some(m =>
+    String(m.accountId) === String(loggedInAccountId.value) &&
+    m.role === 'admin'
+  )
+})
+async function leaveGroup() {
+  const grp = groups.value.find(g => g.id === selectedId.value)
+  if (!grp || !Array.isArray(grp.members)) return
+
+  // ✅ Tìm admin hiện tại của nhóm
+  const admin = grp.members.find(m => m.role === 'admin')
+  if (!admin) {
+    alert('Không tìm thấy quản trị viên nhóm để xác thực yêu cầu.')
+    return
+  }
+
+  try {
+    await removeMembers({
+      conversationId: selectedConversationId.value,
+      ownerId:        admin.accountId,                   // ⚠️ phải là ID của admin
+      ids:            [loggedInAccountId.value]          // ID của chính mình
+    })
+
+    // ✅ Xoá nhóm khỏi giao diện
+    groups.value = groups.value.filter(g => g.id !== selectedId.value)
+
+    // ✅ Reset trạng thái
+    selectedId.value = null
+    selectedConversationId.value = null
+    messages.value = []
+
+    alert('Bạn đã rời khỏi nhóm thành công.')
 
   } catch (err) {
-    console.error('❌ Không thể tải thông tin người dùng hoặc danh sách bạn bè:', err)
+    console.error('❌ Không thể rời nhóm:', err)
+    console.log('Server response:', err?.response?.data)
+    alert(`Không thể rời nhóm: ${err?.response?.data?.message || 'Lỗi máy chủ'}`)
   }
+}
+
+onBeforeUnmount(() => {
+  socket.off('chat message', handleIncomingMessage)
 })
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
-
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
 * {
@@ -1591,5 +1779,100 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   height: 22px;                 /* 1 dòng */
   max-height: calc(22px * 4);   /* tối đa 4 dòng */
 }
+.group-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.group-modal {
+  background-color: #fff;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: fadeInModal 0.25s ease-out;
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.group-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.group-modal-header h3 {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.close-btn:hover {
+  color: #333;
+}
+
+.group-modal-body p {
+  font-size: 15px;
+  color: #333;
+  margin: 0;
+}
+
+.group-buttons-horizontal {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.group-btn-icon-delete {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Huỷ (nút đầu tiên) */
+/* .group-buttons-horizontal button:first-child {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+} */
+/* .group-buttons-horizontal button:first-child:hover {
+  background-color: #bdc3c7;
+} */
+
+/* Xoá (nút thứ hai) */
+/* .group-buttons-horizontal button:last-child {
+  background-color: #e74c3c;
+  color: white;
+} */
+/* .group-buttons-horizontal button:last-child:hover {
+  background-color: #c0392b;
+} */
 
 </style>
