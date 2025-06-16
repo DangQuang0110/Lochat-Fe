@@ -424,7 +424,7 @@ const handleRegister = async () => {
 
 .logo {
   width: 120px;
-  margin: 0 auto -4rem;
+  margin: 0 auto -4.5rem;
   display: block;
 }
 
