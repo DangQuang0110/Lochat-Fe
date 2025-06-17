@@ -15,6 +15,8 @@ import FriendSuggest from '@/components/FriendSuggest.vue'
 import GroupManagement from '@/components/GroupManagement.vue'
 import GroupForm from '@/components/GroupForm.vue'
 import GroupEditModal from '@/components/GroupEditModal.vue'
+import AdminPage from '@/components/AdminPage.vue'
+
 const routes = [
   {
     path:'/friendlist',
@@ -97,6 +99,11 @@ const routes = [
     component: GroupEditModal
   },
   
+   {
+    path :'/admin',
+    name:'AdminPage',
+    component: AdminPage
+  },
 ]
 const router = createRouter({
   history: createWebHistory(),
