@@ -135,9 +135,12 @@
                         <p class="file-name">{{ msg.file.name }}</p>
                         <p class="file-size">{{ msg.file.size }}</p>
                       </div>
-                      <button class="download-btn">⬇️</button>
+                      <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
                     </div>
-                    <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                    <template v-if="msg.image || msg.video">
+                      <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                      <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                    </template>
                     <div
                       :class="[
                         'msg',
@@ -145,7 +148,7 @@
                         isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
                       ]"
                     >
-                      <span v-if="msg.text">{{ msg.text }}</span>
+                      <span v-if="msg.type === 'text' && !msg.file">{{ msg.text }}</span>
                     </div>
                   <!-- </div> -->
                 </div>
@@ -158,17 +161,21 @@
                       <p class="file-name">{{ msg.file.name }}</p>
                       <p class="file-size">{{ msg.file.size }}</p>
                     </div>
-                    <button class="download-btn">⬇️</button>
+                    <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
                   </div>
-                  <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                  <template v-if="msg.image || msg.video">
+                    <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                    <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                  </template>
                   <div
+                    v-if="!msg.image && !msg.video && !msg.file"   
                     :class="[
                       'msg',
                       msg.fromMe ? 'from-me' : 'from-other',
-                      isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
+                      isEmojiOnly(msg.text) ? 'emoji-only' : ''
                     ]"
                   >
-                    <span v-if="msg.text">{{ msg.text }}</span>
+                    <span v-if="msg.type === 'text'">{{ msg.text }}</span>
                   </div>
                 <!-- </div> -->
               </div>
@@ -178,27 +185,56 @@
                 <img class="avatar" :src="getSender(msg)?.avatar" />
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
-                    <div
-                      :class="[
-                        'msg',
-                        'from-other',
-                        isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
-                      ]"
-                    >
-                      <span v-if="msg.text">{{ msg.text }}</span>
+                  
+                  <div v-if="msg.file" class="file-attach">
+                    <span class="file-icon">📎</span>
+                    <div class="file-info">
+                      <p class="file-name">{{ msg.file.name }}</p>
+                      <p class="file-size">{{ msg.file.size }}</p>
                     </div>
+                    <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
+                  </div>
+
+                  <template v-if="msg.image || msg.video">
+                    <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                    <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                  </template>
+                  <div
+                    v-if="!msg.image && !msg.video && !msg.file"
+                    :class="[
+                      'msg',
+                      'from-other',
+                      isEmojiOnly(msg.text) ? 'emoji-only' : ''
+                    ]"
+                  >
+                    <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                  </div>
                 </div>
               </div>
+
               <div v-else class="msg-block align-right">
-              <div
-                :class="[
-                  'msg',
-                  msg.fromMe ? 'from-me' : 'from-other',
-                  isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
-                ]"
-              >
-                <span v-if="msg.text">{{ msg.text }}</span>
-              </div>
+                <div v-if="msg.file" class="file-attach">
+                  <span class="file-icon">📎</span>
+                  <div class="file-info">
+                    <p class="file-name">{{ msg.file.name }}</p>
+                    <p class="file-size">{{ msg.file.size }}</p>
+                  </div>
+                  <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
+                </div>
+                <template v-if="msg.image || msg.video">
+                  <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                  <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                </template>
+                <div
+                  v-if="!msg.image && !msg.video && !msg.file" 
+                  :class="[
+                    'msg',
+                    'from-other',
+                    isEmojiOnly(msg.text) ? 'emoji-only' : ''
+                  ]"
+                >
+                  <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                </div>
               </div>
             </template>
           </div>
@@ -574,22 +610,48 @@ onBeforeUnmount(() =>
 );
 // onMounted(() => socket.on('chat message', handleIncomingMessage))
 onBeforeUnmount(() => socket.off('chat message', handleIncomingMessage))
-function handleIncomingMessage(msg) {
-  console.log('🟢 Tin nhắn realtime:', msg)
 
-  // Bỏ qua nếu không thuộc cuộc trò chuyện đang chọn
-  if (String(msg.conversationId) !== String(selectedConversationId.value)) return
+function handleIncomingMessage(msg) {
+  if (`${msg.conversationId}` !== `${selectedConversationId.value}`) return
+
+  const url = msg.content || ''
+  const isImage = msg.type === 'image' || /\.(jpe?g|png|gif|webp|avif)$/i.test(url)
+  const isVideo = msg.type === 'video' || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url)
+  const isFile  = msg.type === 'file'
+
+  const fromMe = String(msg.senderId) === String(loggedInAccountId.value)
+
+  if (fromMe && pendingUploads.value.has(url)) {
+    messages.value = messages.value.filter(t =>
+      !(t.clientTempId && (t.image === url || t.video === url || t.file?.url === url))
+    )
+    pendingUploads.value.delete(url)
+  }
+
+  const fallbackName = decodeURIComponent(url.split('/').pop() || 'Tập tin')
 
   messages.value.push({
-    id:        Date.now(), // hoặc msg.id nếu backend trả
-    chatId:    Number(msg.conversationId),       // ✅ RẤT QUAN TRỌNG
+    id:        msg.id || Date.now(),
+    chatId:    Number(msg.conversationId),
     senderId:  Number(msg.senderId),
-    fromMe:    String(msg.senderId) === String(loggedInAccountId.value),
-    text:      msg.content,
-    createdAt: new Date()
+    fromMe,
+    text:      msg.type === 'text' ? msg.content : '',
+
+    image:     isImage ? url : null,
+    video:     isVideo ? url : null,
+    file: isFile ? {
+      name: msg.originFilename?.trim() || fallbackName,
+      size: msg.size || 'Không rõ',
+      url
+    } : null,
+
+    type:      isImage ? 'image' : isVideo ? 'video' : isFile ? 'file' : 'text',
+    createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date()
   })
+
   scrollToBottom()
 }
+
 function goToUserProfile() {
   console.log('✅ Đã click Hồ sơ người dùng')
   showProfileModal.value = true
@@ -617,7 +679,7 @@ const showGroupModal      = ref(false)
 const showAddModal        = ref(false)
 const showEmojiPicker     = ref(false)
 const showSearch          = ref(false)
-
+const pendingUploads = ref(new Set()) 
 /* ---------- INPUT / SEARCH ---------- */
 const messageInput = ref('')
 const searchText   = ref('')
@@ -682,7 +744,6 @@ const filteredMessages = computed(() => {
   return currentMessages.value.filter(m => m.text?.toLowerCase().includes(q))
 })
 
-/* ---------- METHODS ---------- */
 function getSender(msg) {
   const friend = friends.value.find(f => f.id === msg.senderId)
   return friend ? {
@@ -800,19 +861,70 @@ function sendMessage() {
 
 function triggerFileDialog() { fileInput.value?.click() }
 
-function handleFileSelect(e) {
-  const file = e.target.files[0]
+import axios from 'axios'
+
+async function handleFileSelect(e) {
+  const file = e.target.files?.[0]
   if (!file) return
-  const size = (b) => b > 1024*1024 ? (b/1024/1024).toFixed(2)+' MB'
-              : b > 1024      ? (b/1024).toFixed(2)+' KB' : b+' B'
-  messages.value.push({
-    id: Date.now(),
-    chatId: selectedId.value,
-    fromMe: true,
-    file: { name: file.name, size: size(file.size), url: URL.createObjectURL(file) }
-  })
-  e.target.value = ''
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', 'chat_up')
+
+  try {
+    const { data } = await axios.post(
+      'https://api.cloudinary.com/v1_1/drniqvbgy/auto/upload',
+      formData
+    )
+
+    const url     = data.secure_url
+    const isImage = file.type.startsWith('image/')
+    const isVideo = file.type.startsWith('video/')
+    const tempId  = Date.now()
+
+    /* Ghi nhận URL đang chờ echo */
+    pendingUploads.value.add(url)
+
+    /* Push tin nhắn tạm */
+    messages.value.push({
+      id: tempId,
+      chatId: Number(selectedConversationId.value),
+      fromMe: true,
+      image:  isImage ? url : null,
+      video:  isVideo ? url : null,
+      file:  !isImage && !isVideo
+               ? { name: file.name, size: formatSize(file.size), url }
+               : null,
+      text: '',
+      type:  isImage ? 'image' : isVideo ? 'video' : 'file',
+      createdAt: new Date(),
+      clientTempId: tempId
+    })
+
+    scrollToBottom()
+
+    /* Gửi thật lên server */
+    socket.emit('chat message', {
+      conversationId: Number(selectedConversationId.value),
+      senderId:       Number(loggedInAccountId.value),
+      type:           isImage ? 'image' : isVideo ? 'video' : 'file',
+      content:        url,
+      originFilename: file.name,  // thêm dòng này
+      size:           formatSize(file.size)
+    })
+  } catch (err) {
+    console.error('❌ Upload lỗi:', err)
+    alert('Không thể upload file, thử lại.')
+  } finally {
+    e.target.value = ''
+  }
 }
+function formatSize(bytes) {
+  return bytes > 1024 * 1024
+    ? (bytes / 1024 / 1024).toFixed(2) + ' MB'
+    : (bytes / 1024).toFixed(2) + ' KB'
+}
+
 async function loadMessages () {
   console.log('[loadMessages] tab =', activeTab.value, 'conversationId =', selectedConversationId.value)
 
@@ -830,16 +942,36 @@ async function loadMessages () {
       return
     }
 
-    // Chuẩn hoá messages
-    messages.value = rawMessages.map(m => ({
-      id:         m.id,
-      chatId:     Number(selectedConversationId.value),
-      senderId:   Number(m.senderId),
-      fromMe:     String(m.senderId) === String(loggedInAccountId.value),
-      text:       m.content,
-      createdAt:  m.createdAt,
-    }))
+    const isFileUrl = (url = '') =>
+      /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|txt)$/i.test(url)
 
+    messages.value = rawMessages.map(m => {
+      console.log('[loadMessages] filename:', m.originFilename)
+      const url = m.content || ''
+      const isImage = m.type === 'image' || /\.(jpe?g|png|gif|webp)$/i.test(url)
+      const isVideo = m.type === 'video' || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url)
+      const isFile  = m.type === 'file' || (m.type === 'text' && isFileUrl(url))
+
+      return {
+        id:        m.id,
+        chatId:    Number(selectedConversationId.value),
+        senderId:  Number(m.senderId),
+        fromMe:    String(m.senderId) === String(loggedInAccountId.value),
+        text:      (!isImage && !isVideo && !isFile && m.type === 'text') ? m.content : '',
+        image:     isImage ? url : null,
+        video:     isVideo ? url : null,
+        file: isFile && url ? {
+          name: typeof m.originFilename === 'string' && m.originFilename.trim().length > 0
+            ? m.originFilename.trim()
+            : decodeURIComponent(url.split('/').pop()) || 'Không rõ tên',
+          size: m.size?.trim() || 'Không rõ',
+          url
+        } : null,
+        type:      isImage ? 'image' : isVideo ? 'video' : isFile ? 'file' : 'text',
+        createdAt: m.createdAt
+      }
+    })
+    console.log('[loadMessages] message example =', rawMessages[0])
     console.log('[loadMessages] mapped =', messages.value)
     await nextTick()
     scrollToBottom()
