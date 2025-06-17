@@ -236,10 +236,12 @@ export default {
 .profile-modal {
   background: white;
   width: 100%;
-  max-width: 500px;
-  max-height: 100vh;
+  max-width: 400px;
+  max-height: 100vh;  
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   overflow-y: auto;
+  overflow: hidden;
+  border-radius: 12px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -256,25 +258,26 @@ export default {
 }
 
 .title {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 600;
   color: #333;
-  margin: 0;
+  margin-left: -6px;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 32px;
+  font-size: 36px;
   color: #999;
   cursor: pointer;
   width: 40px;
   height: 40px;
   display: flex;
-  align-items: center;
+  align-items: center;  
   justify-content: center;
   border-radius: 50%;
   transition: all 0.2s;
+  margin-right : -24px;
 }
 
 .close-btn:hover {
@@ -285,7 +288,9 @@ export default {
 /* Profile View Styles */
 .background-section {
   position: relative;
-  height: 220px;
+  height: 180px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
   overflow: visible;
 }
 
@@ -300,16 +305,16 @@ export default {
 .background-image::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(123, 104, 238, 0.3) 50%, rgba(147, 112, 219, 0.3) 100%);
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(74, 144, 226, 0.4) 0%,
+    rgba(123, 104, 238, 0.2) 60%,
+    rgba(147, 112, 219, 0.0) 100%);
 }
 
 .avatar-overlay {
   position: absolute;
-  bottom: -60px;
+  bottom: -70px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -323,46 +328,52 @@ export default {
 }
 
 .avatar {
-  width: 140px;
-  height: 140px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  border: 6px solid white;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   object-fit: cover;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  z-index: 10;
-  position: relative;
+  transition: transform 0.3s;
+  margin-bottom : 24px;
+}
+.avatar:hover {
+  transform: scale(1.03);
 }
 
 .name-section {
-  padding: 90px 30px 25px 30px;
+  padding: calc(50px + 16px) 24px 8px;  /* top = avatar lift + spacing */
   text-align: center;
+  background: #fff;
 }
 
 .profile-name {
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
   margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  color: #222;
 }
 
 .bio-section {
-  padding: 0 30px 30px 30px;
+  padding: 16px 24px 24px;
+  background: #fcfcfc;
 }
 
 .bio-content {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 20px;
-  border-left: 4px solid #4A90E2;
+  background: #eeeeee;
+  border-radius: 8px;
+  padding: 16px;
+  /* border-left: 4px solid #4A90E2; */
 }
 
 .bio-text {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #555;
   margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #555;
   font-style: italic;
 }
+
 
 .info-section {
   padding: 0 30px 30px 30px;
@@ -371,7 +382,7 @@ export default {
 .section-title {
   font-size: 18px;
   font-weight: 600;
-  color: #666;
+  color: #000;
   margin: 0 0 25px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -398,9 +409,10 @@ export default {
 }
 
 .icon-img {
-  width: 100%;
-  height: 100%;
+  width: 80%;
+  height: 80%;
   object-fit: contain;
+  margin-left: -16px;
 }
 
 .label {
@@ -420,7 +432,7 @@ export default {
   gap: 10px;
   width: 100%;
   padding: 18px 30px;
-  background: #4A90E2;
+  background: #666;
   color: white;
   border: none;
   border-radius: 14px;
@@ -694,20 +706,29 @@ export default {
 }
 
 @media (max-width: 480px) {
-  .profile-modal {
-    width: 100%;
-    max-width: 100%;
-    height: 100vh;
-    border-radius: 0;
+  .background-section {
+    height: 180px;
   }
-  
-  .modal-header, .info-section, .edit-section, .name-section, .bio-section, .edit-profile-form {
-    padding-left: 25px;
-    padding-right: 25px;
+  .avatar {
+    width: 120px;
+    height: 120px;
   }
+  .name-section {
+    padding-top: calc(60px + 12px);
+  }
+  .profile-name {
+    font-size: 22px;
+  }
+  .bio-content {
+    padding: 12px;
+  }
+  .bio-text {
+    font-size: 14px;
+  }
+}
   
   .title {
-    font-size: 24px;
+    font-size: 20px;
   }
   
   .profile-name {
@@ -721,5 +742,5 @@ export default {
   .form-actions {
     flex-direction: column;
   }
-}
+
 </style>
