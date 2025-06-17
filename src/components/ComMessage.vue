@@ -1469,7 +1469,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .chat-header .header-right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  
 }
 .chat-header .icon-btn {
   width: 32px;
@@ -1757,9 +1757,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   font-weight: 600;
   cursor: pointer;
 }
-.message-search {
-  padding: 0.5rem 1rem;
-}
+
 .search-message-input {
   width: 100%;
   padding: 8px 12px;
