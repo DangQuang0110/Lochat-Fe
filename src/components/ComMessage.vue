@@ -133,11 +133,14 @@
                       <span class="file-icon">📎</span>
                       <div class="file-info">
                         <p class="file-name">{{ msg.file.name }}</p>
-                        <p class="file-size">{{ msg.file.size }}</p>
+                        <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                       </div>
-                      <button class="download-btn">⬇️</button>
+                      <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
                     </div>
-                    <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                    <template v-if="msg.image || msg.video">
+                      <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                      <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                    </template>
                     <div
                       :class="[
                         'msg',
@@ -145,7 +148,7 @@
                         isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
                       ]"
                     >
-                      <span v-if="msg.text">{{ msg.text }}</span>
+                      <span v-if="msg.type === 'text' && !msg.file">{{ msg.text }}</span>
                     </div>
                   <!-- </div> -->
                 </div>
@@ -156,19 +159,23 @@
                     <span class="file-icon">📎</span>
                     <div class="file-info">
                       <p class="file-name">{{ msg.file.name }}</p>
-                      <p class="file-size">{{ msg.file.size }}</p>
+                      <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                     </div>
-                    <button class="download-btn">⬇️</button>
+                    <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
                   </div>
-                  <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                  <template v-if="msg.image || msg.video">
+                    <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                    <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                  </template>
                   <div
+                    v-if="!msg.image && !msg.video && !msg.file"   
                     :class="[
                       'msg',
                       msg.fromMe ? 'from-me' : 'from-other',
-                      isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
+                      isEmojiOnly(msg.text) ? 'emoji-only' : ''
                     ]"
                   >
-                    <span v-if="msg.text">{{ msg.text }}</span>
+                    <span v-if="msg.type === 'text'">{{ msg.text }}</span>
                   </div>
                 <!-- </div> -->
               </div>
@@ -178,27 +185,56 @@
                 <img class="avatar" :src="getSender(msg)?.avatar" />
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
-                    <div
-                      :class="[
-                        'msg',
-                        'from-other',
-                        isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
-                      ]"
-                    >
-                      <span v-if="msg.text">{{ msg.text }}</span>
+                  
+                  <div v-if="msg.file" class="file-attach">
+                    <span class="file-icon">📎</span>
+                    <div class="file-info">
+                      <p class="file-name">{{ msg.file.name }}</p>
+                      <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                     </div>
+                    <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
+                  </div>
+
+                  <template v-if="msg.image || msg.video">
+                    <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                    <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                  </template>
+                  <div
+                    v-if="!msg.image && !msg.video && !msg.file"
+                    :class="[
+                      'msg',
+                      'from-other',
+                      isEmojiOnly(msg.text) ? 'emoji-only' : ''
+                    ]"
+                  >
+                    <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                  </div>
                 </div>
               </div>
+
               <div v-else class="msg-block align-right">
-              <div
-                :class="[
-                  'msg',
-                  msg.fromMe ? 'from-me' : 'from-other',
-                  isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
-                ]"
-              >
-                <span v-if="msg.text">{{ msg.text }}</span>
-              </div>
+                <div v-if="msg.file" class="file-attach">
+                  <span class="file-icon">📎</span>
+                  <div class="file-info">
+                    <p class="file-name">{{ msg.file.name }}</p>
+                    <p class="file-size">{{ prettySize(msg.file.size) }}</p>
+                  </div>
+                  <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
+                </div>
+                <template v-if="msg.image || msg.video">
+                  <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
+                  <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                </template>
+                <div
+                  v-if="!msg.image && !msg.video && !msg.file" 
+                  :class="[
+                    'msg',
+                    'from-other',
+                    isEmojiOnly(msg.text) ? 'emoji-only' : ''
+                  ]"
+                >
+                  <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                </div>
               </div>
             </template>
           </div>
@@ -267,7 +303,9 @@
           </div>
           <div class="detail-item">
             <i class="icon-location"></i>
-            <span>{{ current.location || 'Chưa cập nhật' }}</span>
+            <button class="block-btn" @click="handleBlockUser">
+              Chặn người dùng
+            </button>
           </div>
         </div>
         <div class="file-list">
@@ -437,6 +475,35 @@
     </div>
   </div>
 </div>
+<div v-if="showBlockConfirm" class="group-modal-overlay" @click.self="cancelBlockUser">
+  <div class="group-modal">
+    <div class="group-modal-body">
+      <p>Bạn có chắc chắn muốn chặn <strong>{{ current.name }}</strong>?</p>
+        <div class="group-buttons-horizontal">
+          <button @click="cancelBlockUser" class="btn cancel-btn">Huỷ</button>
+          <button @click="confirmBlockUser" class="btn danger-btn">Chặn</button>
+        </div>
+    </div>
+  </div>
+</div>
+<div v-if="showBlockListModal" class="group-modal-overlay" @click.self="showBlockListModal = false">
+  <div class="group-modal">
+    <div class="group-modal-header">
+      <h3>🔴 Quản lí chặn</h3>
+      <button class="close-btn" @click="showBlockListModal = false">×</button>
+    </div>
+    <div class="group-modal-body">
+      <p style="margin-bottom: 12px;">Danh sách chặn</p>
+      <div v-for="user in blockedUsers" :key="user.id" class="block-user-item">
+        <img :src="user.avatar" class="avatar" />
+        <span class="name">{{ user.name }}</span>
+        <button class="unblock-btn" @click="unblockUserHandler(user.id)">
+          Bỏ chặn
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </template>
 
 <script setup>
@@ -447,6 +514,7 @@ import GroupEditModal from './GroupEditModal.vue'
 import { getAccountDetail } from '@/service/profileService' 
 import { getOwnedGroups, getJoinedGroups } from '@/service/conversationService'
 import { addMembers,removeMembers,getConversationDetail   } from '@/service/conversationService'
+import { getBlockedList, blockUser,unblockUser  } from '@/service/blockService' 
 
 // import { sendMessageToConversation } from '@/service/messageService'
 
@@ -460,6 +528,47 @@ const memberToRemove = ref(null)
 function confirmRemoveMember(member) {
   memberToRemove.value = member
   showConfirmRemove.value = true
+}
+const showBlockListModal = ref(false)
+
+const blockedUsers = ref([
+  { id: 1, name: 'Quang', avatar: 'https://i.imgur.com/your-avatar.png' },
+  { id: 2, name: 'Quang', avatar: 'https://i.imgur.com/your-avatar.png' },
+  { id: 3, name: 'Quang', avatar: 'https://i.imgur.com/your-avatar.png' }
+])
+
+async function goToBlockedList() {
+  try {
+    const res = await getBlockedList(loggedInAccountId.value)
+    const raw = res?.data?.data?.blockedList || []
+
+    console.log('📦 Danh sách người bị chặn từ BE:', raw)
+
+    blockedUsers.value = raw.map(user => ({
+      id: user.id,
+      name: user.profile?.fullname || user.username || 'Không rõ',
+      avatar: user.profile?.avatarUrl || require('@/assets/avata.jpg')
+    }))
+
+    showBlockListModal.value = true
+    showUserSidebar.value = false
+  } catch (err) {
+    console.error('❌ Không thể tải danh sách chặn:', err)
+    alert('Lỗi khi tải danh sách chặn')
+  }
+}
+async function unblockUserHandler(id) {
+  try {
+    await unblockUser(loggedInAccountId.value, id)
+
+    blockedUsers.value = blockedUsers.value.filter(u => u.id !== id)
+
+    // (tuỳ chọn) Thông báo
+    alert('Đã bỏ chặn thành công!')
+  } catch (err) {
+    console.error('❌ Không thể bỏ chặn:', err)
+    alert(err?.response?.data?.message || 'Lỗi khi bỏ chặn.')
+  }
 }
 
 const activeTab= ref('friends')
@@ -567,6 +676,35 @@ function handleClickOutsideEmoji(e) {
     showEmojiPicker.value = false;
   }
 }
+const showBlockConfirm = ref(false)
+
+function handleBlockUser() {
+  showBlockConfirm.value = true
+}
+async function confirmBlockUser() {
+    console.log('⚠️ blockerId:', loggedInAccountId.value)
+  console.log('⚠️ blockedId:', current.value.id)
+  try {
+    await blockUser(loggedInAccountId.value, current.value.id)
+
+    blockedUsers.value.push({
+      id: current.value.id,
+      name: current.value.name,
+      avatar: current.value.avatar || require('@/assets/avata.jpg')
+    })
+
+    showBlockConfirm.value = false
+    alert(`Đã chặn ${current.value.name}`)
+  } catch (err) {
+    console.error('❌ Lỗi khi chặn người dùng:', err)
+    alert('Không thể chặn người dùng này.')
+  }
+}
+
+function cancelBlockUser() {
+  showBlockConfirm.value = false
+}
+
 
 onMounted(() => document.addEventListener('click', handleClickOutsideEmoji));
 onBeforeUnmount(() =>
@@ -574,22 +712,48 @@ onBeforeUnmount(() =>
 );
 // onMounted(() => socket.on('chat message', handleIncomingMessage))
 onBeforeUnmount(() => socket.off('chat message', handleIncomingMessage))
-function handleIncomingMessage(msg) {
-  console.log('🟢 Tin nhắn realtime:', msg)
 
-  // Bỏ qua nếu không thuộc cuộc trò chuyện đang chọn
-  if (String(msg.conversationId) !== String(selectedConversationId.value)) return
+function handleIncomingMessage(msg) {
+  if (`${msg.conversationId}` !== `${selectedConversationId.value}`) return
+
+  const url = msg.content || ''
+  const isImage = msg.type === 'image' || /\.(jpe?g|png|gif|webp|avif)$/i.test(url)
+  const isVideo = msg.type === 'video' || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url)
+  const isFile  = msg.type === 'file'
+
+  const fromMe = String(msg.senderId) === String(loggedInAccountId.value)
+
+  if (fromMe && pendingUploads.value.has(url)) {
+    messages.value = messages.value.filter(t =>
+      !(t.clientTempId && (t.image === url || t.video === url || t.file?.url === url))
+    )
+    pendingUploads.value.delete(url)
+  }
+
+  const fallbackName = decodeURIComponent(url.split('/').pop() || 'Tập tin')
 
   messages.value.push({
-    id:        Date.now(), // hoặc msg.id nếu backend trả
-    chatId:    Number(msg.conversationId),       // ✅ RẤT QUAN TRỌNG
+    id:        msg.id || Date.now(),
+    chatId:    Number(msg.conversationId),
     senderId:  Number(msg.senderId),
-    fromMe:    String(msg.senderId) === String(loggedInAccountId.value),
-    text:      msg.content,
-    createdAt: new Date()
+    fromMe,
+    text:      msg.type === 'text' ? msg.content : '',
+
+    image:     isImage ? url : null,
+    video:     isVideo ? url : null,
+    file: isFile ? {
+      name: msg.originFilename?.trim() || fallbackName,
+      size: msg.size || 'Không rõ',
+      url
+    } : null,
+
+    type:      isImage ? 'image' : isVideo ? 'video' : isFile ? 'file' : 'text',
+    createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date()
   })
+
   scrollToBottom()
 }
+
 function goToUserProfile() {
   console.log('✅ Đã click Hồ sơ người dùng')
   showProfileModal.value = true
@@ -617,7 +781,7 @@ const showGroupModal      = ref(false)
 const showAddModal        = ref(false)
 const showEmojiPicker     = ref(false)
 const showSearch          = ref(false)
-
+const pendingUploads = ref(new Set()) 
 /* ---------- INPUT / SEARCH ---------- */
 const messageInput = ref('')
 const searchText   = ref('')
@@ -682,7 +846,6 @@ const filteredMessages = computed(() => {
   return currentMessages.value.filter(m => m.text?.toLowerCase().includes(q))
 })
 
-/* ---------- METHODS ---------- */
 function getSender(msg) {
   const friend = friends.value.find(f => f.id === msg.senderId)
   return friend ? {
@@ -690,6 +853,11 @@ function getSender(msg) {
     avatar: friend.profile?.avatarUrl || friend.avatar
   } : null
 }
+const prettySize = s => {
+  if (!s || s === 'Không rõ') return '(Không rõ)'
+  return `(${s})`
+}
+
 
 function toggleSearch()        { showSearch.value = !showSearch.value; if (!showSearch.value) searchQuery.value = '' }
 function toggleProfilePanel()  { showProfilePanel.value = !showProfilePanel.value }
@@ -788,6 +956,8 @@ function sendMessage() {
     conversationId: Number(selectedConversationId.value),
     senderId:       Number(loggedInAccountId.value),
     content:        text,
+    originFilename:"",
+    size:"",
     type:           "text",
   }
 
@@ -800,19 +970,70 @@ function sendMessage() {
 
 function triggerFileDialog() { fileInput.value?.click() }
 
-function handleFileSelect(e) {
-  const file = e.target.files[0]
+import axios from 'axios'
+
+async function handleFileSelect(e) {
+  const file = e.target.files?.[0]
   if (!file) return
-  const size = (b) => b > 1024*1024 ? (b/1024/1024).toFixed(2)+' MB'
-              : b > 1024      ? (b/1024).toFixed(2)+' KB' : b+' B'
-  messages.value.push({
-    id: Date.now(),
-    chatId: selectedId.value,
-    fromMe: true,
-    file: { name: file.name, size: size(file.size), url: URL.createObjectURL(file) }
-  })
-  e.target.value = ''
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', 'chat_up')
+
+  try {
+    const { data } = await axios.post(
+      'https://api.cloudinary.com/v1_1/drniqvbgy/auto/upload',
+      formData
+    )
+
+    const url     = data.secure_url
+    const isImage = file.type.startsWith('image/')
+    const isVideo = file.type.startsWith('video/')
+    const tempId  = Date.now()
+
+    /* Ghi nhận URL đang chờ echo */
+    pendingUploads.value.add(url)
+
+    /* Push tin nhắn tạm */
+    messages.value.push({
+      id: tempId,
+      chatId: Number(selectedConversationId.value),
+      fromMe: true,
+      image:  isImage ? url : null,
+      video:  isVideo ? url : null,
+      file:  !isImage && !isVideo
+               ? { name: file.name, size: formatSize(file.size), url }
+               : null,
+      text: '',
+      type:  isImage ? 'image' : isVideo ? 'video' : 'file',
+      createdAt: new Date(),
+      clientTempId: tempId
+    })
+
+    scrollToBottom()
+
+    /* Gửi thật lên server */
+    socket.emit('chat message', {
+      conversationId: Number(selectedConversationId.value),
+      senderId:       Number(loggedInAccountId.value),
+      type:           isImage ? 'image' : isVideo ? 'video' : 'file',
+      content:        url,
+      originFilename: file.name,  // thêm dòng này
+      size:           formatSize(file.size)
+    })
+  } catch (err) {
+    console.error('❌ Upload lỗi:', err)
+    alert('Không thể upload file, thử lại.')
+  } finally {
+    e.target.value = ''
+  }
 }
+function formatSize(bytes) {
+  return bytes > 1024 * 1024
+    ? (bytes / 1024 / 1024).toFixed(2) + ' MB'
+    : (bytes / 1024).toFixed(2) + ' KB'
+}
+
 async function loadMessages () {
   console.log('[loadMessages] tab =', activeTab.value, 'conversationId =', selectedConversationId.value)
 
@@ -830,16 +1051,36 @@ async function loadMessages () {
       return
     }
 
-    // Chuẩn hoá messages
-    messages.value = rawMessages.map(m => ({
-      id:         m.id,
-      chatId:     Number(selectedConversationId.value),
-      senderId:   Number(m.senderId),
-      fromMe:     String(m.senderId) === String(loggedInAccountId.value),
-      text:       m.content,
-      createdAt:  m.createdAt,
-    }))
+    const isFileUrl = (url = '') =>
+      /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|txt)$/i.test(url)
 
+    messages.value = rawMessages.map(m => {
+      console.log('[loadMessages] filename:', m.originFilename)
+      const url = m.content || ''
+      const isImage = m.type === 'image' || /\.(jpe?g|png|gif|webp)$/i.test(url)
+      const isVideo = m.type === 'video' || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url)
+      const isFile  = m.type === 'file' || (m.type === 'text' && isFileUrl(url))
+
+      return {
+        id:        m.id,
+        chatId:    Number(selectedConversationId.value),
+        senderId:  Number(m.senderId),
+        fromMe:    String(m.senderId) === String(loggedInAccountId.value),
+        text:      (!isImage && !isVideo && !isFile && m.type === 'text') ? m.content : '',
+        image:     isImage ? url : null,
+        video:     isVideo ? url : null,
+        file: isFile && url ? {
+          name: typeof m.originFilename === 'string' && m.originFilename.trim().length > 0
+            ? m.originFilename.trim()
+            : decodeURIComponent(url.split('/').pop()) || 'Không rõ tên',
+          size: m.size || 'Không rõ',
+          url
+        } : null,
+        type:      isImage ? 'image' : isVideo ? 'video' : isFile ? 'file' : 'text',
+        createdAt: m.createdAt
+      }
+    })
+    console.log('[loadMessages] message example =', rawMessages[0])
     console.log('[loadMessages] mapped =', messages.value)
     await nextTick()
     scrollToBottom()
@@ -1856,6 +2097,19 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
+.block-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  background-color: white;
+  border: 1px solid white;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
 
 /* Huỷ (nút đầu tiên) */
 /* .group-buttons-horizontal button:first-child {
@@ -1874,5 +2128,112 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 /* .group-buttons-horizontal button:last-child:hover {
   background-color: #c0392b;
 } */
+.group-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.group-modal {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease-out;
+  font-family: 'Poppins', sans-serif;
+}
+
+.group-modal-header {
+  padding: 16px 20px;
+  background: #f5f5f5;
+  font-weight: 600;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.group-modal-body {
+  padding: 20px;
+  font-size: 16px;
+  color: #333;
+}
+
+.group-buttons-horizontal {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px; /* khoảng cách giữa hai nút */
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.cancel-btn {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.cancel-btn:hover {
+  background-color: #d5d5d5;
+}
+
+.danger-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.danger-btn:hover {
+  background-color: #c0392b;
+}
+.block-user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+.block-user-item .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+}
+.block-user-item .name {
+  flex: 1;
+  font-weight: 500;
+  color: #333;
+}
+.unblock-btn {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.unblock-btn:hover {
+  background-color: #c0392b;
+}
 
 </style>
