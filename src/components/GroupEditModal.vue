@@ -22,7 +22,8 @@
           
           <!-- Image upload area -->
           <div class="image-upload-area" @click="triggerFileInput" role="button" aria-label="Chọn ảnh để tải lên">
-            <div class="upload-icon">
+            <img v-if="avatarPreview" :src="avatarPreview" alt="Ảnh xem trước" class="image-preview"/>
+            <div v-else class="upload-icon">
               <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -60,6 +61,9 @@
           />
           <p v-if="nameError" class="error-message">{{ nameError }}</p>
         </div>
+
+        <!-- Server error message -->
+        <p v-if="serverError" class="error-message server-error">{{ serverError }}</p>
       </div>
 
       <!-- Footer -->
@@ -77,9 +81,9 @@
 
 <script setup>
 import { ref, computed, watch, defineProps, defineEmits } from 'vue'
-import { updateGroup } from '@/service/conversationService'      // <-- path tới service
+import { updateGroup } from '@/service/conversationService'
+
 const props = defineProps({
-  /* dữ liệu gốc đưa cho modal để hiển thị ngay khi mở */
   ownerId:            { type: [String, Number], required: true },
   conversationId:     { type: [String, Number], required: true },
   initialGroupName:   { type: String,  default: ''  },
@@ -89,12 +93,13 @@ const props = defineProps({
 const emit = defineEmits(['close', 'confirm'])
 
 const showModal          = ref(true)
-const localGroupName     = ref('')          // tên đang chỉnh
-const avatarPreview      = ref('')          // URL hiển thị <img>
-const avatarFile         = ref(null)        // File người dùng chọn
+const localGroupName     = ref('')
+const avatarPreview      = ref('')
+const avatarFile         = ref(null)
 const nameError          = ref('')
+const selectedFile       = ref(null)
+const serverError        = ref('') // Added for server-side error messages
 
-/* khi props thay đổi => đồng bộ lại */
 watch(
   () => [props.initialGroupName, props.initialGroupAvatar],
   ([name, avatar]) => {
@@ -107,29 +112,31 @@ watch(
 const isValid = computed(() =>
   localGroupName.value.trim().length > 0 && localGroupName.value.length <= 50
 )
+
 function closeModal() {
   showModal.value = false
+  serverError.value = '' // Clear server error on close
   emit('close')
 }
 
-/* avatar */
 const fileInput = ref(null)
 const triggerFileInput = () => fileInput.value?.click()
 
-function handleFileSelect (e) {
+function handleFileSelect(e) {
   const file = e.target.files?.[0]
   if (!file) return
   if (file.size > 5 * 1024 * 1024) {
-    alert('Ảnh phải nhỏ hơn 5 MB')
+    serverError.value = 'Ảnh phải nhỏ hơn 5MB'
     e.target.value = ''
     return
   }
-  avatarFile.value  = file
+  selectedFile.value = file
+  avatarFile.value = file
   avatarPreview.value = URL.createObjectURL(file)
+  serverError.value = '' // Clear any previous server error
 }
 
-/* xác nhận */
-async function confirmChanges () {
+async function confirmChanges() {
   if (!isValid.value) {
     nameError.value = 'Tên nhóm phải từ 1-50 ký tự.'
     return
@@ -151,7 +158,7 @@ async function confirmChanges () {
     closeModal()
   } catch (err) {
     console.error('❌ Lỗi cập nhật nhóm:', err.response?.data || err)
-    alert(err.response?.data?.message || 'Cập nhật nhóm thất bại, vui lòng thử lại.')
+    serverError.value = err.response?.data?.message || 'Cập nhật nhóm thất bại, vui lòng thử lại.'
   }
 }
 </script>
@@ -243,7 +250,7 @@ async function confirmChanges () {
 .image-upload-area {
   border: 2px dashed #d1d5db;
   border-radius: 8px;
-  padding: 40px 20px;
+  padding: 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
@@ -258,6 +265,14 @@ async function confirmChanges () {
 .upload-icon {
   color: #9ca3af;
   margin-bottom: 12px;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  border-radius: 4px;
 }
 
 .selected-file {
@@ -287,6 +302,11 @@ async function confirmChanges () {
   color: #ef4444;
   font-size: 12px;
   margin-top: 8px;
+}
+
+.server-error {
+  margin: 0;
+  text-align: center;
 }
 
 .modal-footer {
