@@ -65,7 +65,7 @@
 
           <div class="form-group">
             <label for="name">Tên</label>
-            <input id="name" type="text" v-model="editData.name" placeholder="Nhập tên của bạn" aria-label="Tên người dùng" />
+            <input id="name" type="text" v-model="editData.name" placeholder="Nhập tên của bạn" aria-label="Tên người dùng" value="Gia Phong" />
           </div>
 
           <div class="form-group">
@@ -88,7 +88,7 @@
 
           <div class="form-group">
             <label for="bio">Giới thiệu</label>
-            <textarea id="bio" v-model="editData.bio" placeholder="Viết một vài dòng giới thiệu về bản thân..." rows="4" class="bio-textarea" aria-label="Giới thiệu bản thân"></textarea>
+            <textarea id="bio" v-model="editData.bio" placeholder="Viết một vài dòng giới thiệu về bản thân..." rows="4" class="bio-textarea" aria-label="Giới thiệu bản thân">Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản. Hiện tại, Phong đang học ở trường Đại học Bách Khoa Hà Nội.</textarea>
           </div>
 
           <div class="form-group">
@@ -96,7 +96,7 @@
             <div class="info-group">
               <div>
                 <label for="phone">Số điện thoại</label>
-                <input id="phone" type="tel" v-model="editData.phone" placeholder="0369620631" aria-label="Số điện thoại" />
+                <input id="phone" type="tel" v-model="editData.phone" placeholder="0369620631" aria-label="Số điện thoại" value="0369620631" />
               </div>
             </div>
           </div>
@@ -131,11 +131,11 @@ export default {
       isSaving: false,
       errorMessage: '',
       profile: {
-        name: '',
+        name: 'Gia Phong',
         avatar: '',
         cover: '',
-        bio: '',
-        phone: '',
+        bio: 'Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản. Hiện tại, Phong đang học ở trường Đại học Bách Khoa Hà Nội.',
+        phone: '0369620631',
         profileId: ''
       },
       editData: {},
@@ -152,11 +152,11 @@ export default {
         const data = await getAccountDetail(this.accountId)
         const profile = data.profile || {}
         this.profile = {
-          name: profile.fullname || data.username || '',
+          name: profile.fullname || data.username || 'Gia Phong',
           avatar: profile.avatarUrl || '',
           cover: profile.coverUrl || '',
-          bio: profile.bio || '',
-          phone: data.phoneNumber || '',
+          bio: profile.bio || 'Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản. Hiện tại, Phong đang học ở trường Đại học Bách Khoa Hà Nội.',
+          phone: data.phoneNumber || '0369620631',
           profileId: profile.id || ''
         }
       } catch (err) {

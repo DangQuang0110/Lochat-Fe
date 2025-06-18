@@ -1,8 +1,19 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
+      <!-- Notification component -->
+      <transition-group name="fade" tag="div" class="notification-container">
+        <div 
+          v-for="notification in notifications" 
+          :key="notification.id"
+          :class="['notification', notification.type]"
+        >
+          {{ notification.message }}
+        </div>
+      </transition-group>
+
       <img src="@/assets/lgo.png" alt="" class="logo" />
-      <h1>Thay đổi mật khẩu </h1>
+      <h1>Thay đổi mật khẩu</h1>
       <p class="sub-text">Vui lòng nhập mật khẩu cũ và mật khẩu mới để cập nhật tài khoản</p>
 
       <label>Mật khẩu cũ</label>
@@ -160,6 +171,18 @@ const showConfirmPassword = ref(false)
 const oldPasswordError = ref('')
 const passwordError = ref('')
 const confirmPasswordError = ref('')
+const notifications = ref([])
+
+// Notification handler
+const addNotification = (message, type = 'success') => {
+  const id = Date.now()
+  notifications.value.push({ id, message, type })
+  
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    notifications.value = notifications.value.filter(n => n.id !== id)
+  }, 3000)
+}
 
 const validateOldPassword = () => {
   if (!oldPassword.value) {
@@ -243,7 +266,7 @@ const handleReset = () => {
   const okNew = validatePassword()
   const okConfirm = validateConfirmPassword()
   if (okOld && okNew && okConfirm) {
-    alert('Đặt lại mật khẩu thành công (demo giao diện)')
+    addNotification('Đặt lại mật khẩu thành công', 'success')
     router.push('/')
   }
 }
@@ -253,6 +276,7 @@ const handleReset = () => {
 * {
   font-family: 'Roboto', sans-serif;
 }
+
 .auth-container {
   position: fixed;
   top: 0;
@@ -262,10 +286,9 @@ const handleReset = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden; /* Ẩn phần thừa khi scale ảnh */
+  overflow: hidden;
 }
 
-/* Pseudo-element ::before chịu trách nhiệm hiển thị và làm mờ hình nền */
 .auth-container::before {
   content: "";
   position: absolute;
@@ -277,19 +300,53 @@ const handleReset = () => {
   background-size: cover;
 }
 
-/* Phần hộp form (auth-box) nằm ở trên lớp blur */
 .auth-box {
   position: relative;
-  z-index: 1;               /* Luôn luôn “trên” pseudo-element */
+  z-index: 1;
   background-color: #EEEEEE;
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;
   width: 400px;
-  /* Nếu muốn form hơi “nổi” hơn, có thể thêm backdrop hoặc border:
-     border: 1px solid rgba(0,0,0,0.05);
-  */
+}
+
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification.success {
+  background-color: #4caf50;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
 .logo {
@@ -323,20 +380,19 @@ label {
   position: relative;
   width: 100%;
   margin-bottom: 0.5rem;
- 
 }
 
- .input-group input {
+.input-group input {
   width: 100%;
-  height: 45px;             /* Chiều cao bằng nút */
-  padding: 0 10px;          /* Chỉ padding trái/phải để giữ height cố định */
+  height: 45px;
+  padding: 0 10px;
   font-size: 1rem;
   color: #dc77b2;
   border: 1px solid #FFFFFF;
   border-radius: 4px;
-  background: #fFFFFF;
+  background: #FFFFFF;
   outline: none;
-  box-sizing: border-box;   /* Đảm bảo padding không làm input vượt 45px */
+  box-sizing: border-box;
 }
 
 .input-group input.error-input {
@@ -366,13 +422,13 @@ label {
 
 .btn {
   width: 100%;
-  max-width: 400px;    /* ngang tối đa 320px */
-  height: 45px;        /* cao 45px */
-  margin: 1rem auto 0; /* cách trên 1rem, căn giữa */
-  display: block;      /* để max-width và margin:auto có hiệu lực */
+  max-width: 400px;
+  height: 45px;
+  margin: 1rem auto 0;
+  display: block;
   border: none;
-  border-radius: 4px;  /* bo góc 4px */
-  background-color: #dc77b2; /* giống màu cam Login */
+  border-radius: 4px;
+  background-color: #dc77b2;
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
@@ -381,7 +437,7 @@ label {
 }
 
 .btn:hover:not(:disabled) {
-  background-color: #dc77b2; /* cam đậm hơn khi hover */
+  background-color: #dc77b2;
 }
 
 .btn:disabled {

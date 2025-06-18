@@ -7,6 +7,17 @@
         <HeaderContact />
 
         <div class="scroll-content">
+          <!-- Notification component -->
+          <transition-group name="fade" tag="div" class="notification-container">
+            <div 
+              v-for="notification in notifications" 
+              :key="notification.id"
+              :class="['notification', notification.type]"
+            >
+              {{ notification.message }}
+            </div>
+          </transition-group>
+
           <!-- Tìm kiếm -->
           <div class="search-bar">
             <img src="/icons/search.png" class="search-icon" />
@@ -16,17 +27,17 @@
           <h2 class="section-title">Lời mời kết bạn</h2>
 
           <div class="grid-list">
-          <div class="request-card" v-for="friend in filteredFriends" :key="friend.id">
-            <div class="card-top">
-              <img :src="friend.avatar" class="avatar" />
-              <strong class="friend-name">{{ friend.name }}</strong>
-              <span class="time-label">{{ friend.time }}</span>
+            <div class="request-card" v-for="friend in filteredFriends" :key="friend.id">
+              <div class="card-top">
+                <img :src="friend.avatar" class="avatar" />
+                <strong class="friend-name">{{ friend.name }}</strong>
+                <span class="time-label">{{ friend.time }}</span>
+              </div>
+              <div class="action-buttons">
+                <button class="btn-accept" @click="acceptFriend(friend.id)">Chấp nhận</button>
+                <button class="btn-decline" @click="declineFriend(friend.id)">Xóa</button>
+              </div>
             </div>
-            <div class="action-buttons">
-              <button class="btn-accept" @click="acceptFriend(friend.id)">Chấp nhận</button>
-              <button class="btn-decline" @click="declineFriend(friend.id)">Xóa</button>
-            </div>
-          </div>
           </div>
         </div>
       </div>
@@ -37,17 +48,27 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import layout from '@/layout/SideBarContact.vue'
-import { getReceivedFriendRequests, respondToFriendRequest,unfriend  } from '@/service/friendService'
-
+import { getReceivedFriendRequests, respondToFriendRequest, unfriend } from '@/service/friendService'
 
 const searchText = ref('')
 const requests = ref([])
 const accountId = localStorage.getItem('accountId')
+const notifications = ref([])
+
+const addNotification = (message, type = 'success') => {
+  const id = Date.now()
+  notifications.value.push({ id, message, type })
+  
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    notifications.value = notifications.value.filter(n => n.id !== id)
+  }, 3000)
+}
 
 const fetchRequests = async () => {
   try {
     const data = await getReceivedFriendRequests(accountId)
-    console.log('✅ Dữ liệu từ API:', data) // <-- Thêm dòng này để kiểm tra dữ liệu thật
+    console.log('✅ Dữ liệu từ API:', data)
     console.log('🧪 accountId:', accountId)
 
     requests.value = data.map(user => ({
@@ -58,6 +79,7 @@ const fetchRequests = async () => {
     }))
   } catch (err) {
     console.error('❌ Lỗi khi gọi API lời mời:', err)
+    addNotification('Lỗi khi tải danh sách lời mời', 'error')
   }
 }
 
@@ -77,25 +99,25 @@ const acceptFriend = async (senderId) => {
       receiverId: String(accountId),
       status: 'ACCEPTED'
     })
-alert('Đã chấp nhận lời mời') // đơn giản
+    addNotification('Đã chấp nhận lời mời kết bạn', 'success')
     fetchRequests()
   } catch {
-alert('Đã chấp tu choi nhận lời mời') // đơn giản
+    addNotification('Chấp nhận lời mời thất bại', 'error')
   }
 }
+
 const declineFriend = async (senderId) => {
   try {
     await unfriend({
       senderId: Number(senderId),
       receiverId: Number(accountId)
     })
-    alert('Đã xóa lời mời kết bạn') // đơn giản
+    addNotification('Đã xóa lời mời kết bạn', 'success')
     fetchRequests()
   } catch {
-    alert('Xóa lời mời thất bại') // đơn giản
+    addNotification('Xóa lời mời thất bại', 'error')
   }
 }
-
 </script>
 
 <style scoped>
@@ -116,6 +138,45 @@ const declineFriend = async (senderId) => {
   flex: 1;
   overflow-y: auto;
   padding: 30px;
+  position: relative;
+}
+
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification.success {
+  background-color: #4caf50;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
 .search-bar {
@@ -123,6 +184,7 @@ const declineFriend = async (senderId) => {
   width: 300px;
   margin-bottom: 20px;
 }
+
 .search-bar input {
   width: 100%;
   padding: 10px 15px 10px 40px;
@@ -130,6 +192,7 @@ const declineFriend = async (senderId) => {
   border-radius: 25px;
   font-size: 14px;
 }
+
 .search-icon {
   position: absolute;
   top: 50%;
