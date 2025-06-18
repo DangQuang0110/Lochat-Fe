@@ -34,9 +34,11 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { verifyOTP } from '@/service/otpService';
-import { registerUser } from '@/service/authService';
+import { verifyOTP } from '@/service/otpService'
+import { registerUser } from '@/service/authService'
 import { useRouter } from 'vue-router'
+import Toastify from 'toastify-js'
+import 'toastify-js/src/toastify.css'
 
 const router = useRouter()
 
@@ -72,23 +74,28 @@ onBeforeUnmount(() => {
 // Khi gõ OTP, tự động nhảy sang ô kế tiếp
 const handleOtpInput = async (event, index) => {
   const value = event.target.value
-  // Chỉ cho phép số (hoặc xóa để sửa lại)
   if (!/^\d?$/.test(value)) {
     otp.value[index] = ''
     return
   }
   otp.value[index] = value
-
   if (value.length === 1 && index < otp.value.length - 1) {
     await nextTick()
-    const nextInput = document.querySelector(`#otp-input-${index + 1}`)
-    if (nextInput) nextInput.focus()
+    document.querySelector(`#otp-input-${index + 1}`)?.focus()
   }
 }
 
-// Hàm giả lập gửi lại OTP (chỉ show alert, không gọi API)
+// Hàm giả lập gửi lại OTP
 const resendOtp = () => {
-  alert('Chức năng gửi lại mã OTP đã được kích hoạt.')
+  Toastify({
+    text: "🔄 Mã OTP mới đã được gửi lại.",
+    duration: 3000,
+    close: true,
+    gravity: "top",
+    position: "right",
+    backgroundColor: "#3498DB",
+  }).showToast()
+
   countdown.value = 120
   clearInterval(intervalId)
   startCountdown()
@@ -98,11 +105,17 @@ const resendOtp = () => {
 const sendLink = async () => {
   const otpString = otp.value.join('')
   if (otpString.length !== 6) {
-    alert('⚠️ Vui lòng nhập đủ 6 chữ số OTP!')
+    Toastify({
+      text: "⚠️ Vui lòng nhập đủ 6 chữ số OTP!",
+      duration: 3000,
+      close: true,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#F39C12",
+    }).showToast()
     return
   }
 
-  // Lấy thông tin từ localStorage
   const email = localStorage.getItem('register_email')
   const phone = localStorage.getItem('register_phone')
   const username = localStorage.getItem('register_username')
@@ -113,7 +126,7 @@ const sendLink = async () => {
     // 1. Gửi OTP xác minh
     await verifyOTP({ email, otp: otpString })
 
-    // 2. OTP hợp lệ => Gửi API tạo tài khoản
+    // 2. Tạo tài khoản
     await registerUser({
       email,
       phoneNumber: phone,
@@ -130,12 +143,32 @@ const sendLink = async () => {
     localStorage.removeItem('register_confirm')
     localStorage.removeItem('register_flow')
 
-    alert('✅ Đăng ký và xác thực thành công! Mời bạn đăng nhập.')
-    router.push('/login')
+    // 4. Thông báo success và chuyển về đăng nhập
+    Toastify({
+      text: "✅ Đăng ký và xác thực thành công! Mời bạn đăng nhập.",
+      duration: 3000,
+      close: true,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#27AE60",
+    }).showToast()
+
+    setTimeout(() => {
+      router.push('/')
+    }, 2000)
+
   } catch (err) {
-    alert('❌ Xác thực thất bại: ' + (err?.response?.data?.message || 'OTP sai hoặc hết hạn'))
+    Toastify({
+      text: "❌ Xác thực thất bại: " + (err?.response?.data?.message || 'OTP sai hoặc hết hạn'),
+      duration: 4000,
+      close: true,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#E74C3C",
+    }).showToast()
   }
 }
+
 // Format đếm ngược thành mm:ss
 const formatCountdown = () => {
   const min = String(Math.floor(countdown.value / 60)).padStart(2, '0')
@@ -143,6 +176,7 @@ const formatCountdown = () => {
   return `${min}:${sec}`
 }
 </script>
+
 
 <style scoped>
 * {
