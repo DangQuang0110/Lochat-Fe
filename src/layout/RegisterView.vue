@@ -177,6 +177,9 @@
 import { ref, computed } from 'vue'
 import { sendOTP } from '@/service/otpService';
 import router from '@/router';
+import Toastify from 'toastify-js'
+import 'toastify-js/src/toastify.css'
+
 const contact = ref('')
 const contactFocus = ref(false)
 const contactError = ref('')
@@ -357,10 +360,20 @@ const handleRegister = async () => {
 
   if (okEmail && okPhone && okName && okPwd && okConfirm) {
     try {
-      // 1. Gửi OTP đến email (chưa tạo tài khoản vội)
+      // 1. Gửi OTP đến email
       await sendOTP(contact.value)
 
-      // 2. Lưu thông tin đăng ký vào localStorage để dùng lại sau khi xác minh OTP
+      // 2. Hiển thị toast báo thành công
+      Toastify({
+        text: "🌟 Đăng ký thành công! Vui lòng kiểm tra email để xác minh OTP.",
+        duration: 3000,
+        close: true,
+        gravity: "top", // top or bottom
+        position: "right", // left, center or right
+        backgroundColor: "#4CAF50",
+      }).showToast()
+
+      // 3. Lưu thông tin đăng ký vào localStorage
       localStorage.setItem('register_email', contact.value)
       localStorage.setItem('register_phone', phone.value)
       localStorage.setItem('register_username', fullname.value)
@@ -368,10 +381,17 @@ const handleRegister = async () => {
       localStorage.setItem('register_confirm', confirmPassword.value)
       localStorage.setItem('register_flow', 'true')
 
-      // 3. Chuyển sang trang nhập OTP
+      // 4. Chuyển sang trang nhập OTP
       router.push({ path: '/verificationCode' })
     } catch (error) {
-      alert('❌ Gửi OTP thất bại: ' + (error?.response?.data?.message || 'Lỗi không xác định'))
+      Toastify({
+        text: "❌ Gửi OTP thất bại: " + (error?.response?.data?.message || 'Lỗi không xác định'),
+        duration: 4000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#E74C3C",
+      }).showToast()
     }
   }
 }
