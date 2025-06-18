@@ -10,6 +10,17 @@
     </div>
 
     <div class="form-content">
+      <!-- Notification component -->
+      <transition-group name="fade" tag="div" class="notification-container">
+        <div 
+          v-for="notification in notifications" 
+          :key="notification.id"
+          :class="['notification', notification.type]"
+        >
+          {{ notification.message }}
+        </div>
+      </transition-group>
+
       <!-- Ảnh nhóm -->
       <div class="avatar-section">
         <div class="avatar-container">
@@ -97,25 +108,38 @@
     </div>
   </div>
 </template>
+
 <script setup>
 /* eslint-disable */
 import { ref, reactive, computed } from 'vue'
 import { createGroup as apiCreateGroup, addMembers } from '@/service/conversationService'
 
 const props = defineProps({ friends: { type: Array, default: () => [] } })
-const emit  = defineEmits(['group-created', 'close'])
+const emit = defineEmits(['group-created', 'close'])
 
-const groupName     = ref('')
-const avatarFile    = ref(null)
-const groupAvatar   = ref(null)
-const creating      = ref(false)
+const groupName = ref('')
+const avatarFile = ref(null)
+const groupAvatar = ref(null)
+const creating = ref(false)
+const notifications = ref([])
 
 const members = reactive(props.friends.map(f => ({ ...f, selected: false })))
 const selectedMembers = computed(() => members.filter(m => m.selected))
-const selectedIds     = computed(() => selectedMembers.value.map(m => String(m.id)))
+const selectedIds = computed(() => selectedMembers.value.map(m => String(m.id)))
 
 const avatarInput = ref(null)
 const triggerAvatarDialog = () => avatarInput.value?.click()
+
+// Notification handler
+const addNotification = (message, type = 'success') => {
+  const id = Date.now()
+  notifications.value.push({ id, message, type })
+  
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    notifications.value = notifications.value.filter(n => n.id !== id)
+  }, 3000)
+}
 
 function handleAvatarSelect(e) {
   const file = e.target.files[0]
@@ -129,68 +153,71 @@ const toggleMember = id => {
   if (m) m.selected = !m.selected
 }
 
-async function createGroup () {
+async function createGroup() {
   if (creating.value) return
   if (!groupName.value.trim() || selectedIds.value.length === 0) return
   if (!avatarFile.value) {
-    alert('Vui lòng chọn ảnh nhóm!')
+    addNotification('Vui lòng chọn ảnh nhóm!', 'error')
     return
   }
 
   creating.value = true
   try {
-    // 1 — Tạo nhóm
+    // 1 — Tạo nhóm
     const fd = new FormData()
-    fd.append('name',    groupName.value.trim())
+    fd.append('name', groupName.value.trim())
     fd.append('ownerId', localStorage.getItem('accountId') || '0')
-    fd.append('avatar',  avatarFile.value)
+    fd.append('avatar', avatarFile.value)
 
     const { data: createRes } = await apiCreateGroup(fd)
-    const convId       = String(createRes.conversationId ?? createRes.data?.conversationId ?? '')
-    const convName     = createRes.name ?? createRes.data?.name ?? groupName.value
-    const convAvatar   = createRes.groupAvatar ?? createRes.data?.groupAvatar
+    const convId = String(createRes.conversationId ?? createRes.data?.conversationId ?? '')
+    const convName = createRes.name ?? createRes.data?.name ?? groupName.value
+    const convAvatar = createRes.groupAvatar ?? createRes.data?.groupAvatar
 
     if (!convId) throw new Error('Không lấy được conversationId sau khi tạo nhóm.')
 
-    // 2 — Thêm thành viên
+    // 2 — Thêm thành viên
     if (selectedIds.value.length) {
       const addBody = {
         conversationId: convId,
-        ownerId:        String(localStorage.getItem('accountId')),
-        ids:            selectedIds.value.map(String)
+        ownerId: String(localStorage.getItem('accountId')),
+        ids: selectedIds.value.map(String)
       }
       console.log('📦 Payload /conversations/members:', addBody)
       await addMembers(addBody)
     }
 
-    // 3 — Emit lên component cha
+    // 3 — Emit lên component cha
     emit('group-created', {
       conversationId: convId,
-      name:           convName,
-      groupAvatar:    convAvatar || groupAvatar.value,
-      members:        selectedMembers.value
+      name: convName,
+      groupAvatar: convAvatar || groupAvatar.value,
+      members: selectedMembers.value
     })
 
+    addNotification('Tạo nhóm thành công!', 'success')
     resetForm()
     emit('close')
   } catch (e) {
     console.error('❌ Tạo nhóm hoặc thêm thành viên thất bại:', e.response?.data || e.message)
-    alert('Tạo nhóm không thành công. Vui lòng thử lại!')
+    addNotification('Tạo nhóm không thành công. Vui lòng thử lại!', 'error')
   } finally {
     creating.value = false
   }
 }
 
-function closeForm () { resetForm(); emit('close') }
+function closeForm() {
+  resetForm()
+  emit('close')
+}
 
-function resetForm () {
-  groupName.value    = ''
-  avatarFile.value   = null
-  groupAvatar.value  = null
+function resetForm() {
+  groupName.value = ''
+  avatarFile.value = null
+  groupAvatar.value = null
   members.forEach(m => (m.selected = false))
 }
 </script>
-
 
 <style scoped>
 .mobile-form {
@@ -202,6 +229,7 @@ function resetForm () {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
 .form-header {
   display: flex;
   align-items: center;
@@ -210,11 +238,13 @@ function resetForm () {
   border-bottom: 1px solid #f0f0f0;
   background: #ffffff;
 }
+
 .header-title {
   font-size: 18px;
   font-weight: 600;
   color: #333333;
 }
+
 .close-btn {
   background: none;
   border: none;
@@ -224,20 +254,64 @@ function resetForm () {
   border-radius: 4px;
   transition: background-color 0.2s;
 }
+
 .close-btn:hover {
   background-color: #f5f5f5;
 }
+
 .form-content {
   padding: 20px;
+  position: relative;
 }
+
+.notification-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification.success {
+  background-color: #4caf50;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
 .avatar-section {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 24vempx;
 }
+
 .avatar-container {
   margin-right: 12px;
 }
+
 .avatar-placeholder {
   width: 60px;
   height: 60px;
@@ -249,20 +323,24 @@ function resetForm () {
   color: #6c757d;
   border: 2px dashed #dee2e6;
 }
+
 .avatar-text {
   flex: 1;
   padding-top: 8px;
 }
+
 .avatar-label {
   font-size: 16px;
   font-weight: 500;
   color: #333333;
   margin-bottom: 4px;
 }
+
 .avatar-subtitle {
   font-size: 13px;
   color: #888888;
 }
+
 .avatar-upload-btn {
   margin-top: 8px;
   padding: 6px 12px;
@@ -274,12 +352,15 @@ function resetForm () {
   font-size: 12px;
   font-weight: 500;
 }
+
 .avatar-upload-btn:hover {
   background: #bbdefb;
 }
+
 .input-section {
   margin-bottom: 24px;
 }
+
 .input-label {
   display: block;
   font-size: 14px;
@@ -287,9 +368,11 @@ function resetForm () {
   color: #333333;
   margin-bottom: 8px;
 }
+
 .required {
   color: #ff4757;
 }
+
 .group-input {
   width: 90%;
   padding: 12px 16px;
@@ -299,47 +382,56 @@ function resetForm () {
   background: #ffffff;
   transition: border-color 0.2s;
 }
+
 .group-input:focus {
   outline: none;
   border-color: #1da1f2;
   box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
 }
+
 .members-section {
   margin-bottom: 32px;
 }
+
 .members-label {
   font-size: 14px;
   font-weight: 500;
   color: #333333;
   margin-bottom: 16px;
 }
+
 .members-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+
 .member-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
 }
+
 .member-info {
   display: flex;
   align-items: center;
   gap: 12px;
 }
+
 .member-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
 }
+
 .member-name {
   font-size: 15px;
   color: #333333;
   font-weight: 400;
 }
+
 .btn-add, .btn-remove {
   padding: 6px 12px;
   border-radius: 16px;
@@ -349,23 +441,29 @@ function resetForm () {
   cursor: pointer;
   transition: all 0.2s;
 }
+
 .btn-add {
   background: #e3f2fd;
   color: #1976d2;
 }
+
 .btn-add:hover {
   background: #bbdefb;
 }
+
 .btn-remove {
   background: #ffebee;
   color: #d32f2f;
 }
+
 .btn-remove:hover {
   background: #ffcdd2;
 }
+
 .button-section {
   margin-top: 24px;
 }
+
 .create-btn {
   width: 100%;
   padding: 14px 24px;
@@ -378,13 +476,16 @@ function resetForm () {
   cursor: pointer;
   transition: background-color 0.2s;
 }
+
 .create-btn:hover:not(.disabled) {
   background: #1991db;
 }
+
 .create-btn.disabled {
   background: #ccd6dd;
   cursor: not-allowed;
 }
+
 @media (max-width: 480px) {
   .mobile-form {
     border-radius: 0;
@@ -395,4 +496,3 @@ function resetForm () {
   }
 }
 </style>
-```
