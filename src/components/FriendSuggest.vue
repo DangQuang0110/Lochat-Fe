@@ -7,6 +7,17 @@
         <HeaderContact />
 
         <div class="scroll-content">
+          <!-- Notification component -->
+          <transition-group name="fade" tag="div" class="notification-container">
+            <div 
+              v-for="notification in notifications" 
+              :key="notification.id"
+              :class="['notification', notification.type]"
+            >
+              {{ notification.message }}
+            </div>
+          </transition-group>
+
           <!-- Tìm kiếm -->
           <div class="search-bar">
             <img src="/icons/search.png" class="search-icon" />
@@ -23,7 +34,7 @@
               </div>
               <div class="action-buttons">
                 <button class="btn-skip" @click="skipFriend(friend.id)">Bỏ qua</button>
-                <button class="btn-add"  @click="addFriend(friend.id)">Kết bạn</button>
+                <button class="btn-add" @click="addFriend(friend.id)">Kết bạn</button>
               </div>
             </div>
           </div>
@@ -35,15 +46,27 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import layout                         from '@/layout/SideBarContact.vue'
-import { getRandomAccounts }         from '@/service/accountService'
+import layout from '@/layout/SideBarContact.vue'
+import { getRandomAccounts } from '@/service/accountService'
 import { sendFriendRequest, getAcceptedFriends } from '@/service/friendService'
 
 /* -------- state -------- */
-const searchText        = ref('')
-const friends           = ref([])
+const searchText = ref('')
+const friends = ref([])
 const loggedInAccountId = Number(localStorage.getItem('accountId'))
-const currentFriends    = ref([]) // 🟡 danh sách đã là bạn
+const currentFriends = ref([]) // 🟡 danh sách đã là bạn
+const notifications = ref([])
+
+/* -------- notification handler -------- */
+const addNotification = (message, type = 'success') => {
+  const id = Date.now()
+  notifications.value.push({ id, message, type })
+  
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    notifications.value = notifications.value.filter(n => n.id !== id)
+  }, 3000)
+}
 
 /* -------- fetch gợi ý -------- */
 onMounted(async () => {
@@ -60,6 +83,7 @@ onMounted(async () => {
     )
   } catch (err) {
     console.error('Không load được gợi ý liên hệ:', err)
+    addNotification('Không load được gợi ý liên hệ', 'error')
   }
 })
 
@@ -78,9 +102,10 @@ async function addFriend(receiverId) {
     console.log('📤 Gửi request:', { senderId: loggedInAccountId, receiverId })
     await sendFriendRequest(loggedInAccountId, receiverId)
     friends.value = friends.value.filter(f => f.id !== receiverId)
+    addNotification('Đã gửi lời mời kết bạn', 'success')
   } catch (err) {
     console.error('Không thể gửi lời mời:', err)
-    alert('Gửi lời mời thất bại!')
+    addNotification('Gửi lời mời thất bại', 'error')
   }
 }
 
@@ -107,6 +132,45 @@ function skipFriend(id) {
   flex: 1;
   overflow-y: auto;
   padding: 30px;
+  position: relative;
+}
+
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification.success {
+  background-color: #4caf50;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
 .search-bar {
