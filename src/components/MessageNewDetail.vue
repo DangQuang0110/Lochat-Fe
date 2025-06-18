@@ -1,12 +1,12 @@
 <template>
-  <div class="modal-overlay">
-    <div class="profile-modal">
+  <div class="modal-overlay" v-if="showModal" @click="closeModal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+    <div class="profile-modal" @click.stop>
       <!-- Profile View -->
       <div v-if="!isEditing" class="profile-view">
         <!-- Header -->
         <div class="modal-header">
-          <h2 class="title">Hồ sơ của tôi</h2>
-          <button class="close-btn" @click="closeModal">×</button>
+          <h2 class="title" id="modal-title">Hồ sơ của tôi</h2>
+          <button class="close-btn" @click="closeModal" aria-label="Đóng modal">×</button>
         </div>
 
         <!-- Background Image Section with Avatar -->
@@ -14,39 +14,38 @@
           <div class="background-image" :style="{ backgroundImage: `url(${profile.cover || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=220&fit=crop'})` }"></div>
           <div class="avatar-overlay">
             <div class="avatar-container">
-              <img :src="profile.avatar" :alt="profile.name" class="avatar" />
+              <img :src="profile.avatar || '/icons/default-avatar.png'" :alt="profile.name" class="avatar" />
             </div>
           </div>
         </div>
 
         <!-- Profile Name -->
         <div class="name-section">
-          <h3 class="profile-name">{{ profile.name }}</h3>
+          <h3 class="profile-name">{{ profile.name || 'Chưa đặt tên' }}</h3>
         </div>
 
         <!-- Bio Section -->
         <div class="bio-section">
           <h4 class="section-title">Giới thiệu</h4>
           <div class="bio-content">
-            <p class="bio-text">{{ profile.bio }}</p>
+            <p class="bio-text">{{ profile.bio || 'Chưa có giới thiệu.' }}</p>
           </div>
         </div>
 
         <!-- Personal Information -->
         <div class="info-section">
           <h4 class="section-title">Thông tin liên hệ</h4>
-          
           <div class="info-item">
             <div class="icon">
               <img src="/icons/phone.png" alt="Phone" class="icon-img" />
             </div>
-            <span class="label">{{ profile.phone }}</span>
+            <span class="label">{{ profile.phone || 'Chưa có số điện thoại.' }}</span>
           </div>
         </div>
 
         <!-- Edit Button -->
         <div class="edit-section">
-          <button class="edit-btn" @click="startEditing">
+          <button class="edit-btn" @click="startEditing" aria-label="Chỉnh sửa hồ sơ">
             <span>Chỉnh sửa thông tin cá nhân</span>
             <img src="/icons/pencil.png" alt="Edit" class="edit-icon" />
           </button>
@@ -56,57 +55,57 @@
       <!-- Edit Form -->
       <div v-else class="edit-form-view">
         <div class="modal-header">
-          <h2 class="title">Chỉnh sửa thông tin cá nhân</h2>
-          <button class="close-btn" @click="cancelEdit">×</button>
+          <h2 class="title" id="modal-title">Chỉnh sửa thông tin cá nhân</h2>
+          <button class="close-btn" @click="cancelEdit" aria-label="Hủy chỉnh sửa">×</button>
         </div>
 
         <div class="edit-profile-form">
+          <!-- Error Notification -->
+          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+
           <div class="form-group">
-            <label>Tên</label>
-            <input type="text" v-model="editData.name" placeholder="Nhập tên của bạn">
+            <label for="name">Tên</label>
+            <input id="name" type="text" v-model="editData.name" placeholder="Nhập tên của bạn" aria-label="Tên người dùng" />
           </div>
 
           <div class="form-group">
-            <label>Ảnh đại diện</label>
-            <div class="avatar-placeholder">
-              <input type="file" accept="image/*" @change="handleAvatarUpload">
+            <label for="avatar-upload">Ảnh đại diện</label>
+            <div class="avatar-placeholder" @click="triggerAvatarInput">
+              <input id="avatar-upload" type="file" accept="image/*" ref="avatarInput" @change="handleAvatarUpload" aria-label="Tải lên ảnh đại diện" />
               <div v-if="!editData.avatar" class="avatar-icon">📷</div>
-              <img v-else :src="editData.avatar" alt="Avatar Preview" class="avatar-preview">
+              <img v-else :src="editData.avatar" alt="Ảnh đại diện xem trước" class="avatar-preview" />
             </div>
           </div>
 
           <div class="form-group">
-            <label>Ảnh bìa</label>
-            <div class="cover-placeholder">
-              <input type="file" accept="image/*" @change="handleCoverUpload">
+            <label for="cover-upload">Ảnh bìa</label>
+            <div class="cover-placeholder" @click="triggerCoverInput">
+              <input id="cover-upload" type="file" accept="image/*" ref="coverInput" @change="handleCoverUpload" aria-label="Tải lên ảnh bìa" />
               <div v-if="!editData.cover" class="cover-icon">📸</div>
-              <img v-else :src="editData.cover" alt="Cover Preview" class="cover-preview">
+              <img v-else :src="editData.cover" alt="Ảnh bìa xem trước" class="cover-preview" />
             </div>
           </div>
 
           <div class="form-group">
-            <label>Giới thiệu</label>
-            <textarea 
-              v-model="editData.bio" 
-              placeholder="Viết một vài dòng giới thiệu về bản thân..."
-              rows="4"
-              class="bio-textarea"
-            ></textarea>
+            <label for="bio">Giới thiệu</label>
+            <textarea id="bio" v-model="editData.bio" placeholder="Viết một vài dòng giới thiệu về bản thân..." rows="4" class="bio-textarea" aria-label="Giới thiệu bản thân"></textarea>
           </div>
 
           <div class="form-group">
             <label>Thông tin liên hệ</label>
             <div class="info-group">
               <div>
-                <label>Số điện thoại</label>
-                <input type="tel" v-model="editData.phone" placeholder="0369620631">
+                <label for="phone">Số điện thoại</label>
+                <input id="phone" type="tel" v-model="editData.phone" placeholder="0369620631" aria-label="Số điện thoại" />
               </div>
             </div>
           </div>
 
           <div class="form-actions">
-            <button class="save-btn" @click="saveChanges">Lưu thông tin</button>
-            <button class="cancel-btn" @click="cancelEdit">Hủy</button>
+            <button class="save-btn" @click="saveChanges" :disabled="isSaving" aria-label="Lưu thông tin">
+              {{ isSaving ? 'Đang lưu...' : 'Lưu thông tin' }}
+            </button>
+            <button class="cancel-btn" @click="cancelEdit" aria-label="Hủy chỉnh sửa">Hủy</button>
           </div>
         </div>
       </div>
@@ -127,7 +126,10 @@ export default {
   },
   data() {
     return {
+      showModal: true,
       isEditing: false,
+      isSaving: false,
+      errorMessage: '',
       profile: {
         name: '',
         avatar: '',
@@ -150,7 +152,7 @@ export default {
         const data = await getAccountDetail(this.accountId)
         const profile = data.profile || {}
         this.profile = {
-          name: profile.fullname || data.username,
+          name: profile.fullname || data.username || '',
           avatar: profile.avatarUrl || '',
           cover: profile.coverUrl || '',
           bio: profile.bio || '',
@@ -158,37 +160,65 @@ export default {
           profileId: profile.id || ''
         }
       } catch (err) {
+        this.errorMessage = 'Không thể tải hồ sơ. Vui lòng thử lại sau.'
         console.error('Không thể tải hồ sơ:', err)
       }
     },
     closeModal() {
+      this.showModal = false
       this.$emit('close')
     },
     startEditing() {
       this.isEditing = true
       this.editData = { ...this.profile }
+      this.errorMessage = ''
     },
     cancelEdit() {
       this.isEditing = false
       this.editData = {}
       this.avatarFile = null
       this.coverFile = null
+      this.errorMessage = ''
+    },
+    triggerAvatarInput() {
+      this.$refs.avatarInput.click()
+    },
+    triggerCoverInput() {
+      this.$refs.coverInput.click()
     },
     handleAvatarUpload(e) {
       const file = e.target.files[0]
       if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          this.errorMessage = 'Ảnh đại diện phải nhỏ hơn 5MB.'
+          e.target.value = ''
+          return
+        }
         this.avatarFile = file
         this.editData.avatar = URL.createObjectURL(file)
+        this.errorMessage = ''
       }
     },
     handleCoverUpload(e) {
       const file = e.target.files[0]
       if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          this.errorMessage = 'Ảnh bìa phải nhỏ hơn 5MB.'
+          e.target.value = ''
+          return
+        }
         this.coverFile = file
         this.editData.cover = URL.createObjectURL(file)
+        this.errorMessage = ''
       }
     },
     async saveChanges() {
+      if (!this.editData.name.trim()) {
+        this.errorMessage = 'Vui lòng nhập tên.'
+        return
+      }
+      this.isSaving = true
+      this.errorMessage = ''
       try {
         const result = await updateProfile(
           this.profile.profileId,
@@ -196,7 +226,6 @@ export default {
           this.avatarFile,
           this.coverFile
         )
-
         this.profile = {
           name: result.fullname,
           avatar: result.avatarUrl,
@@ -205,19 +234,20 @@ export default {
           phone: this.editData.phone,
           profileId: result.profileId
         }
-
         this.isEditing = false
         this.avatarFile = null
         this.coverFile = null
         this.$emit('save', this.profile)
       } catch (err) {
+        this.errorMessage = err.response?.data?.message || 'Lỗi khi cập nhật hồ sơ. Vui lòng thử lại.'
         console.error('Lỗi khi cập nhật hồ sơ:', err)
+      } finally {
+        this.isSaving = false
       }
     }
   }
 }
 </script>
-
 
 <style scoped>
 .modal-overlay {
@@ -226,7 +256,7 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -241,24 +271,24 @@ export default {
 }
 
 .profile-modal {
-  background: white;
+  background: #ffffff;
   width: 100%;
-  max-width: 400px;
-  max-height: 100vh;  
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  max-width: 450px;
+  max-height: 90vh;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   overflow-y: auto;
-  overflow: hidden;
-  border-radius: 12px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Header */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 25px 30px;
-  border-bottom: 1px solid #f0f0f0;
-  background: white;
+  padding: 9px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -267,38 +297,35 @@ export default {
 .title {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
-  margin-left: -6px;
+  color: #1f2937;
+  margin: 0;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 36px;
-  color: #999;
+  font-size: 24px;
+  color: #6b7280;
   cursor: pointer;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
-  align-items: center;  
+  align-items: center;
   justify-content: center;
   border-radius: 50%;
   transition: all 0.2s;
-  margin-right : -24px;
 }
 
 .close-btn:hover {
-  background: #f5f5f5;
-  color: #666;
+  background: #f3f4f6;
+  color: #374151;
 }
 
 /* Profile View Styles */
 .background-section {
   position: relative;
-  height: 180px;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  overflow: visible;
+  height: 160px;
+  overflow: hidden;
 }
 
 .background-image {
@@ -313,20 +340,14 @@ export default {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg,
-    rgba(74, 144, 226, 0.4) 0%,
-    rgba(123, 104, 238, 0.2) 60%,
-    rgba(147, 112, 219, 0.0) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 100%);
 }
 
 .avatar-overlay {
   position: absolute;
-  bottom: -70px;
+  bottom: -50px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   z-index: 10;
 }
 
@@ -335,71 +356,68 @@ export default {
 }
 
 .avatar {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   object-fit: cover;
   transition: transform 0.3s;
-  margin-bottom : 24px;
 }
+
 .avatar:hover {
-  transform: scale(1.03);
+  transform: scale(1.05);
 }
 
 .name-section {
-  padding: calc(50px + 16px) 24px 8px;  /* top = avatar lift + spacing */
+  padding: 60px 24px 16px;
   text-align: center;
-  background: #fff;
+  background: #ffffff;
 }
 
 .profile-name {
   margin: 0;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 600;
-  color: #222;
+  color: #1f2937;
 }
 
 .bio-section {
-  padding: 16px 24px 24px;
-  background: #fcfcfc;
+  padding: 16px 24px;
+  background: #f9fafb;
 }
 
 .bio-content {
-  background: #eeeeee;
+  background: #ffffff;
   border-radius: 8px;
   padding: 16px;
-  /* border-left: 4px solid #4A90E2; */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .bio-text {
   margin: 0;
   font-size: 15px;
-  line-height: 1.5;
-  color: #555;
-  font-style: italic;
+  line-height: 1.6;
+  color: #4b5563;
 }
 
-
 .info-section {
-  padding: 0 30px 30px 30px;
+  padding: 16px 24px;
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  color: #000;
-  margin: 0 0 25px 0;
+  color: #1f2937;
+  margin: 0 0 16px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  padding: 18px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .info-item:last-child {
@@ -407,19 +425,18 @@ export default {
 }
 
 .icon {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 24px;
+  margin-right: 16px;
 }
 
 .icon-img {
-  width: 80%;
-  height: 80%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  margin-left: -16px;
 }
 
 .label {
@@ -429,107 +446,109 @@ export default {
 }
 
 .edit-section {
-  padding: 0 30px 30px 30px;
+  padding: 16px 24px;
 }
 
 .edit-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  padding: 18px 30px;
-  background: #666;
-  color: white;
+  padding: 14px;
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
   border: none;
   border-radius: 14px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .edit-btn:hover {
-  background: #3B82F6;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .edit-btn:active {
   transform: translateY(0);
-  box-shadow: none;
 }
 
 .edit-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
 }
 
 /* Edit Form Styles */
 .edit-form-view {
-  max-height: 95vh;
-  overflow-y: auto;
+  padding: 24px;
 }
 
 .edit-profile-form {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 14px;
+  text-align: center;
+  margin: 0 0 16px;
+  padding: 8px;
+  background: #fef2f2;
+  border-radius: 8px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #34495e;
-  font-size: 15px;
-  transition: color 0.3s ease;
-}
-
-.form-group:hover label {
-  color: #2980b9;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
 }
 
 .form-group input[type="text"],
 .form-group input[type="tel"] {
   width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #ddd;
+  padding: 12px;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  font-size: 16px;
-  background: #fff;
-  transition: border-color 0.3s, box-shadow 0.3s;
-  box-sizing: border-box;
+  font-size: 15px;
+  background: #ffffff;
+  transition: all 0.2s;
 }
 
-.form-group input[type="text"]:focus,
-.form-group input[type="tel"]:focus {
+.form-group input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .avatar-placeholder {
   width: 120px;
   height: 120px;
-  background: #ecf0f1;
-  border: 2px dashed #bdc3c7;
+  background: #f3f4f6;
+  border: 2px dashed #d1d5db;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 8px auto 0;
+  margin: 8px auto;
   position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .avatar-placeholder:hover {
-  background: #dfe6e9;
-  border-color: #3498db;
+  border-color: #3b82f6;
+  background: #eff6ff;
 }
 
 .avatar-placeholder input {
@@ -541,13 +560,8 @@ export default {
 }
 
 .avatar-icon {
-  font-size: 28px;
-  color: #7f8c8d;
-  transition: color 0.3s ease;
-}
-
-.avatar-placeholder:hover .avatar-icon {
-  color: #3498db;
+  font-size: 24px;
+  color: #6b7280;
 }
 
 .avatar-preview {
@@ -559,22 +573,22 @@ export default {
 
 .cover-placeholder {
   width: 100%;
-  height: 120px;
-  background: #ecf0f1;
-  border: 2px dashed #bdc3c7;
+  height: 100px;
+  background: #f3f4f6;
+  border: 2px dashed #d1d5db;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 8px;
   position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .cover-placeholder:hover {
-  background: #dfe6e9;
-  border-color: #3498db;
+  border-color: #3b82f6;
+  background: #eff6ff;
 }
 
 .cover-placeholder input {
@@ -586,123 +600,97 @@ export default {
 }
 
 .cover-icon {
-  font-size: 28px;
-  color: #7f8c8d;
-  transition: color 0.3s ease;
-}
-
-.cover-placeholder:hover .cover-icon {
-  color: #3498db;
+  font-size: 24px;
+  color: #6b7280;
 }
 
 .cover-preview {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 8px;
 }
 
 .bio-textarea {
   width: 100%;
-  padding: 15px;
-  border: 1px solid #ddd;
+  padding: 12px;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  font-size: 16px;
-  background: #fff;
+  font-size: 15px;
+  background: #ffffff;
   resize: vertical;
-  min-height: 100px;
-  font-family: inherit;
-  line-height: 1.5;
-  transition: border-color 0.3s, box-shadow 0.3s;
-  box-sizing: border-box;
+  min-height: 80px;
+  transition: all 0.2s;
 }
 
 .bio-textarea:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
-}
-
-.bio-textarea::placeholder {
-  color: #95a5a6;
-  font-style: italic;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .info-group {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-}
-
-.info-group div {
-  display: flex;
-  flex-direction: column;
+  gap: 16px;
 }
 
 .info-group label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #2c3e50;
+  font-size: 13px;
+  color: #4b5563;
 }
 
 .info-group input {
-  padding: 10px 12px;
-  border: 1px solid #ddd;
+  padding: 10px;
   border-radius: 6px;
-  font-size: 14px;
-  background: #fff;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.info-group input:focus {
-  outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
 }
 
 .form-actions {
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .save-btn {
   flex: 1;
-  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
-  color: white;
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
   padding: 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s;
 }
 
 .save-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.save-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(52, 152, 219, 0.2);
+.save-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .cancel-btn {
   flex: 1;
-  background: #95a5a6;
-  color: white;
+  background: #f3f4f6;
+  color: #374151;
   padding: 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
   transition: all 0.2s;
 }
 
 .cancel-btn:hover {
-  background: #7f8c8d;
+  background: #e5e7eb;
 }
 
 /* Responsive */
@@ -714,40 +702,30 @@ export default {
 
 @media (max-width: 480px) {
   .background-section {
-    height: 180px;
+    height: 140px;
   }
   .avatar {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
   }
   .name-section {
-    padding-top: calc(60px + 12px);
+    padding-top: 50px;
   }
   .profile-name {
-    font-size: 22px;
-  }
-  .bio-content {
-    padding: 12px;
+    font-size: 20px;
   }
   .bio-text {
     font-size: 14px;
   }
-}
-  
-  .title {
-    font-size: 20px;
-  }
-  
-  .profile-name {
-    font-size: 26px;
-  }
-  
-  .bio-text {
-    font-size: 15px;
-  }
-  
   .form-actions {
     flex-direction: column;
   }
-
+  .form-group label {
+    font-size: 13px;
+  }
+  .form-group input,
+  .bio-textarea {
+    font-size: 14px;
+  }
+}
 </style>
