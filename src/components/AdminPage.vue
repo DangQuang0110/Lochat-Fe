@@ -1,5 +1,10 @@
 <template>
   <div class="admin-container">
+    <!-- Add notification component -->
+    <div v-if="notification.show" :class="['notification', notification.type]">
+      {{ notification.message }}
+    </div>
+
     <!-- Sidebar -->
     <aside class="sidebar">
       <h2 class="sidebar-brand">Admin</h2>
@@ -55,14 +60,18 @@
             </div>
             <div class="card-footer">
               <button
-                v-if="!user.blocked"
+                v-if="!user.isBanned"
                 class="btn-block"
-                @click="user.blocked = true"
+                @click="handleBanUser(user)"
               >
-                Chặn
+                Khóa
               </button>
-              <button v-else class="btn-unblock" @click="user.blocked = false">
-                Mở chặn
+              <button 
+                v-else 
+                class="btn-unblock" 
+                @click="handleUnbanUser(user)"
+              >
+                Mở khóa
               </button>
             </div>
           </div>
@@ -90,10 +99,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { getListAccount } from "@/service/AdminService/AdminSer";
+import { getListAccount, banUser, unbanUser } from "@/service/AdminService/AdminSer";
 import defaultAvatar from "@/assets/avata.jpg";
 
 const users = ref([]);
+const notification = ref({ show: false, message: '', type: '' });
 
 const sortOrder = ref("name-asc");
 const currentPage = ref(1);
@@ -130,15 +140,62 @@ const fetchListAccount = async () => {
     users.value = res.map((acc) => ({
       id: acc.id,
       name: acc.profile.fullname || "Người dùng",
-      // role: acc.role || 'Người dùng',
       phone: acc.phoneNumber || "",
       avatar: acc.profile.avatarUrl || defaultAvatar,
-      blocked: acc.blocked || false,
+      isBanned: acc.isBanned || false,
     }));
+    console.log("Danh sách người dùng sau khi map:", users.value);
   } catch (err) {
     console.error("❌ Lỗi khi gọi API:", err);
   }
 };
+
+// Add notification function
+const showNotification = (message, type = 'info') => {
+  notification.value = {
+    show: true,
+    message,
+    type
+  };
+  setTimeout(() => {
+    notification.value.show = false;
+  }, 3000);
+};
+
+const handleBanUser = async (user) => {
+  try {
+    await banUser(user.id);
+    user.isBanned = true;
+    showNotification('Đã khóa người dùng thành công', 'success');
+  } catch (error) {
+    if (error.response?.status === 409) {
+      // Kiểm tra response data để xác định lý do lỗi
+      const errorMessage = error.response?.data?.message || 'Người dùng đã bị khóa trước đó';
+      user.isBanned = true;
+      showNotification(errorMessage, 'warning');
+    } else {
+      showNotification('Có lỗi xảy ra khi khóa người dùng', 'error');
+    }
+  }
+};
+
+const handleUnbanUser = async (user) => {
+  try {
+    await unbanUser(user.id);
+    user.isBanned = false;
+    showNotification('Đã mở khóa người dùng thành công', 'success');
+  } catch (error) {
+    if (error.response?.status === 409) {
+      // Kiểm tra response data để xác định lý do lỗi
+      const errorMessage = error.response?.data?.message || 'Người dùng chưa bị khóa';
+      user.isBanned = false;
+      showNotification(errorMessage, 'warning');
+    } else {
+      showNotification('Có lỗi xảy ra khi mở khóa người dùng', 'error');
+    }
+  }
+};
+
 onMounted(fetchListAccount);
 </script>
 
@@ -354,6 +411,45 @@ onMounted(fetchListAccount);
 @media (max-width: 480px) {
   .grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Add notification styles */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 4px;
+  color: white;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+  background-color: #4CAF50;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
+
+.notification.warning {
+  background-color: #ff9800;
+}
+
+.notification.info {
+  background-color: #2196F3;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 </style>

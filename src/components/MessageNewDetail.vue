@@ -232,6 +232,13 @@ export default {
   align-items: center;
   z-index: 1000;
 }
+.profile-view {
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 0 16px;
+  overflow-y: auto;
+  max-height: 96vh;
+}
 
 .profile-modal {
   background: white;
@@ -416,7 +423,7 @@ export default {
 }
 
 .label {
-  font-size: 18px;
+  font-size: 14px;
   color: #333;
   font-weight: 400;
 }
@@ -436,7 +443,7 @@ export default {
   color: white;
   border: none;
   border-radius: 14px;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;

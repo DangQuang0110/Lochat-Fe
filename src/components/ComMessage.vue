@@ -1287,8 +1287,11 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   align-items: center;
   cursor: pointer;
   margin-left: auto;
-  margin-right: 5px;
-  margin-bottom: 5px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  
+    
+
 }
 .sidebar-top{
   display: flex;
@@ -1333,6 +1336,10 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   font-size: 14px;
   outline: none;
 }
+.search-bar input:focus {
+  border-color: #007BFF; 
+  background-color: #f0f8ff; 
+}
 .search-bar .add-btn {
   width: 8px;
   height: 16px;
@@ -1349,10 +1356,13 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   transition: background 0.2s;
   margin-left: -16px;
   margin-right: 3px;
+  padding-right: 10px;
+  margin-right: 10px;
 }
 .search-bar .add-btn:hover {
   background: #335bcc;
 }
+
 .tab-section {
   display: flex;
   position: relative;
