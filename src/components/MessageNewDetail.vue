@@ -262,6 +262,13 @@ export default {
   align-items: center;
   z-index: 1000;
 }
+.profile-view {
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 0 16px;
+  overflow-y: auto;
+  max-height: 96vh;
+}
 
 .profile-modal {
   background: #ffffff;
@@ -433,8 +440,9 @@ export default {
 }
 
 .label {
-  font-size: 15px;
-  color: #4b5563;
+  font-size: 14px;
+  color: #333;
+  font-weight: 400;
 }
 
 .edit-section {
@@ -451,8 +459,8 @@ export default {
   background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 14px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
