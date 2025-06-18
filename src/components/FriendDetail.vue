@@ -32,7 +32,7 @@
         <!-- SĐT -->
         <div class="info-item">
           <img src="/icons/phone.png" class="icon" />
-          <span>{{ user.phone }}</span>
+          <span style="margin-top: 4px;">{{ user.phone }}</span>
         </div>
       </div>
 
