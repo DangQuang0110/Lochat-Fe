@@ -9,45 +9,64 @@
           <button class="close-btn" @click="closeModal" aria-label="Đóng modal">×</button>
         </div>
 
-        <!-- Background Image Section with Avatar -->
-        <div class="background-section">
-          <div class="background-image" :style="{ backgroundImage: `url(${profile.cover || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=220&fit=crop'})` }"></div>
-          <div class="avatar-overlay">
-            <div class="avatar-container">
-              <img :src="profile.avatar || '/icons/default-avatar.png'" :alt="profile.name" class="avatar" />
-            </div>
+        <!-- Cover and Avatar Section -->
+        <div class="profile-header">
+          <!-- Cover Image -->
+          <div class="cover-section">
+            <img v-if="profile.cover" :src="profile.cover" alt="Ảnh bìa" class="cover-image" />
+            <div v-else class="cover-placeholder-display"></div>
+          </div>
+          
+          <!-- Avatar positioned over cover -->
+          <div class="avatar-section">
+            <img :src="profile.avatar || '/icons/default-avatar.png'" :alt="profile.name" class="avatar" />
           </div>
         </div>
 
-        <!-- Profile Name -->
-        <div class="name-section">
+        <!-- Name Section -->
+        <div class="profile-info">
           <h3 class="profile-name">{{ profile.name || 'Chưa đặt tên' }}</h3>
         </div>
 
-        <!-- Bio Section -->
-        <div class="bio-section">
-          <h4 class="section-title">Giới thiệu</h4>
-          <div class="bio-content">
-            <p class="bio-text">{{ profile.bio || 'Chưa có giới thiệu.' }}</p>
-          </div>
-        </div>
-
-        <!-- Personal Information -->
+        <!-- Info Section -->
         <div class="info-section">
-          <h4 class="section-title">Thông tin liên hệ</h4>
+          <h4 class="section-title">Thông tin cá nhân</h4>
+          
+          <!-- Bio Item -->
           <div class="info-item">
-            <div class="icon">
-              <img src="/icons/phone.png" alt="Phone" class="icon-img" />
+            <div class="info-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
             </div>
-            <span class="label">{{ profile.phone || 'Chưa có số điện thoại.' }}</span>
+            <div class="info-content">
+              <div class="info-label">Tiểu sử</div>
+              <div class="info-value">{{ profile.bio || 'Chưa có giới thiệu.' }}</div>
+            </div>
+          </div>
+
+          <!-- Phone Item -->
+          <div class="info-item">
+            <div class="info-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+            </div>
+            <div class="info-content">
+              <div class="info-value">{{ profile.phone || 'Chưa có số điện thoại.' }}</div>
+            </div>
           </div>
         </div>
 
         <!-- Edit Button -->
         <div class="edit-section">
           <button class="edit-btn" @click="startEditing" aria-label="Chỉnh sửa hồ sơ">
-            <span>Chỉnh sửa thông tin cá nhân</span>
-            <img src="/icons/pencil.png" alt="Edit" class="edit-icon" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Chỉnh sửa thông tin cá nhân
           </button>
         </div>
       </div>
@@ -65,7 +84,7 @@
 
           <div class="form-group">
             <label for="name">Tên</label>
-            <input id="name" type="text" v-model="editData.name" placeholder="Nhập tên của bạn" aria-label="Tên người dùng" value="Gia Phong" />
+            <input id="name" type="text" v-model="editData.name" placeholder="Nhập tên của bạn" aria-label="Tên người dùng" />
           </div>
 
           <div class="form-group">
@@ -88,7 +107,7 @@
 
           <div class="form-group">
             <label for="bio">Giới thiệu</label>
-            <textarea id="bio" v-model="editData.bio" placeholder="Viết một vài dòng giới thiệu về bản thân..." rows="4" class="bio-textarea" aria-label="Giới thiệu bản thân">Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản. Hiện tại, Phong đang học ở trường Đại học Bách Khoa Hà Nội.</textarea>
+            <textarea id="bio" v-model="editData.bio" placeholder="Viết một vài dòng giới thiệu về bản thân..." rows="4" class="bio-textarea" aria-label="Giới thiệu bản thân"></textarea>
           </div>
 
           <div class="form-group">
@@ -96,7 +115,7 @@
             <div class="info-group">
               <div>
                 <label for="phone">Số điện thoại</label>
-                <input id="phone" type="tel" v-model="editData.phone" placeholder="0369620631" aria-label="Số điện thoại" value="0369620631" />
+                <input id="phone" type="tel" v-model="editData.phone" placeholder="Nhập số điện thoại" aria-label="Số điện thoại" />
               </div>
             </div>
           </div>
@@ -134,7 +153,7 @@ export default {
         name: 'Gia Phong',
         avatar: '',
         cover: '',
-        bio: 'Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản. Hiện tại, Phong đang học ở trường Đại học Bách Khoa Hà Nội.',
+        bio: 'Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản và sự cố gắng.',
         phone: '0369620631',
         profileId: ''
       },
@@ -153,9 +172,9 @@ export default {
         const profile = data.profile || {}
         this.profile = {
           name: profile.fullname || data.username || 'Gia Phong',
-          avatar: profile.avatarUrl || '',
+          avatar: profile.avatarUrl || '/assets/cau.jpg',
           cover: profile.coverUrl || '',
-          bio: profile.bio || 'Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản. Hiện tại, Phong đang học ở trường Đại học Bách Khoa Hà Nội.',
+          bio: profile.bio || 'Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản và sự cố gắng.',
           phone: data.phoneNumber || '0369620631',
           profileId: profile.id || ''
         }
@@ -256,29 +275,27 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
-.profile-view {
-  max-width: 380px;
-  margin: 0 auto;
-  padding: 0 16px;
-  overflow-y: auto;
-  max-height: 96vh;
-}
 
 .profile-modal {
   background: #ffffff;
   width: 100%;
-  max-width: 450px;
+  max-width: 400px;
   max-height: 90vh;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.profile-view {
+  overflow-y: auto;
+  max-height: 90vh;
 }
 
 /* Header */
@@ -286,18 +303,15 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 9px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 20px;
   background: #ffffff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: #333;
   margin: 0;
 }
 
@@ -305,148 +319,136 @@ export default {
   background: none;
   border: none;
   font-size: 24px;
-  color: #6b7280;
+  color: #666;
   cursor: pointer;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s;
+  transition: background 0.2s;
 }
 
 .close-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: #f5f5f5;
 }
 
-/* Profile View Styles */
-.background-section {
+/* Profile Header with Cover and Avatar */
+.profile-header {
   position: relative;
-  height: 160px;
-  overflow: hidden;
+  margin-bottom: 50px;
 }
 
-.background-image {
+.cover-section {
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.cover-image {
   width: 100%;
   height: 100%;
-  background-size: cover;
-  background-position: center;
-  position: relative;
+  object-fit: cover;
 }
 
-.background-image::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 100%);
+.cover-placeholder-display {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.avatar-overlay {
+.avatar-section {
   position: absolute;
-  bottom: -50px;
   left: 50%;
+  bottom: -19px;
   transform: translateX(-50%);
-  z-index: 10;
-}
-
-.avatar-container {
-  position: relative;
+  z-index: 2;
 }
 
 .avatar {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  border: 4px solid #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.avatar:hover {
-  transform: scale(1.05);
-}
-
-.name-section {
-  padding: 60px 24px 16px;
-  text-align: center;
+  border: 4px solid #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   background: #ffffff;
+}
+
+/* Profile Info */
+.profile-info {
+  text-align: center;
+  padding: 0 20px 20px;
 }
 
 .profile-name {
-  margin: 0;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
-  color: #1f2937;
-}
-
-.bio-section {
-  padding: 16px 24px;
-  background: #f9fafb;
-}
-
-.bio-content {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.bio-text {
+  color: #333;
   margin: 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #4b5563;
 }
 
+/* Info Section */
 .info-section {
-  padding: 16px 24px;
+  padding: 0 20px 20px;
 }
 
 .section-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: #333;
   margin: 0 0 16px;
-  text-transform: uppercase;
 }
 
 .info-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 12px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .info-item:last-child {
   border-bottom: none;
 }
 
-.icon {
-  width: 24px;
-  height: 24px;
+.info-icon {
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16px;
+  margin-right: 12px;
+  flex-shrink: 0;
+ 
 }
 
-.icon-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.info-content {
+  flex: 1;
+  min-width: 0;
 }
 
-.label {
+.info-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.info-value {
   font-size: 14px;
   color: #333;
-  font-weight: 400;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 
+/* Edit Section */
 .edit-section {
-  padding: 16px 24px;
+  padding: 20px;
+  background: #f9f9f9;
 }
 
 .edit-btn {
@@ -455,50 +457,41 @@ export default {
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-  color: #ffffff;
+  padding: 12px;
+  background: #007AFF;
+  color: white;
   border: none;
-  border-radius: 14px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
 }
 
 .edit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.edit-btn:active {
-  transform: translateY(0);
-}
-
-.edit-icon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
+  background: #0056CC;
 }
 
 /* Edit Form Styles */
 .edit-form-view {
-  padding: 24px;
+  padding: 0 20px 20px;
+  overflow-y: auto;
+  max-height: 90vh;
 }
 
 .edit-profile-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .error-message {
-  color: #ef4444;
+  color: #FF3B30;
   font-size: 14px;
   text-align: center;
-  margin: 0 0 16px;
-  padding: 8px;
-  background: #fef2f2;
+  margin: 0;
+  padding: 8px 12px;
+  background: #FFE8E6;
   border-radius: 8px;
 }
 
@@ -511,31 +504,31 @@ export default {
 .form-group label {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: #333;
 }
 
 .form-group input[type="text"],
 .form-group input[type="tel"] {
   width: 100%;
   padding: 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 16px;
   background: #ffffff;
-  transition: all 0.2s;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #007AFF;
 }
 
 .avatar-placeholder {
-  width: 120px;
-  height: 120px;
-  background: #f3f4f6;
-  border: 2px dashed #d1d5db;
+  width: 100px;
+  height: 100px;
+  background: #f5f5f5;
+  border: 2px dashed #ddd;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -543,12 +536,11 @@ export default {
   margin: 8px auto;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.2s;
 }
 
 .avatar-placeholder:hover {
-  border-color: #3b82f6;
-  background: #eff6ff;
+  border-color: #007AFF;
 }
 
 .avatar-placeholder input {
@@ -561,7 +553,7 @@ export default {
 
 .avatar-icon {
   font-size: 24px;
-  color: #6b7280;
+  color: #999;
 }
 
 .avatar-preview {
@@ -573,9 +565,9 @@ export default {
 
 .cover-placeholder {
   width: 100%;
-  height: 100px;
-  background: #f3f4f6;
-  border: 2px dashed #d1d5db;
+  height: 120px;
+  background: #f5f5f5;
+  border: 2px dashed #ddd;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -583,12 +575,11 @@ export default {
   margin-top: 8px;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.2s;
 }
 
 .cover-placeholder:hover {
-  border-color: #3b82f6;
-  background: #eff6ff;
+  border-color: #007AFF;
 }
 
 .cover-placeholder input {
@@ -601,7 +592,7 @@ export default {
 
 .cover-icon {
   font-size: 24px;
-  color: #6b7280;
+  color: #999;
 }
 
 .cover-preview {
@@ -614,118 +605,133 @@ export default {
 .bio-textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 16px;
   background: #ffffff;
   resize: vertical;
   min-height: 80px;
-  transition: all 0.2s;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
 .bio-textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #007AFF;
 }
 
 .info-group {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .info-group label {
   font-size: 13px;
-  color: #4b5563;
-}
-
-.info-group input {
-  padding: 10px;
-  border-radius: 6px;
+  color: #666;
 }
 
 .form-actions {
   display: flex;
   gap: 12px;
-  margin-top: 24px;
+  margin-top: 16px;
+  margin-bottom: 5px;
 }
 
 .save-btn {
   flex: 1;
-  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-  color: #ffffff;
+  background: #007AFF;
+  color: white;
   padding: 12px;
   border: none;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
 }
 
 .save-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  background: #0056CC;
 }
 
 .save-btn:disabled {
-  background: #9ca3af;
+  background: #ccc;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .cancel-btn {
   flex: 1;
-  background: #f3f4f6;
-  color: #374151;
+  background: #f5f5f5;
+  color: #333;
   padding: 12px;
   border: none;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
 }
 
 .cancel-btn:hover {
-  background: #e5e7eb;
+  background: #e8e8e8;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .profile-modal {
-    max-width: 90%;
-  }
-}
-
+/* Mobile Responsive */
 @media (max-width: 480px) {
-  .background-section {
-    height: 140px;
+  .profile-modal {
+    max-width: 95%;
+    margin: 0 10px;
   }
+  
+  .modal-header {
+    padding: 12px 16px;
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .cover-section {
+    height: 100px;
+  }
+  
   .avatar {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
   }
-  .name-section {
-    padding-top: 50px;
+  
+  .avatar-section {
+    bottom: -35px;
   }
+  
+  .profile-info {
+    padding: 0 16px 16px;
+  }
+  
   .profile-name {
-    font-size: 20px;
+    font-size: 18px;
   }
-  .bio-text {
-    font-size: 14px;
+  
+  .info-section {
+    padding: 0 16px 16px;
   }
+  
+  .edit-section {
+    padding: 16px;
+  }
+  
+  .edit-form-view {
+    padding: 0 16px 16px;
+  }
+  
   .form-actions {
     flex-direction: column;
   }
-  .form-group label {
-    font-size: 13px;
-  }
-  .form-group input,
-  .bio-textarea {
-    font-size: 14px;
+  
+  .cover-placeholder {
+    height: 100px;
   }
 }
 </style>
