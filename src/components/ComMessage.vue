@@ -299,7 +299,7 @@
                   v-if="!msg.image && !msg.video && !msg.file"
                   :class="[
                     'msg',
-                    'from-other',
+                    'from-me',
                     isEmojiOnly(msg.text) ? 'emoji-only' : '',
                   ]"
                 >
@@ -866,6 +866,13 @@ onMounted(() => document.addEventListener("click", handleClickOutsideEmoji));
 onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutsideEmoji)
 );
+// onMounted(() => {
+//   const rawId = localStorage.getItem("accountId");
+//   const accountId = rawId ? Number(rawId) : null;
+//   if (accountId) {
+//     socket.emit("identify", accountId); // ✅ Gửi accountId khi kết nối
+//   }
+// });
 // onMounted(() => socket.on('chat message', handleIncomingMessage))
 onBeforeUnmount(() => socket.off("chat message", handleIncomingMessage));
 
@@ -1367,30 +1374,38 @@ onMounted(async () => {
       avatar: profile.avatarUrl || require("@/assets/avata.jpg"),
       name: profile.fullname || profile.username || "Người dùng",
     };
-    socket.emit("identify", loggedInAccountId.value);
+// Gửi identify ngay sau khi socket connect
+socket.emit("identify", Number(loggedInAccountId.value));
 
-    const rawFriends = await getAcceptedFriends(loggedInAccountId.value);
-    const others = await Promise.all(
-      rawFriends.map(async (f) => {
-        try {
-          const d = await getAccountDetail(f.id);
-          return { ...f, profile: d.profile };
-        } catch {
-          return { ...f, profile: null };
-        }
-      })
-    );
+// ✅ Ép server gửi lại danh sách online sau 500ms nếu chưa có
+setTimeout(() => {
+  socket.emit("get online users");
+}, 500);
 
-    friends.value = others
-      .filter((f) => String(f.id) !== String(loggedInAccountId.value))
-      .map((f) => ({
-        id: f.id,
-        name: f.profile?.fullname || f.username,
-        avatar: f.profile?.avatarUrl || require("@/assets/avata.jpg"),
-        desc: "",
-        conversationId: f.conversationId,
-        online: false,
-      }));
+// 🔽 Tiếp tục lấy danh sách bạn bè và gán profile
+const rawFriends = await getAcceptedFriends(loggedInAccountId.value);
+const others = await Promise.all(
+  rawFriends.map(async (f) => {
+    try {
+      const d = await getAccountDetail(f.id);
+      return { ...f, profile: d.profile };
+    } catch {
+      return { ...f, profile: null };
+    }
+  })
+);
+
+// ✅ Gán lại friends list
+friends.value = others
+  .filter((f) => String(f.id) !== String(loggedInAccountId.value))
+  .map((f) => ({
+    id: f.id,
+    name: f.profile?.fullname || f.username,
+    avatar: f.profile?.avatarUrl || require("@/assets/avata.jpg"),
+    desc: "",
+    conversationId: f.conversationId,
+    online: false, // mặc định là offline, sẽ cập nhật sau từ socket
+  }));
 
     /* GROUPS ------------------------------------ */
     const [owned, joined] = await Promise.all([
@@ -1432,17 +1447,28 @@ onMounted(async () => {
   }
 
   socket.on("chat message", handleIncomingMessage);
-    socket.on("online users", (onlineIds) => {
-    const idSet = new Set(onlineIds.map(Number));
-    // cập nhật trạng thái online của friends
+  socket.on("online users", (onlineIds) => {
+    const onlineSet = new Set(onlineIds.map(Number));
+
     friends.value.forEach((f) => {
-      f.online = idSet.has(f.id);
+      f.online = onlineSet.has(f.id); // đúng ID người dùng
     });
-    // cập nhật trạng thái online cho nhóm (nếu cần)
+
     groups.value.forEach((g) => {
-      g.online = g.members?.some((m) => idSet.has(m.accountId));
+      g.online = g.members?.some((m) => onlineSet.has(m.accountId));
     });
   });
+// socket.on("connect", () => {
+//   console.log("✅ Socket connected:", socket.id);
+
+//   // Gửi identify NGAY KHI connect
+//   const accountId = localStorage.getItem("accountId");
+//   if (accountId) {
+//     socket.emit("identify", parseInt(accountId));
+//   }
+// });
+
+
 });
 const isGroupAdmin = computed(() => {
   if (activeTab.value !== "groups") return false;
