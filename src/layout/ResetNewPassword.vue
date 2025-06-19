@@ -148,6 +148,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import Toastify from 'toastify-js'
+import 'toastify-js/src/toastify.css'
 
 const router = useRouter()
 
@@ -242,9 +244,21 @@ const handleReset = () => {
   const okOld = validateOldPassword()
   const okNew = validatePassword()
   const okConfirm = validateConfirmPassword()
+
   if (okOld && okNew && okConfirm) {
-    alert('Đặt lại mật khẩu thành công (demo giao diện)')
-    router.push('/')
+    Toastify({
+      text: "✅ Đặt lại mật khẩu thành công!",
+      duration: 3000,
+      close: true,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#27AE60",
+    }).showToast()
+
+    // Chuyển về trang đăng nhập sau khi toast hiển thị
+    setTimeout(() => {
+      router.push('/')
+    }, 2000)
   }
 }
 </script>

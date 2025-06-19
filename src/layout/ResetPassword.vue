@@ -32,6 +32,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 // import { sendOTP } from '@/service/otpService' // đã bỏ API
+import Toastify from 'toastify-js'
+import 'toastify-js/src/toastify.css'
 
 const router = useRouter()
 const contact = ref('')
@@ -55,11 +57,23 @@ const validateEmail = () => {
 const sendLink = () => {
   if (!validateEmail()) return
 
-  // Demo giao diện: chỉ hiện alert, không gọi API
-  alert(`Mã OTP đã được gửi tới: ${contact.value.trim()}`)
-  router.push('/verificationCode')
+  // Thông báo bằng toast thay vì alert
+  Toastify({
+    text: `🔔 Mã OTP đã được gửi tới: ${contact.value.trim()}`,
+    duration: 3000,
+    close: true,
+    gravity: "top",       // toast xuất hiện ở trên
+    position: "right",    // canh phải
+    backgroundColor: "#3498DB",
+  }).showToast()
+
+  // Chuyển trang sau toast
+  setTimeout(() => {
+    router.push('/verificationCode')
+  }, 800)
 }
 </script>
+
 
 <style scoped>
 * {
