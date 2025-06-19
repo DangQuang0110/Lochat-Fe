@@ -353,13 +353,17 @@
   .forgot {
     margin-top: -0.5rem;
     margin-bottom: 1rem;
-    color: #FFFFFF;
+    color: #040404;
     font-size: 1rem;
     text-align: right;
     width: 100%;
     max-width: 320px;
+    text-decoration: none;
   }
 
+  .forgot:hover {
+  text-decoration: none;
+}
   /* Nút Đăng nhập */
   .btn {
     width: 100%;               /* full trong wrapper 320px */

@@ -38,14 +38,17 @@
 import { ref, computed, onMounted } from 'vue'
 import layout from '@/layout/SideBarContact.vue'
 import FriendDetail from './FriendDetail.vue'
-import { getAcceptedFriends,unfriend } from '@/service/friendService'
+import { getAcceptedFriends, unfriend } from '@/service/friendService'
 import hinhImg from '@/assets/hinh.jpg'
+import Toastify from 'toastify-js'
+import 'toastify-js/src/toastify.css'
 
 // State
 const searchText = ref('')
 const friends = ref([])
 const selectedUser = ref(null)
 const accountId = localStorage.getItem('accountId')
+
 // Hàm lấy danh sách bạn bè
 const fetchFriends = async () => {
   try {
@@ -54,10 +57,17 @@ const fetchFriends = async () => {
     friends.value = result.map(friend => ({
       id: friend.id,
       name: friend.username,
-      avatar: friend.imageUrl|| 'image/avata.jpg'
+      avatar: friend.imageUrl || hinhImg
     }))
   } catch (e) {
-    // hiển thị toast hoặc console
+    Toastify({
+      text: '❌ Lấy danh sách bạn bè thất bại.',
+      duration: 3000,
+      close: true,
+      gravity: 'top',
+      position: 'right',
+      backgroundColor: '#E74C3C'
+    }).showToast()
     console.error(e)
   }
 }
@@ -84,19 +94,37 @@ const openDetail = (friend) => {
     isFriend: true
   }
 }
+
+// Huỷ kết bạn
 const handleUnfriend = async (friendId) => {
   try {
     await unfriend({
       senderId: Number(accountId),
       receiverId: friendId
     })
-    alert('Đã huỷ kết bạn')
+    Toastify({
+      text: '✅ Đã huỷ kết bạn.',
+      duration: 3000,
+      close: true,
+      gravity: 'top',
+      position: 'right',
+      backgroundColor: '#27AE60'
+    }).showToast()
     fetchFriends() // refresh lại danh sách bạn bè
-  } catch {
-    alert('Huỷ kết bạn thất bại')
+  } catch (e) {
+    Toastify({
+      text: '❌ Huỷ kết bạn thất bại.',
+      duration: 3000,
+      close: true,
+      gravity: 'top',
+      position: 'right',
+      backgroundColor: '#E74C3C'
+    }).showToast()
+    console.error(e)
   }
 }
 </script>
+
 <style scoped>
 .container {
   display: flex;
