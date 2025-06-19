@@ -14,7 +14,7 @@ export async function getSuggestedAccounts(accountId) {
 
   return data.data.map(u => ({
     id      : Number(u.id),
-    username: u.username,
+    name: u.username,
     email   : u.email,
     phone   : u.phoneNumber,
     avatar  : u.profile?.avatarUrl || '/image/avata.jpg',

@@ -93,9 +93,10 @@ const filteredFriends = computed(() => {
   const kw = searchText.value.toLowerCase()
   return friends.value.filter(f =>
     (f.username || '').toLowerCase().includes(kw) ||
-    (f.profile?.fullname || '').toLowerCase().includes(kw)
+    (f.fullname || '').toLowerCase().includes(kw)
   )
 })
+
 
 /* -------- hành động -------- */
 async function addFriend(receiverId) {

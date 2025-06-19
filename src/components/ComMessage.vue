@@ -1,3 +1,4 @@
+```vue
 <template>
   <div class="chat-app">
     <!-- Icons Sidebar -->
@@ -13,7 +14,7 @@
           <div class="user-sidebar-divider"></div>
           <ul class="user-sidebar-menu">
             <li @click="goToUserProfile">Hồ sơ người dùng</li>
-            <li @click="goToChangePassword">Đổi mật khẩu</li>
+            <!-- <li @click="goToChangePassword">Đổi mật khẩu</li> -->
             <li @click="goToBlockedList">Quản lí chặn</li>
             <li @click="logout">Đăng xuất</li>
           </ul>
@@ -30,9 +31,6 @@
         </ul>
       </nav>
       <div class="sidebar-spacer"></div>
-      <!-- <div class="sidebar-bottom">
-        <img src="@/assets/menu.png" alt="Menu" class="hamburger" />
-      </div> -->
     </aside>
     <!-- Sidebar Friends/Groups -->
     <aside class="sidebar">
@@ -45,7 +43,7 @@
           />
           <input type="text" placeholder="Tìm kiếm" />
         </div>
-        <button class="add-btn">+</button>
+        <button class="add-btn"></button>
       </div>
       <div class="tab-section">
         <button
@@ -98,8 +96,8 @@
           <div class="info">
             <div class="name">{{ current.name }}</div>
             <div class="status">
-              {{ current.online ? "Đang hoạt động" : "Offline"
-              }}<span v-if="current.online" class="online-dot"></span>
+              {{ current.online ? "Đang hoạt động" : "Offline" }}
+              <span v-if="current.online" class="online-dot"></span>
             </div>
           </div>
         </div>
@@ -147,7 +145,6 @@
                 <img class="avatar" :src="getSender(msg)?.avatar" />
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
-                  <!-- <div class="msg from-other"> -->
                   <div v-if="msg.file" class="file-attach">
                     <span class="file-icon">📎</span>
                     <div class="file-info">
@@ -185,11 +182,9 @@
                       {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
                     </span>
                   </div>
-                  <!-- </div> -->
                 </div>
               </div>
               <div v-else class="msg-block align-right">
-                <!-- <div class="msg from-me"> -->
                 <div v-if="msg.file" class="file-attach">
                   <span class="file-icon">📎</span>
                   <div class="file-info">
@@ -215,7 +210,6 @@
                   ></video>
                 </template>
                 <div
-                  v-if="!msg.image && !msg.video && !msg.file"
                   :class="[
                     'msg',
                     msg.fromMe ? 'from-me' : 'from-other',
@@ -227,7 +221,6 @@
                     {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
                   </span>
                 </div>
-                <!-- </div> -->
               </div>
             </template>
             <template v-else>
@@ -235,7 +228,6 @@
                 <img class="avatar" :src="getSender(msg)?.avatar" />
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
-
                   <div v-if="msg.file" class="file-attach">
                     <span class="file-icon">📎</span>
                     <div class="file-info">
@@ -246,7 +238,6 @@
                       >⬇️</a
                     >
                   </div>
-
                   <template v-if="msg.image || msg.video">
                     <img
                       v-if="msg.image"
@@ -275,7 +266,6 @@
                   </div>
                 </div>
               </div>
-
               <div v-else class="msg-block align-right">
                 <div v-if="msg.file" class="file-attach">
                   <span class="file-icon">📎</span>
@@ -449,7 +439,6 @@
             </li>
           </ul>
         </div>
-        <!-- Nếu là admin -->
         <button
           v-if="isGroupAdmin"
           class="delete-btn"
@@ -457,8 +446,6 @@
         >
           Xóa đoạn tin nhắn
         </button>
-
-        <!-- Nếu không phải admin -->
         <button v-else class="delete-btn leave-btn" @click="leaveGroup">
           Rời nhóm
         </button>
@@ -678,20 +665,20 @@ import {
   getConversationDetail,
 } from "@/service/conversationService";
 import { getBlockedList, blockUser, unblockUser } from "@/service/blockService";
-
-// import { sendMessageToConversation } from '@/service/messageService'
-
 import { getAcceptedFriends } from "@/service/friendService";
 import { getMessages, delMessage } from "@/service/messageService";
 import { useRouter } from "vue-router";
 import socket from "@/socket";
+
 const bottomRef = ref(null);
 const showConfirmRemove = ref(false);
 const memberToRemove = ref(null);
+
 function confirmRemoveMember(member) {
   memberToRemove.value = member;
   showConfirmRemove.value = true;
 }
+
 const showBlockListModal = ref(false);
 
 const blockedUsers = ref([
@@ -720,13 +707,11 @@ async function goToBlockedList() {
     alert("Lỗi khi tải danh sách chặn");
   }
 }
+
 async function unblockUserHandler(id) {
   try {
     await unblockUser(loggedInAccountId.value, id);
-
     blockedUsers.value = blockedUsers.value.filter((u) => u.id !== id);
-
-    // (tuỳ chọn) Thông báo
     alert("Đã bỏ chặn thành công!");
   } catch (err) {
     console.error("❌ Không thể bỏ chặn:", err);
@@ -735,16 +720,14 @@ async function unblockUserHandler(id) {
 }
 
 const activeTab = ref("friends");
+
 function handleKeydown(e) {
-  // Shift để xuống dòng
   if (e.key === "Shift" && !e.ctrlKey && !e.altKey && !e.metaKey) {
     e.preventDefault();
     messageInput.value += "\n";
     autoResize();
     return;
   }
-
-  // Enter để gửi
   if (
     e.key === "Enter" &&
     !e.shiftKey &&
@@ -757,6 +740,7 @@ function handleKeydown(e) {
     return;
   }
 }
+
 function autoResize() {
   nextTick(() => {
     const el = textInput.value;
@@ -764,15 +748,14 @@ function autoResize() {
       const lineHeight = 22;
       const minRows = 1;
       const maxRows = 4;
-
       el.style.height = "auto";
       const rows = Math.floor(el.scrollHeight / lineHeight);
-
       const finalRows = Math.min(Math.max(rows, minRows), maxRows);
       el.style.height = finalRows * lineHeight + "px";
     }
   });
 }
+
 watch(activeTab, (newTab) => {
   if (newTab === "friends" && friends.value.length) {
     const firstFriend = friends.value[0];
@@ -781,7 +764,6 @@ watch(activeTab, (newTab) => {
     socket.emit("join room", `conversation_${selectedConversationId.value}`);
     loadMessages();
   }
-
   if (newTab === "groups" && groups.value.length) {
     const firstGroup = groups.value[0];
     selectedId.value = firstGroup.id;
@@ -790,6 +772,7 @@ watch(activeTab, (newTab) => {
     loadMessages();
   }
 });
+
 async function removeConfirmedMember() {
   const member = memberToRemove.value;
   if (!member) return;
@@ -799,14 +782,12 @@ async function removeConfirmedMember() {
       ownerId: loggedInAccountId.value,
       ids: [member.id],
     });
-
     const grp = groups.value.find((g) => g.id === selectedId.value);
     if (grp) {
       grp.members = grp.members.filter(
         (m) => Number(m.accountId) !== Number(member.id)
       );
     }
-
     members.value = members.value.filter(
       (m) => Number(m.id) !== Number(member.id)
     );
@@ -824,24 +805,28 @@ function scrollToBottom() {
     bottomRef.value?.scrollIntoView({ behavior: "smooth" });
   });
 }
+
 const router = useRouter();
 
 function goToFriendList() {
   router.push("/friendlist");
 }
+
 function toggleEmojiPicker() {
-  // bật / tắt
   showEmojiPicker.value = !showEmojiPicker.value;
 }
+
 function addEmoji(emoji) {
   messageInput.value += emoji;
 }
+
 function isEmojiOnly(text = "") {
   return (
     text.trim() !== "" &&
     /^[\p{Emoji_Presentation}\u200d\s]+$/u.test(text.trim())
   );
 }
+
 function handleClickOutsideEmoji(e) {
   if (
     showEmojiPicker.value &&
@@ -851,23 +836,23 @@ function handleClickOutsideEmoji(e) {
     showEmojiPicker.value = false;
   }
 }
+
 const showBlockConfirm = ref(false);
 
 function handleBlockUser() {
   showBlockConfirm.value = true;
 }
+
 async function confirmBlockUser() {
   console.log("⚠️ blockerId:", loggedInAccountId.value);
   console.log("⚠️ blockedId:", current.value.id);
   try {
     await blockUser(loggedInAccountId.value, current.value.id);
-
     blockedUsers.value.push({
       id: current.value.id,
       name: current.value.name,
       avatar: current.value.avatar || require("@/assets/avata.jpg"),
     });
-
     showBlockConfirm.value = false;
     alert(`Đã chặn ${current.value.name}`);
   } catch (err) {
@@ -884,21 +869,17 @@ onMounted(() => document.addEventListener("click", handleClickOutsideEmoji));
 onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutsideEmoji)
 );
-// onMounted(() => socket.on('chat message', handleIncomingMessage))
 onBeforeUnmount(() => socket.off("chat message", handleIncomingMessage));
 
 function handleIncomingMessage(msg) {
   if (`${msg.conversationId}` !== `${selectedConversationId.value}`) return;
-
   const url = msg.content || "";
   const isImage =
     msg.type === "image" || /\.(jpe?g|png|gif|webp|avif)$/i.test(url);
   const isVideo =
     msg.type === "video" || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
   const isFile = msg.type === "file";
-
   const fromMe = String(msg.senderId) === String(loggedInAccountId.value);
-
   if (fromMe && pendingUploads.value.has(url)) {
     messages.value = messages.value.filter(
       (t) =>
@@ -909,16 +890,13 @@ function handleIncomingMessage(msg) {
     );
     pendingUploads.value.delete(url);
   }
-
   const fallbackName = decodeURIComponent(url.split("/").pop() || "Tập tin");
-
   messages.value.push({
     id: msg.id || Date.now(),
     chatId: Number(msg.conversationId),
     senderId: Number(msg.senderId),
     fromMe,
     text: msg.type === "text" ? msg.content : "",
-
     image: isImage ? url : null,
     video: isVideo ? url : null,
     file: isFile
@@ -928,11 +906,9 @@ function handleIncomingMessage(msg) {
           url,
         }
       : null,
-
     type: isImage ? "image" : isVideo ? "video" : isFile ? "file" : "text",
     createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
   });
-
   scrollToBottom();
 }
 
@@ -947,9 +923,8 @@ const user = ref([]);
 const groupMembers = ref([]);
 const friends = ref([]);
 const groups = ref([]);
-
-const messages = ref([]); // load khi chọn cuộc trò chuyện
-const members = ref([]); // danh sách thành viên nhóm (nếu cần)
+const messages = ref([]);
+const members = ref([]);
 
 /* ---------- UI STATE ---------- */
 const selectedId = ref(null);
@@ -963,6 +938,7 @@ const showAddModal = ref(false);
 const showEmojiPicker = ref(false);
 const showSearch = ref(false);
 const pendingUploads = ref(new Set());
+
 /* ---------- INPUT / SEARCH ---------- */
 const messageInput = ref("");
 const searchText = ref("");
@@ -1025,6 +1001,7 @@ const emojis = ref([
   "🐯",
   "🦁",
 ]);
+
 const current = computed(() => {
   const list = activeTab.value === "friends" ? friends.value : groups.value;
   return list.find((i) => i.id === selectedId.value) || {};
@@ -1032,28 +1009,22 @@ const current = computed(() => {
 
 const filteredMembers = computed(() =>
   members.value
-    .filter((m) => m.role !== "admin") // ⚠️ loại bỏ admin
+    .filter((m) => m.role !== "admin")
     .filter((m) =>
       m.name.toLowerCase().includes(searchText.value.toLowerCase())
     )
 );
-
-// const filteredFriendsToAdd = computed(() =>
-//   friends.value.filter(f =>
-//     f.name.toLowerCase().includes(addSearch.value.toLowerCase()) ||
-//     String(f.id).includes(addSearch.value))
-// )
 
 const currentMessages = computed(() =>
   messages.value.filter(
     (m) => m.chatId === Number(selectedConversationId.value)
   )
 );
+
 async function loadGroupMembers(conversationId) {
   try {
     const res = await getConversationDetail(conversationId);
     const raw = res?.data?.data?.members || [];
-
     groupMembers.value = raw.map((m) => ({
       id: m.accountId,
       name: m.username,
@@ -1065,6 +1036,7 @@ async function loadGroupMembers(conversationId) {
     groupMembers.value = [];
   }
 }
+
 const selectedConversationId = ref(null);
 
 const filteredMessages = computed(() => {
@@ -1082,6 +1054,7 @@ function getSender(msg) {
       }
     : null;
 }
+
 const prettySize = (s) => {
   if (!s || s === "Không rõ") return "(Không rõ)";
   return `(${s})`;
@@ -1091,73 +1064,65 @@ function toggleSearch() {
   showSearch.value = !showSearch.value;
   if (!showSearch.value) searchQuery.value = "";
 }
+
 function toggleProfilePanel() {
   showProfilePanel.value = !showProfilePanel.value;
 }
+
 function toggleUserSidebar() {
   showUserSidebar.value = !showUserSidebar.value;
 }
+
 function closeProfileModal() {
   showProfileModal.value = false;
 }
+
 function closeGroupForm() {
   showGroupForm.value = false;
 }
+
 function openEditGroupModal() {
   showEditGroupModal.value = true;
 }
+
 function closeEditGroupModal() {
   showEditGroupModal.value = false;
 }
+
 async function selectFriend(id) {
-  // Xác định hiện đang ở tab nào
   const source = activeTab.value === "friends" ? friends.value : groups.value;
   const selected = source.find((item) => item.id === id);
-
   if (!selected) {
     console.warn("⚠️ Không tìm thấy item với ID:", id);
     return;
   }
-
   selectedId.value = id;
-
-  // Bảo đảm mọi item đều có conversationId
   if (!selected.conversationId) {
-    // sinh tạm một ID hoặc gọi API tạo nhóm
     selected.conversationId = Date.now();
   }
-
   selectedConversationId.value = Number(selected.conversationId);
   if (activeTab.value === "groups") {
     await loadGroupMembers(selected.conversationId);
     members.value = [...groupMembers.value];
   }
-
-  // Tham gia phòng socket tương ứng
   socket.emit("join room", `conversation_${selectedConversationId.value}`);
   console.log("🟢 Join room:", `conversation_${selectedConversationId.value}`);
-
-  loadMessages(); // gọi API / hoặc tạo stub tin nhắn cho nhóm
+  loadMessages();
 }
 
 async function addToGroup(friendId) {
   const groupId = selectedConversationId.value;
   const ownerId = loggedInAccountId.value;
-
   const payload = {
     conversationId: String(groupId),
     ownerId: String(ownerId),
     ids: [String(friendId)],
   };
-
   try {
     console.log("📦 Gửi request thêm thành viên:", payload);
-
     await addMembers(payload);
-
     const grp = groups.value.find((g) => g.id === selectedId.value);
     const friend = friends.value.find((f) => f.id === friendId);
-
     if (grp && friend) {
       grp.members.push({
         accountId: friend.id,
@@ -1166,7 +1131,6 @@ async function addToGroup(friendId) {
         role: "member",
       });
     }
-
     addSearch.value = "";
   } catch (err) {
     console.error("❌ Thêm thành viên thất bại:", err);
@@ -1181,14 +1145,10 @@ async function addToGroup(friendId) {
 
 const friendsToAdd = computed(() => {
   if (activeTab.value !== "groups") return [];
-
-  // nhóm đang mở
   const grp = groups.value.find((g) => g.id === selectedId.value);
   const memberIds = new Set(
     (grp?.members || []).map((m) => Number(m.accountId))
   );
-
-  // chỉ lấy bạn bè chưa có trong memberIds + filter theo addSearch
   return friends.value.filter(
     (f) =>
       !memberIds.has(f.id) &&
@@ -1196,10 +1156,10 @@ const friendsToAdd = computed(() => {
         String(f.id).includes(addSearch.value))
   );
 });
+
 function sendMessage() {
   const text = messageInput.value.trim();
   if (!text || !selectedConversationId.value) return;
-
   const payload = {
     conversationId: Number(selectedConversationId.value),
     senderId: Number(loggedInAccountId.value),
@@ -1208,8 +1168,7 @@ function sendMessage() {
     size: "",
     type: "text",
   };
-
-  socket.emit("chat message", payload); // chỉ emit thôi
+  socket.emit("chat message", payload);
   messageInput.value = "";
   const el = textInput.value;
   if (el) el.style.height = "auto";
@@ -1225,26 +1184,19 @@ import axios from "axios";
 async function handleFileSelect(e) {
   const file = e.target.files?.[0];
   if (!file) return;
-
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", "chat_up");
-
   try {
     const { data } = await axios.post(
       "https://api.cloudinary.com/v1_1/drniqvbgy/auto/upload",
       formData
     );
-
     const url = data.secure_url;
     const isImage = file.type.startsWith("image/");
     const isVideo = file.type.startsWith("video/");
     const tempId = Date.now();
-
-    /* Ghi nhận URL đang chờ echo */
     pendingUploads.value.add(url);
-
-    /* Push tin nhắn tạm */
     messages.value.push({
       id: tempId,
       chatId: Number(selectedConversationId.value),
@@ -1260,16 +1212,13 @@ async function handleFileSelect(e) {
       createdAt: new Date(),
       clientTempId: tempId,
     });
-
     scrollToBottom();
-
-    /* Gửi thật lên server */
     socket.emit("chat message", {
       conversationId: Number(selectedConversationId.value),
       senderId: Number(loggedInAccountId.value),
       type: isImage ? "image" : isVideo ? "video" : "file",
       content: url,
-      originFilename: file.name, // thêm dòng này
+      originFilename: file.name,
       size: formatSize(file.size),
     });
   } catch (err) {
@@ -1279,6 +1228,7 @@ async function handleFileSelect(e) {
     e.target.value = "";
   }
 }
+
 function formatSize(bytes) {
   return bytes > 1024 * 1024
     ? (bytes / 1024 / 1024).toFixed(2) + " MB"
@@ -1292,25 +1242,20 @@ async function loadMessages() {
     "conversationId =",
     selectedConversationId.value
   );
-
   try {
     const res = await getMessages({
       conversationId: selectedConversationId.value,
     });
-
     const rawMessages = Array.isArray(res?.data?.messages)
       ? res.data.messages
       : [];
-
     if (!rawMessages.length) {
       console.warn("[loadMessages] Không có message nào");
       messages.value = [];
       return;
     }
-
     const isFileUrl = (url = "") =>
       /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|txt)$/i.test(url);
-
     messages.value = rawMessages.map((m) => {
       const isDeleted = m.isDeleted === true;
       const url = m.content || "";
@@ -1355,6 +1300,7 @@ async function loadMessages() {
     messages.value = [];
   }
 }
+
 function handleClickOutside(e) {
   if (
     avatarWrapper.value &&
@@ -1375,9 +1321,7 @@ onMounted(async () => {
       showUserSidebar.value = false;
     }
   });
-
   try {
-    /* USER + FRIENDS ----------------------------- */
     const me = await getAccountDetail(loggedInAccountId.value);
     const profile = me?.profile || {};
     user.value = {
@@ -1385,6 +1329,7 @@ onMounted(async () => {
       name: profile.fullname || profile.username || "Người dùng",
     };
 
+    socket.emit("identify", loggedInAccountId.value);
     const rawFriends = await getAcceptedFriends(loggedInAccountId.value);
     const others = await Promise.all(
       rawFriends.map(async (f) => {
@@ -1396,7 +1341,6 @@ onMounted(async () => {
         }
       })
     );
-
     friends.value = others
       .filter((f) => String(f.id) !== String(loggedInAccountId.value))
       .map((f) => ({
@@ -1405,10 +1349,8 @@ onMounted(async () => {
         avatar: f.profile?.avatarUrl || require("@/assets/avata.jpg"),
         desc: "",
         conversationId: f.conversationId,
-        online: Math.random() < 0.5,
+        online: false,
       }));
-
-    /* GROUPS ------------------------------------ */
     const [owned, joined] = await Promise.all([
       getOwnedGroups(loggedInAccountId.value),
       getJoinedGroups(loggedInAccountId.value),
@@ -1436,7 +1378,6 @@ onMounted(async () => {
     } else if (activeTab.value === "groups" && groups.value.length) {
       selectFriend(groups.value[0].id);
     }
-    /* AUTO SELECT FIRST FRIEND ------------------ */
     if (friends.value.length) {
       selectedId.value = friends.value[0].id;
       selectedConversationId.value = Number(friends.value[0].conversationId);
@@ -1446,49 +1387,49 @@ onMounted(async () => {
   } catch (err) {
     console.error("❌ Không thể tải dữ liệu:", err);
   }
-
   socket.on("chat message", handleIncomingMessage);
+    socket.on("online users", (onlineIds) => {
+    const idSet = new Set(onlineIds.map(Number));
+    // cập nhật trạng thái online của friends
+    friends.value.forEach((f) => {
+      f.online = idSet.has(f.id);
+    });
+    // cập nhật trạng thái online cho nhóm (nếu cần)
+    groups.value.forEach((g) => {
+      g.online = g.members?.some((m) => idSet.has(m.accountId));
+    });
+  });
 });
+
 const isGroupAdmin = computed(() => {
   if (activeTab.value !== "groups") return false;
-
-  // tìm nhóm đang mở
   const grp = groups.value.find((g) => g.id === selectedId.value);
   if (!grp || !Array.isArray(grp.members)) return false;
-
-  // tìm chính mình trong mảng members của nhóm
   return grp.members.some(
     (m) =>
       String(m.accountId) === String(loggedInAccountId.value) &&
       m.role === "admin"
   );
 });
+
 async function leaveGroup() {
   const grp = groups.value.find((g) => g.id === selectedId.value);
   if (!grp || !Array.isArray(grp.members)) return;
-
-  // ✅ Tìm admin hiện tại của nhóm
   const admin = grp.members.find((m) => m.role === "admin");
   if (!admin) {
     alert("Không tìm thấy quản trị viên nhóm để xác thực yêu cầu.");
     return;
   }
-
   try {
     await removeMembers({
       conversationId: selectedConversationId.value,
-      ownerId: admin.accountId, // ⚠️ phải là ID của admin
-      ids: [loggedInAccountId.value], // ID của chính mình
+      ownerId: admin.accountId,
+      ids: [loggedInAccountId.value],
     });
-
-    // ✅ Xoá nhóm khỏi giao diện
     groups.value = groups.value.filter((g) => g.id !== selectedId.value);
-
-    // ✅ Reset trạng thái
     selectedId.value = null;
     selectedConversationId.value = null;
     messages.value = [];
-
     alert("Bạn đã rời khỏi nhóm thành công.");
   } catch (err) {
     console.error("❌ Không thể rời nhóm:", err);
@@ -1576,4 +1517,32 @@ onBeforeUnmount(() => {
   font-style: italic;
   font-size: 13px;
 }
+
+.context-menu {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  min-width: 120px;
+  padding: 4px 0;
+}
+.context-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.context-menu li {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.context-menu li:hover {
+  background: #f5f5f5;
+}
+.text-deleted {
+  color: #888;
+  font-style: italic;
+  font-size: 13px;
+}
+
 </style>
