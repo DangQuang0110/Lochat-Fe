@@ -52,8 +52,10 @@ const accountId = localStorage.getItem('accountId')
 // Hàm lấy danh sách bạn bè
 const fetchFriends = async () => {
   try {
-    const accountId = localStorage.getItem('accountId') // hoặc inject từ context
+    const accountId = localStorage.getItem('accountId')
+    console.log('🔍 accountId từ localStorage:', accountId)
     const result = await getAcceptedFriends(accountId)
+    console.log('✅ Dữ liệu bạn bè từ BE:', result) 
     friends.value = result.map(friend => ({
       id: friend.id,
       name: friend.username,
