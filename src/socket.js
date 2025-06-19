@@ -1,11 +1,20 @@
-import { io } from 'socket.io-client'
+// src/socket.js   (hoặc đường dẫn bạn đặt)
+import { io } from "socket.io-client";
 
-const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+const socket = io("http://localhost:8082", {
+  transports: ["websocket"],
+  auth: { token: localStorage.getItem("accessToken") },
+});
 
-const socket = io('http://localhost:8082', {
-    transports:['websocket'],
-  query: { userId: currentUser?.id ?? 0 },
-  auth: { token: localStorage.getItem('accessToken') }
-})
+// ➊ Gắn listener NGAY tại đây – chạy 1 lần duy nhất
+socket.on("connect", () => {
+  console.log("✅ Socket connected:", socket.id);
 
-export default socket
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  if (user?.id) {
+    socket.emit("identify", user.id);
+  }
+});
+
+// ➋ Khi socket tự reconnect, sự kiện `connect` sẽ chạy lại → tự gửi identify
+export default socket;
