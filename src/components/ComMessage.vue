@@ -135,6 +135,7 @@
             :key="msg.id"
             class="msg-wrapper"
             :class="{ 'align-right': msg.fromMe, 'align-left': !msg.fromMe }"
+            @contextmenu.prevent="handleRightClickMessage($event, msg)"
           >
             <div v-if="msg.system" class="system-text">
               {{ msg.text }}
@@ -177,9 +178,9 @@
                         : '',
                     ]"
                   >
-                    <span v-if="msg.type === 'text' && !msg.file">{{
-                      msg.text
-                    }}</span>
+                    <span :class="{'text-deleted': msg.isDeleted}">
+                      {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -213,9 +214,12 @@
                     'msg',
                     msg.fromMe ? 'from-me' : 'from-other',
                     isEmojiOnly(msg.text) ? 'emoji-only' : '',
+                    msg.isDeleted ? 'deleted-message' : ''
                   ]"
                 >
-                  <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                  <span :class="{'text-deleted': msg.isDeleted}">
+                    {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
+                  </span>
                 </div>
               </div>
             </template>
@@ -256,7 +260,9 @@
                       isEmojiOnly(msg.text) ? 'emoji-only' : '',
                     ]"
                   >
-                    <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                    <span :class="{'text-deleted': msg.isDeleted}">
+                      {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -293,7 +299,9 @@
                     isEmojiOnly(msg.text) ? 'emoji-only' : '',
                   ]"
                 >
-                  <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                  <span :class="{'text-deleted': msg.isDeleted}">
+                    {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
+                  </span>
                 </div>
               </div>
             </template>
@@ -548,85 +556,89 @@
       :accountId="loggedInAccountId"
       @close="closeProfileModal"
     />
-    <!-- Block Confirmation Modal -->
+    <!-- Context Menu -->
     <div
-      v-if="showBlockConfirm"
-      class="group-modal-overlay"
-      @click.self="cancelBlockUser"
+      v-if="showContextMenu"
+      class="context-menu"
+      :style="{ top: contextMenuPosition.y + 'px', left: contextMenuPosition.x + 'px', position: 'fixed', zIndex: 2000 }"
     >
-      <div class="group-modal">
-        <div class="group-modal-header">
-          <h3>Xác nhận chặn</h3>
-          <button class="close-btn" @click="cancelBlockUser">×</button>
-        </div>
-        <div class="group-modal-body">
-          <p>
-            Bạn có chắc chắn muốn chặn <strong>{{ current.name }}</strong>?
-          </p>
-          <div class="group-buttons-horizontal">
-            <button @click="confirmBlockUser" class="btn danger-btn">Chặn</button>
-            <button @click="cancelBlockUser" class="btn cancel-btn">Huỷ</button>
-          </div>
+      <ul>
+        <li @click="deleteMessage">Xóa tin nhắn</li>
+      </ul>
+    </div>
+  </div>
+  <div
+    v-if="showConfirmRemove"
+    class="group-modal-overlay"
+    @click.self="showConfirmRemove = false"
+  >
+    <div class="group-modal">
+      <div class="group-modal-header">
+        <h3>Xác nhận</h3>
+        <button class="close-btn" @click="showConfirmRemove = false">×</button>
+      </div>
+      <div class="group-modal-body">
+        <p>
+          Bạn có chắc chắn muốn xóa
+          <strong>{{ memberToRemove?.name }}</strong> khỏi nhóm không?
+        </p>
+        <div
+          class="group-buttons-horizontal"
+          style="justify-content: flex-end; margin-top: 20px"
+        >
+          <button
+            @click="showConfirmRemove = false"
+            class="group-btn-icon-delete"
+          >
+            Huỷ
+          </button>
+          <button @click="removeConfirmedMember" class="group-btn-icon-delete">
+            Xoá
+          </button>
         </div>
       </div>
     </div>
-    <!-- Block List Modal -->
-    <div
-      v-if="showBlockListModal"
-      class="group-modal-overlay"
-      @click.self="showBlockListModal = false"
-    >
-      <div class="group-modal">
-        <div class="group-modal-header">
-          <h3>🔴 Quản lí chặn</h3>
-          <button class="close-btn" @click="showBlockListModal = false">×</button>
-        </div>
-        <div class="group-modal-body">
-          <p style="margin-bottom: 12px">Danh sách chặn</p>
-          <div
-            v-for="user in blockedUsers"
-            :key="user.id"
-            class="block-user-item"
-          >
-            <img :src="user.avatar" class="avatar" />
-            <span class="name">{{ user.name }}</span>
-            <button class="unblock-btn" @click="unblockUserHandler(user.id)">
-              Bỏ chặn
-            </button>
-          </div>
+  </div>
+  <div
+    v-if="showBlockConfirm"
+    class="group-modal-overlay"
+    @click.self="cancelBlockUser"
+  >
+    <div class="group-modal">
+      <div class="group-modal-body">
+        <p>
+          Bạn có chắc chắn muốn chặn <strong>{{ current.name }}</strong
+          >?
+        </p>
+        <div class="group-buttons-horizontal">
+          <button @click="cancelBlockUser" class="btn cancel-btn">Huỷ</button>
+          <button @click="confirmBlockUser" class="btn danger-btn">Chặn</button>
         </div>
       </div>
     </div>
-    <!-- Confirm Remove Member Modal -->
-    <div
-      v-if="showConfirmRemove"
-      class="group-modal-overlay"
-      @click.self="showConfirmRemove = false"
-    >
-      <div class="group-modal">
-        <div class="group-modal-header">
-          <h3>Xác nhận</h3>
-          <button class="close-btn" @click="showConfirmRemove = false">×</button>
-        </div>
-        <div class="group-modal-body">
-          <p>
-            Bạn có chắc chắn muốn xóa
-            <strong>{{ memberToRemove?.name }}</strong> khỏi nhóm không?
-          </p>
-          <div
-            class="group-buttons-horizontal"
-            style="justify-content: flex-end; margin-top: 20px"
-          >
-            <button
-              @click="showConfirmRemove = false"
-              class="group-btn-icon-delete"
-            >
-              Huỷ
-            </button>
-            <button @click="removeConfirmedMember" class="group-btn-icon-delete">
-              Xoá
-            </button>
-          </div>
+  </div>
+  <div
+    v-if="showBlockListModal"
+    class="group-modal-overlay"
+    @click.self="showBlockListModal = false"
+  >
+    <div class="group-modal">
+      <div class="group-modal-header">
+        <h3>🔴 Quản lí chặn</h3>
+        <button class="close-btn" @click="showBlockListModal = false">×</button>
+      </div>
+      <div class="group-modal-body">
+        <p style="margin-bottom: 12px">Danh sách chặn</p>
+        <div
+          v-for="user in blockedUsers"
+          :key="user.id"
+          class="block-user-item"
+        >
+          <img :src="user.avatar" class="avatar" />
+          <span class="name">{{ user.name }}</span>
+          <button class="unblock-btn" @click="unblockUserHandler(user.id)">
+            Bỏ chặn
+          </button>
         </div>
       </div>
     </div>
@@ -654,7 +666,7 @@ import {
 } from "@/service/conversationService";
 import { getBlockedList, blockUser, unblockUser } from "@/service/blockService";
 import { getAcceptedFriends } from "@/service/friendService";
-import { getMessages } from "@/service/messageService";
+import { getMessages, delMessage } from "@/service/messageService";
 import { useRouter } from "vue-router";
 import socket from "@/socket";
 
@@ -1234,7 +1246,6 @@ async function loadMessages() {
     const res = await getMessages({
       conversationId: selectedConversationId.value,
     });
-    console.log("[loadMessages] raw response =", res);
     const rawMessages = Array.isArray(res?.data?.messages)
       ? res.data.messages
       : [];
@@ -1246,41 +1257,42 @@ async function loadMessages() {
     const isFileUrl = (url = "") =>
       /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|txt)$/i.test(url);
     messages.value = rawMessages.map((m) => {
-      console.log("[loadMessages] filename:", m.originFilename);
+      const isDeleted = m.isDeleted === true;
       const url = m.content || "";
-      const isImage =
-        m.type === "image" || /\.(jpe?g|png|gif|webp)$/i.test(url);
-      const isVideo =
-        m.type === "video" || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
-      const isFile = m.type === "file" || (m.type === "text" && isFileUrl(url));
+      
+      const isImage = !isDeleted && (
+        m.type === "image" || /\.(jpe?g|png|gif|webp)$/i.test(url)
+      );
+      const isVideo = !isDeleted && (
+        m.type === "video" || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url)
+      );
+      const isFile = !isDeleted && (
+        m.type === "file" || (m.type === "text" && isFileUrl(url))
+      );
+
       return {
         id: m.id,
         chatId: Number(selectedConversationId.value),
         senderId: Number(m.senderId),
         fromMe: String(m.senderId) === String(loggedInAccountId.value),
-        text:
-          !isImage && !isVideo && !isFile && m.type === "text" ? m.content : "",
+        text: isDeleted ? "Tin nhắn đã thu hồi" : (
+          !isImage && !isVideo && !isFile && m.type === "text" ? m.content : ""
+        ),
         image: isImage ? url : null,
         video: isVideo ? url : null,
-        file:
-          isFile && url
-            ? {
-                name:
-                  typeof m.originFilename === "string" &&
-                  m.originFilename.trim().length > 0
-                    ? m.originFilename.trim()
-                    : decodeURIComponent(url.split("/").pop()) ||
-                      "Không rõ tên",
-                size: m.size || "Không rõ",
-                url,
-              }
-            : null,
-        type: isImage ? "image" : isVideo ? "video" : isFile ? "file" : "text",
+        file: isFile && url ? {
+          name: m.originFilename?.trim() || decodeURIComponent(url.split("/").pop()) || "Không rõ tên",
+          size: m.size || "Không rõ",
+          url,
+        } : null,
+        type: isDeleted ? "deleted" : (
+          isImage ? "image" : isVideo ? "video" : isFile ? "file" : "text"
+        ),
+        isDeleted,
         createdAt: m.createdAt,
       };
     });
-    console.log("[loadMessages] message example =", rawMessages[0]);
-    console.log("[loadMessages] mapped =", messages.value);
+
     await nextTick();
     scrollToBottom();
   } catch (err) {
@@ -1434,9 +1446,71 @@ onBeforeUnmount(() => {
 onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutside)
 );
-</script>
 
+const showContextMenu = ref(false);
+const contextMenuPosition = ref({ x: 0, y: 0 });
+const selectedMessage = ref(null);
+
+function handleRightClickMessage(event, msg) {
+  event.preventDefault();
+  selectedMessage.value = msg;
+  showContextMenu.value = true;
+
+  // Đợi context menu render xong để lấy kích thước
+  nextTick(() => {
+    const menu = document.querySelector('.context-menu');
+    let x = event.clientX;
+    let y = event.clientY;
+    if (menu) {
+      const { innerWidth, innerHeight } = window;
+      const rect = menu.getBoundingClientRect();
+      // Nếu tràn phải
+      if (x + rect.width > innerWidth) {
+        x = innerWidth - rect.width - 8;
+      }
+      // Nếu tràn dưới
+      if (y + rect.height > innerHeight) {
+        y = innerHeight - rect.height - 8;
+      }
+    }
+    contextMenuPosition.value = { x, y };
+  });
+}
+
+async function deleteMessage() {
+  if (!selectedMessage.value) return;
+  
+  const body = {
+    ownerId: String(loggedInAccountId.value),
+    conversationId: String(selectedConversationId.value),
+    messageId: selectedMessage.value.id
+  };
+
+  try {
+    await delMessage(body);
+    // Sau khi xóa thành công, load lại tin nhắn để cập nhật trạng thái
+    await loadMessages();
+    showContextMenu.value = false;
+  } catch (err) {
+    console.error("❌ Lỗi khi xóa tin nhắn:", err);
+    alert("Không thể xóa tin nhắn!");
+  }
+}
+
+function handleClickOutsideContextMenu(event) {
+  if (!event.target.closest('.context-menu')) {
+    showContextMenu.value = false;
+  }
+}
+onMounted(() => {
+  document.addEventListener('click', handleClickOutsideContextMenu);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutsideContextMenu);
+});
+</script>
 <style scoped>
+
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap");
 * {
   margin: 0;
@@ -1534,7 +1608,7 @@ onBeforeUnmount(() =>
   pointer-events: none;
 }
 .search-bar input {
-  width: 109%;
+  width: 94%;
   padding: 8px 12px 8px 36px;
   border: 1px solid #000;
   border-radius: 20px;
@@ -1550,7 +1624,7 @@ onBeforeUnmount(() =>
   height: 16px;
   border: none;
   border-radius: 50%;
-  background: #f5f5f5;
+  background: #3b6eee;
   color: #fff;
   font-size: 20px;
   line-height: 1;
@@ -1567,6 +1641,7 @@ onBeforeUnmount(() =>
 .search-bar .add-btn:hover {
   background: #335bcc;
 }
+
 .tab-section {
   display: flex;
   position: relative;
@@ -1694,7 +1769,7 @@ onBeforeUnmount(() =>
   line-height: 1;
   display: flex;
   align-items: center;
-  justify-content: end;
+  justify-content: center;
 }
 .chat-header .menu-btn img,
 .chat-header .search-btn img {
@@ -1723,10 +1798,11 @@ onBeforeUnmount(() =>
 .msg-block.align-right {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  max-width: 50%;
-  margin-left: auto;
+  align-items: flex-end; /* Đẩy nội dung bên trong về phải */
+  max-width: 50%; /* Giới hạn chiều rộng khối tin nhắn */
+  margin-left: auto; /* Căn cả block sang phải */
 }
+
 .msg {
   display: inline-flex;
   flex-direction: column;
@@ -1740,10 +1816,16 @@ onBeforeUnmount(() =>
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* .msg-block {
+  max-width: 80%;
+} */
+
 .msg-text {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
 .from-other {
   background: #ececec;
   color: #333;
@@ -1923,14 +2005,14 @@ onBeforeUnmount(() =>
   background-image: url("@/assets/phone.png");
 }
 .icon-location {
-  background-image: url("@/assets/image.png");
+  background-image: url("@/assets/trangchu.png");
 }
 .file-list {
   flex: 1;
 }
 .section-title {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
 }
@@ -1967,6 +2049,7 @@ onBeforeUnmount(() =>
   font-weight: 600;
   cursor: pointer;
 }
+
 .search-message-input {
   width: 100%;
   padding: 8px 12px;
@@ -1989,6 +2072,7 @@ onBeforeUnmount(() =>
   z-index: 1000;
   padding-top: 10px;
 }
+
 .user-sidebar-header {
   font-size: 18px;
   font-weight: bold;
@@ -2007,6 +2091,7 @@ onBeforeUnmount(() =>
   padding: 0;
   width: 100%;
 }
+
 .user-sidebar-menu li {
   text-align: center;
   padding: 10px 0;
@@ -2015,6 +2100,7 @@ onBeforeUnmount(() =>
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .user-sidebar-menu li:hover {
   background-color: #f5f5f5;
 }
@@ -2202,6 +2288,7 @@ onBeforeUnmount(() =>
   line-height: 1.2;
   animation: pop 0.2s ease;
 }
+
 @keyframes pop {
   0% {
     transform: scale(0.9);
@@ -2220,13 +2307,14 @@ onBeforeUnmount(() =>
   font-size: 14px;
   resize: none;
   background: transparent;
-  line-height: 22px;
+  line-height: 22px; /* đảm bảo khớp với JS */
   color: #333;
   overflow-y: auto;
   white-space: pre-wrap;
   font-family: "Roboto", sans-serif;
-  height: 22px;
-  max-height: calc(22px * 4);
+
+  height: 22px; /* 1 dòng */
+  max-height: calc(22px * 4); /* tối đa 4 dòng */
 }
 .group-modal-overlay {
   position: fixed;
@@ -2237,6 +2325,7 @@ onBeforeUnmount(() =>
   justify-content: center;
   z-index: 9999;
 }
+
 .group-modal {
   background-color: #fff;
   width: 90%;
@@ -2246,6 +2335,7 @@ onBeforeUnmount(() =>
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   animation: fadeInModal 0.25s ease-out;
 }
+
 @keyframes fadeInModal {
   from {
     opacity: 0;
@@ -2256,17 +2346,20 @@ onBeforeUnmount(() =>
     transform: scale(1);
   }
 }
+
 .group-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
+
 .group-modal-header h3 {
   font-size: 18px;
   font-weight: bold;
   margin: 0;
 }
+
 .close-btn {
   background: none;
   border: none;
@@ -2278,17 +2371,20 @@ onBeforeUnmount(() =>
 .close-btn:hover {
   color: #333;
 }
+
 .group-modal-body p {
   font-size: 15px;
   color: #333;
   margin: 0;
 }
+
 .group-buttons-horizontal {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 20px;
 }
+
 .group-btn-icon-delete {
   padding: 8px 16px;
   border: none;
@@ -2305,32 +2401,100 @@ onBeforeUnmount(() =>
   background-color: white;
   border: 1px solid white;
   border-radius: 20px;
-  font-size: 16px;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
-.btn {
-  
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  min-width: 80px;
-  text-align: center;
+
+/* Huỷ (nút đầu tiên) */
+/* .group-buttons-horizontal button:first-child {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+} */
+/* .group-buttons-horizontal button:first-child:hover {
+  background-color: #bdc3c7;
+} */
+
+/* Xoá (nút thứ hai) */
+/* .group-buttons-horizontal button:last-child {
+  background-color: #e74c3c;
+  color: white;
+} */
+/* .group-buttons-horizontal button:last-child:hover {
+  background-color: #c0392b;
+} */
+.group-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
-.cancel-btn {
-  background-color: #f0f0f0;
+
+.group-modal {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease-out;
+  font-family: "Poppins", sans-serif;
+}
+
+.group-modal-header {
+  padding: 16px 20px;
+  background: #f5f5f5;
+  font-weight: 600;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.group-modal-body {
+  padding: 20px;
+  font-size: 16px;
   color: #333;
 }
+
+.group-buttons-horizontal {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px; /* khoảng cách giữa hai nút */
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.cancel-btn {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
 .cancel-btn:hover {
   background-color: #d5d5d5;
 }
+
 .danger-btn {
   background-color: #e74c3c;
   color: white;
 }
+
 .danger-btn:hover {
   background-color: #c0392b;
 }
@@ -2358,7 +2522,7 @@ onBeforeUnmount(() =>
   color: white;
   border: none;
   padding: 6px 16px;
-  border-radius: 8px;
+  border-radius: 8px; 
   font-size: 13px;
   cursor: pointer;
   font-weight: 500;
@@ -2366,5 +2530,60 @@ onBeforeUnmount(() =>
 .unblock-btn:hover {
   background-color: #c0392b;
 }
+
+.context-menu {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  min-width: 120px;
+  padding: 4px 0;
+}
+.context-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.context-menu li {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.context-menu li:hover {
+  background: #f5f5f5;
+}
+
+.text-deleted {
+  color: #888;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.context-menu {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  min-width: 120px;
+  padding: 4px 0;
+}
+.context-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.context-menu li {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.context-menu li:hover {
+  background: #f5f5f5;
+}
+.text-deleted {
+  color: #888;
+  font-style: italic;
+  font-size: 13px;
+}
+
 </style>
-```
