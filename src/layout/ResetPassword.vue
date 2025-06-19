@@ -53,15 +53,15 @@ const emailError = ref('')
 const notifications = ref([])
 
 // Notification handler
-const addNotification = (message, type = 'success') => {
-  const id = Date.now()
-  notifications.value.push({ id, message, type })
+// const addNotification = (message, type = 'success') => {
+//   const id = Date.now()
+//   notifications.value.push({ id, message, type })
   
-  // Auto-remove after 3 seconds
-  setTimeout(() => {
-    notifications.value = notifications.value.filter(n => n.id !== id)
-  }, 3000)
-}
+//   // Auto-remove after 3 seconds
+//   setTimeout(() => {
+//     notifications.value = notifications.value.filter(n => n.id !== id)
+//   }, 3000)
+// }
 
 const validateEmail = () => {
   const email = contact.value.trim()

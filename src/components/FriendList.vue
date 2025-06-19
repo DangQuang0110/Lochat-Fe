@@ -39,7 +39,7 @@ import { ref, computed, onMounted } from 'vue'
 import layout from '@/layout/SideBarContact.vue'
 import FriendDetail from './FriendDetail.vue'
 import { getAcceptedFriends, unfriend } from '@/service/friendService'
-import hinhImg from '@/assets/hinh.jpg'
+import hinhImg from '@/assets/avata.jpg'
 import Toastify from 'toastify-js'
 import 'toastify-js/src/toastify.css'
 
