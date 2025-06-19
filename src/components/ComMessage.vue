@@ -13,7 +13,7 @@
           <div class="user-sidebar-divider"></div>
           <ul class="user-sidebar-menu">
             <li @click="goToUserProfile">Hồ sơ người dùng</li>
-            <li @click="goToChangePassword">Đổi mật khẩu</li>
+            <!-- <li @click="goToChangePassword">Đổi mật khẩu</li> -->
             <li @click="goToBlockedList">Quản lí chặn</li>
             <li @click="logout">Đăng xuất</li>
           </ul>
@@ -1367,6 +1367,7 @@ onMounted(async () => {
       avatar: profile.avatarUrl || require("@/assets/avata.jpg"),
       name: profile.fullname || profile.username || "Người dùng",
     };
+    socket.emit("identify", loggedInAccountId.value);
 
     const rawFriends = await getAcceptedFriends(loggedInAccountId.value);
     const others = await Promise.all(
@@ -1388,7 +1389,7 @@ onMounted(async () => {
         avatar: f.profile?.avatarUrl || require("@/assets/avata.jpg"),
         desc: "",
         conversationId: f.conversationId,
-        online: Math.random() < 0.5,
+        online: false,
       }));
 
     /* GROUPS ------------------------------------ */
@@ -1431,6 +1432,17 @@ onMounted(async () => {
   }
 
   socket.on("chat message", handleIncomingMessage);
+    socket.on("online users", (onlineIds) => {
+    const idSet = new Set(onlineIds.map(Number));
+    // cập nhật trạng thái online của friends
+    friends.value.forEach((f) => {
+      f.online = idSet.has(f.id);
+    });
+    // cập nhật trạng thái online cho nhóm (nếu cần)
+    groups.value.forEach((g) => {
+      g.online = g.members?.some((m) => idSet.has(m.accountId));
+    });
+  });
 });
 const isGroupAdmin = computed(() => {
   if (activeTab.value !== "groups") return false;
