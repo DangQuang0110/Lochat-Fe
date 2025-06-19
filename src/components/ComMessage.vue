@@ -8,20 +8,16 @@
           class="avatar"
           @click.stop="toggleUserSidebar"
         />
-      <aside
-        v-if="showUserSidebar"
-        class="user-sidebar"
-        ref="avatarWrapper"
-      >
-        <div class="user-sidebar-header">{{ user.name }}</div>
-        <div class="user-sidebar-divider"></div>
-        <ul class="user-sidebar-menu">
-          <li @click="goToUserProfile">Hồ sơ người dùng</li>
-          <li @click="goToChangePassword">Đổi mật khẩu</li>
-          <li @click="goToBlockedList">Quản lí chặn</li>
-          <li @click="logout">Đăng xuất</li>
-        </ul>
-      </aside>
+        <aside v-if="showUserSidebar" class="user-sidebar" ref="avatarWrapper">
+          <div class="user-sidebar-header">{{ user.name }}</div>
+          <div class="user-sidebar-divider"></div>
+          <ul class="user-sidebar-menu">
+            <li @click="goToUserProfile">Hồ sơ người dùng</li>
+            <li @click="goToChangePassword">Đổi mật khẩu</li>
+            <li @click="goToBlockedList">Quản lí chặn</li>
+            <li @click="logout">Đăng xuất</li>
+          </ul>
+        </aside>
       </div>
       <nav class="sidebar-nav">
         <ul>
@@ -42,38 +38,51 @@
     <aside class="sidebar">
       <div class="search-bar">
         <div class="input-wrapper">
-          <img src="@/assets/search_icon.png" alt="Tìm kiếm" class="search-icon" />
+          <img
+            src="@/assets/search_icon.png"
+            alt="Tìm kiếm"
+            class="search-icon"
+          />
           <input type="text" placeholder="Tìm kiếm" />
         </div>
         <button class="add-btn">+</button>
       </div>
       <div class="tab-section">
-        <button 
-          class="tab-btn" 
+        <button
+          class="tab-btn"
           :class="{ active: activeTab === 'friends' }"
           @click="activeTab = 'friends'"
-        >Bạn bè</button>
-        <button 
-          class="tab-btn" 
+        >
+          Bạn bè
+        </button>
+        <button
+          class="tab-btn"
           :class="{ active: activeTab === 'groups' }"
           @click="activeTab = 'groups'"
-        >Nhóm</button>
-        <div 
+        >
+          Nhóm
+        </button>
+        <div
           class="tab-indicator"
-          :style="{ transform: activeTab === 'friends' ? 'translateX(0%)' : 'translateX(100%)' }"
+          :style="{
+            transform:
+              activeTab === 'friends' ? 'translateX(0%)' : 'translateX(100%)',
+          }"
         />
       </div>
       <div class="friend-section">
-        <div 
-          v-for="item in activeTab === 'friends' ? friends : groups" 
-          :key="item.id" 
-          class="friend-item" 
+        <div
+          v-for="item in activeTab === 'friends' ? friends : groups"
+          :key="item.id"
+          class="friend-item"
           :class="{ active: selectedId === item.id }"
           @click="selectFriend(item.id)"
         >
           <img :src="item.avatar" class="avatar" />
           <div class="friend-info">
-            <div class="name">{{ item.name }}<span v-if="item.online" class="online-dot"></span></div>
+            <div class="name">
+              {{ item.name }}<span v-if="item.online" class="online-dot"></span>
+            </div>
             <div class="desc">{{ item.desc }}</div>
           </div>
         </div>
@@ -88,12 +97,18 @@
           <img :src="current.avatar" class="avatar" />
           <div class="info">
             <div class="name">{{ current.name }}</div>
-            <div class="status">{{ current.online ? 'Đang hoạt động' : 'Offline' }}<span v-if="current.online" class="online-dot"></span></div>
+            <div class="status">
+              {{ current.online ? "Đang hoạt động" : "Offline"
+              }}<span v-if="current.online" class="online-dot"></span>
+            </div>
           </div>
         </div>
         <div class="header-right">
           <button class="btn icon-btn search-btn" @click="toggleSearch">
-            <img src="@/assets/search_icon.png" alt="Tìm trong cuộc trò chuyện" />
+            <img
+              src="@/assets/search_icon.png"
+              alt="Tìm trong cuộc trò chuyện"
+            />
           </button>
           <div v-if="showSearch" class="message-search">
             <input
@@ -110,7 +125,10 @@
       </header>
 
       <div class="chat-body">
-        <div v-if="currentMessages && currentMessages.length === 0" class="no-message">
+        <div
+          v-if="currentMessages && currentMessages.length === 0"
+          class="no-message"
+        >
           Chưa có tin nhắn mới
         </div>
         <template v-else>
@@ -129,54 +147,82 @@
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
                   <!-- <div class="msg from-other"> -->
-                    <div v-if="msg.file" class="file-attach">
-                      <span class="file-icon">📎</span>
-                      <div class="file-info">
-                        <p class="file-name">{{ msg.file.name }}</p>
-                        <p class="file-size">{{ prettySize(msg.file.size) }}</p>
-                      </div>
-                      <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
-                    </div>
-                    <template v-if="msg.image || msg.video">
-                      <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
-                      <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
-                    </template>
-                    <div
-                      :class="[
-                        'msg',
-                        'from-other',
-                        isEmojiOnly(msg.text) && !msg.file && !msg.image ? 'emoji-only' : ''
-                      ]"
-                    >
-                      <span v-if="msg.type === 'text' && !msg.file">{{ msg.text }}</span>
-                    </div>
-                  <!-- </div> -->
-                </div>
-              </div>
-              <div v-else class="msg-block align-right">
-                <!-- <div class="msg from-me"> -->
                   <div v-if="msg.file" class="file-attach">
                     <span class="file-icon">📎</span>
                     <div class="file-info">
                       <p class="file-name">{{ msg.file.name }}</p>
                       <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                     </div>
-                    <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
+                    <a :href="msg.file.url" target="_blank" class="download-btn"
+                      >⬇️</a
+                    >
                   </div>
                   <template v-if="msg.image || msg.video">
-                    <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
-                    <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                    <img
+                      v-if="msg.image"
+                      :src="msg.image"
+                      style="max-width: 200px; border-radius: 8px"
+                    />
+                    <video
+                      v-if="msg.video"
+                      :src="msg.video"
+                      controls
+                      playsinline
+                      style="max-width: 200px; border-radius: 8px"
+                    ></video>
                   </template>
                   <div
-                    v-if="!msg.image && !msg.video && !msg.file"   
                     :class="[
                       'msg',
-                      msg.fromMe ? 'from-me' : 'from-other',
-                      isEmojiOnly(msg.text) ? 'emoji-only' : ''
+                      'from-other',
+                      isEmojiOnly(msg.text) && !msg.file && !msg.image
+                        ? 'emoji-only'
+                        : '',
                     ]"
                   >
-                    <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                    <span v-if="msg.type === 'text' && !msg.file">{{
+                      msg.text
+                    }}</span>
                   </div>
+                  <!-- </div> -->
+                </div>
+              </div>
+              <div v-else class="msg-block align-right">
+                <!-- <div class="msg from-me"> -->
+                <div v-if="msg.file" class="file-attach">
+                  <span class="file-icon">📎</span>
+                  <div class="file-info">
+                    <p class="file-name">{{ msg.file.name }}</p>
+                    <p class="file-size">{{ prettySize(msg.file.size) }}</p>
+                  </div>
+                  <a :href="msg.file.url" target="_blank" class="download-btn"
+                    >⬇️</a
+                  >
+                </div>
+                <template v-if="msg.image || msg.video">
+                  <img
+                    v-if="msg.image"
+                    :src="msg.image"
+                    style="max-width: 200px; border-radius: 8px"
+                  />
+                  <video
+                    v-if="msg.video"
+                    :src="msg.video"
+                    controls
+                    playsinline
+                    style="max-width: 200px; border-radius: 8px"
+                  ></video>
+                </template>
+                <div
+                  v-if="!msg.image && !msg.video && !msg.file"
+                  :class="[
+                    'msg',
+                    msg.fromMe ? 'from-me' : 'from-other',
+                    isEmojiOnly(msg.text) ? 'emoji-only' : '',
+                  ]"
+                >
+                  <span v-if="msg.type === 'text'">{{ msg.text }}</span>
+                </div>
                 <!-- </div> -->
               </div>
             </template>
@@ -185,26 +231,38 @@
                 <img class="avatar" :src="getSender(msg)?.avatar" />
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
-                  
+
                   <div v-if="msg.file" class="file-attach">
                     <span class="file-icon">📎</span>
                     <div class="file-info">
                       <p class="file-name">{{ msg.file.name }}</p>
                       <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                     </div>
-                    <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
+                    <a :href="msg.file.url" target="_blank" class="download-btn"
+                      >⬇️</a
+                    >
                   </div>
 
                   <template v-if="msg.image || msg.video">
-                    <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
-                    <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                    <img
+                      v-if="msg.image"
+                      :src="msg.image"
+                      style="max-width: 200px; border-radius: 8px"
+                    />
+                    <video
+                      v-if="msg.video"
+                      :src="msg.video"
+                      controls
+                      playsinline
+                      style="max-width: 200px; border-radius: 8px"
+                    ></video>
                   </template>
                   <div
                     v-if="!msg.image && !msg.video && !msg.file"
                     :class="[
                       'msg',
                       'from-other',
-                      isEmojiOnly(msg.text) ? 'emoji-only' : ''
+                      isEmojiOnly(msg.text) ? 'emoji-only' : '',
                     ]"
                   >
                     <span v-if="msg.type === 'text'">{{ msg.text }}</span>
@@ -219,18 +277,30 @@
                     <p class="file-name">{{ msg.file.name }}</p>
                     <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                   </div>
-                  <a :href="msg.file.url" target="_blank" class="download-btn">⬇️</a>
+                  <a :href="msg.file.url" target="_blank" class="download-btn"
+                    >⬇️</a
+                  >
                 </div>
                 <template v-if="msg.image || msg.video">
-                  <img v-if="msg.image" :src="msg.image" style="max-width: 200px; border-radius: 8px;" />
-                  <video v-if="msg.video" :src="msg.video" controls playsinline style="max-width: 200px; border-radius: 8px;"></video>
+                  <img
+                    v-if="msg.image"
+                    :src="msg.image"
+                    style="max-width: 200px; border-radius: 8px"
+                  />
+                  <video
+                    v-if="msg.video"
+                    :src="msg.video"
+                    controls
+                    playsinline
+                    style="max-width: 200px; border-radius: 8px"
+                  ></video>
                 </template>
                 <div
-                  v-if="!msg.image && !msg.video && !msg.file" 
+                  v-if="!msg.image && !msg.video && !msg.file"
                   :class="[
                     'msg',
                     'from-other',
-                    isEmojiOnly(msg.text) ? 'emoji-only' : ''
+                    isEmojiOnly(msg.text) ? 'emoji-only' : '',
                   ]"
                 >
                   <span v-if="msg.type === 'text'">{{ msg.text }}</span>
@@ -250,7 +320,7 @@
           <input
             ref="fileInput"
             type="file"
-            style="display:none"
+            style="display: none"
             @change="handleFileSelect"
             accept="*/*"
           />
@@ -299,7 +369,7 @@
           <h4 class="section-title">Thông tin cá nhân</h4>
           <div class="detail-item">
             <i class="icon-phone"></i>
-            <span>{{ current.phone || 'Chưa cập nhật' }}</span>
+            <span>{{ current.phone || "Chưa cập nhật" }}</span>
           </div>
           <div class="detail-item">
             <i class="icon-location"></i>
@@ -311,7 +381,11 @@
         <div class="file-list">
           <h4 class="section-title">Files</h4>
           <ul>
-            <li v-for="msg in messages.filter(m => m.file)" :key="msg.id" class="file-item">
+            <li
+              v-for="msg in messages.filter((m) => m.file)"
+              :key="msg.id"
+              class="file-item"
+            >
               <i class="icon-file"></i>
               <span class="file-name">{{ msg.file.name }}</span>
               <a :href="msg.file.url" download class="icon-download"></a>
@@ -323,18 +397,23 @@
       <div v-else class="panel-content">
         <div class="profile-info">
           <img :src="current.avatar" class="profile-avatar" />
-          <h3 class="profile-name">{{ current.name }} <span class="edit-icon" @click="openEditGroupModal">✎</span></h3>
+          <h3 class="profile-name">
+            {{ current.name }}
+            <span class="edit-icon" @click="openEditGroupModal">✎</span>
+          </h3>
         </div>
         <div class="group-info">
           <h4 class="section-title">Thông tin nhóm</h4>
           <p>{{ groupMembers.length }} thành viên</p>
           <div class="member-avatars">
-            <img v-for="m in groupMembers" :src="m.avatar" class="avatar" :key="m.id" />
+            <img
+              v-for="m in groupMembers"
+              :src="m.avatar"
+              class="avatar"
+              :key="m.id"
+            />
           </div>
-          <div
-              class="group-actions-horizontal"
-              v-if="isGroupAdmin"                
-            >
+          <div class="group-actions-horizontal" v-if="isGroupAdmin">
             <p class="admin-label">Bạn là quản trị viên</p>
             <div class="group-buttons-horizontal">
               <button class="group-btn-icon" @click="showAddModal = true">
@@ -351,7 +430,11 @@
         <div class="file-list">
           <h4 class="section-title">Files</h4>
           <ul>
-            <li v-for="msg in messages.filter(m => m.file)" :key="msg.id" class="file-item">
+            <li
+              v-for="msg in messages.filter((m) => m.file)"
+              :key="msg.id"
+              class="file-item"
+            >
               <i class="icon-file"></i>
               <span class="file-name">{{ msg.file.name }}</span>
               <a :href="msg.file.url" download class="icon-download"></a>
@@ -368,17 +451,17 @@
         </button>
 
         <!-- Nếu không phải admin -->
-        <button
-          v-else
-          class="delete-btn leave-btn"
-          @click="leaveGroup"
-        >
+        <button v-else class="delete-btn leave-btn" @click="leaveGroup">
           Rời nhóm
         </button>
       </div>
     </aside>
     <!-- Add Members Modal -->
-    <div v-if="showAddModal" class="group-modal-overlay" @click.self="showAddModal = false">
+    <div
+      v-if="showAddModal"
+      class="group-modal-overlay"
+      @click.self="showAddModal = false"
+    >
       <div class="group-modal">
         <div class="group-modal-header">
           <h3>Thêm vào nhóm</h3>
@@ -386,7 +469,11 @@
         </div>
         <div class="group-modal-body">
           <div class="search-wrapper">
-            <span class="list-title">Danh sách bạn bè</span>
+            <span
+              class="list-title"
+              style="width: 73px; padding-top: 8px; height: 50.6"
+              >Danh sách bạn bè</span
+            >
             <input
               type="text"
               v-model="addSearch"
@@ -401,10 +488,7 @@
             >
               <img :src="friend.avatar" class="avatar" alt="" />
               <span class="name">{{ friend.name }}</span>
-              <button
-                class="add-btn"
-                @click="addToGroup(friend.id)"
-              >
+              <button class="add-btn" @click="addToGroup(friend.id)">
                 Thêm vào nhóm
               </button>
             </li>
@@ -414,7 +498,11 @@
     </div>
 
     <!-- Manage Group Modal -->
-    <div v-if="showGroupModal" class="group-modal-overlay" @click.self="showGroupModal = false">
+    <div
+      v-if="showGroupModal"
+      class="group-modal-overlay"
+      @click.self="showGroupModal = false"
+    >
       <div class="group-modal">
         <div class="group-modal-header">
           <h3>Quản lí nhóm</h3>
@@ -428,10 +516,16 @@
             class="group-search"
           />
           <ul class="member-list">
-            <li v-for="member in filteredMembers" :key="member.id" class="member-item">
+            <li
+              v-for="member in filteredMembers"
+              :key="member.id"
+              class="member-item"
+            >
               <img :src="member.avatar" class="avatar" />
               <span class="name">{{ member.name }}</span>
-              <button class="remove-btn" @click="confirmRemoveMember(member)">Xóa khỏi nhóm</button>
+              <button class="remove-btn" @click="confirmRemoveMember(member)">
+                Xóa khỏi nhóm
+              </button>
             </li>
           </ul>
         </div>
@@ -439,378 +533,492 @@
     </div>
 
     <!-- GroupForm Modal -->
-    <div v-if="showGroupForm" class="group-modal-overlay" @click.self="showGroupForm = false">
-      <GroupForm :friends="friends" @close="closeGroupForm" @group-created="handleGroupCreated" />
+    <div
+      v-if="showGroupForm"
+      class="group-modal-overlay"
+      @click.self="showGroupForm = false"
+    >
+      <GroupForm
+        :friends="friends"
+        @close="closeGroupForm"
+        @group-created="handleGroupCreated"
+      />
     </div>
 
     <!-- GroupEditModal -->
     <GroupEditModal
       v-if="showEditGroupModal"
-      :owner-id="loggedInAccountId"         
-      :conversation-id="selectedConversationId" 
+      :owner-id="loggedInAccountId"
+      :conversation-id="selectedConversationId"
       :initial-group-name="current.name"
       :initial-group-avatar="current.avatar"
       @close="closeEditGroupModal"
       @confirm="handleGroupEdit"
     />
     <!-- Profile Modal -->
-    <ProfileModal 
-      v-if="showProfileModal" 
-      :accountId="loggedInAccountId" 
-      @close="closeProfileModal" 
+    <ProfileModal
+      v-if="showProfileModal"
+      :accountId="loggedInAccountId"
+      @close="closeProfileModal"
     />
   </div>
-  <div v-if="showConfirmRemove" class="group-modal-overlay" @click.self="showConfirmRemove = false">
-  <div class="group-modal">
-    <div class="group-modal-header">
-      <h3>Xác nhận</h3>
-      <button class="close-btn" @click="showConfirmRemove = false">×</button>
-    </div>
-    <div class="group-modal-body">
-      <p>Bạn có chắc chắn muốn xóa <strong>{{ memberToRemove?.name }}</strong> khỏi nhóm không?</p>
-      <div class="group-buttons-horizontal" style="justify-content: flex-end; margin-top: 20px;">
-        <button @click="showConfirmRemove = false" class="group-btn-icon-delete">Huỷ</button>
-        <button @click="removeConfirmedMember" class="group-btn-icon-delete">Xoá</button>
+  <div
+    v-if="showConfirmRemove"
+    class="group-modal-overlay"
+    @click.self="showConfirmRemove = false"
+  >
+    <div class="group-modal">
+      <div class="group-modal-header">
+        <h3>Xác nhận</h3>
+        <button class="close-btn" @click="showConfirmRemove = false">×</button>
+      </div>
+      <div class="group-modal-body">
+        <p>
+          Bạn có chắc chắn muốn xóa
+          <strong>{{ memberToRemove?.name }}</strong> khỏi nhóm không?
+        </p>
+        <div
+          class="group-buttons-horizontal"
+          style="justify-content: flex-end; margin-top: 20px"
+        >
+          <button
+            @click="showConfirmRemove = false"
+            class="group-btn-icon-delete"
+          >
+            Huỷ
+          </button>
+          <button @click="removeConfirmedMember" class="group-btn-icon-delete">
+            Xoá
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<div v-if="showBlockConfirm" class="group-modal-overlay" @click.self="cancelBlockUser">
-  <div class="group-modal">
-    <div class="group-modal-body">
-      <p>Bạn có chắc chắn muốn chặn <strong>{{ current.name }}</strong>?</p>
+  <div
+    v-if="showBlockConfirm"
+    class="group-modal-overlay"
+    @click.self="cancelBlockUser"
+  >
+    <div class="group-modal">
+      <div class="group-modal-body">
+        <p>
+          Bạn có chắc chắn muốn chặn <strong>{{ current.name }}</strong
+          >?
+        </p>
         <div class="group-buttons-horizontal">
           <button @click="cancelBlockUser" class="btn cancel-btn">Huỷ</button>
           <button @click="confirmBlockUser" class="btn danger-btn">Chặn</button>
         </div>
-    </div>
-  </div>
-</div>
-<div v-if="showBlockListModal" class="group-modal-overlay" @click.self="showBlockListModal = false">
-  <div class="group-modal">
-    <div class="group-modal-header">
-      <h3>🔴 Quản lí chặn</h3>
-      <button class="close-btn" @click="showBlockListModal = false">×</button>
-    </div>
-    <div class="group-modal-body">
-      <p style="margin-bottom: 12px;">Danh sách chặn</p>
-      <div v-for="user in blockedUsers" :key="user.id" class="block-user-item">
-        <img :src="user.avatar" class="avatar" />
-        <span class="name">{{ user.name }}</span>
-        <button class="unblock-btn" @click="unblockUserHandler(user.id)">
-          Bỏ chặn
-        </button>
       </div>
     </div>
   </div>
-</div>
+  <div
+    v-if="showBlockListModal"
+    class="group-modal-overlay"
+    @click.self="showBlockListModal = false"
+  >
+    <div class="group-modal">
+      <div class="group-modal-header">
+        <h3>🔴 Quản lí chặn</h3>
+        <button class="close-btn" @click="showBlockListModal = false">×</button>
+      </div>
+      <div class="group-modal-body">
+        <p style="margin-bottom: 12px">Danh sách chặn</p>
+        <div
+          v-for="user in blockedUsers"
+          :key="user.id"
+          class="block-user-item"
+        >
+          <img :src="user.avatar" class="avatar" />
+          <span class="name">{{ user.name }}</span>
+          <button class="unblock-btn" @click="unblockUserHandler(user.id)">
+            Bỏ chặn
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount,nextTick,watch   } from 'vue'
-import ProfileModal   from './MessageNewDetail.vue'
-import GroupForm      from './GroupForm.vue'
-import GroupEditModal from './GroupEditModal.vue'
-import { getAccountDetail } from '@/service/profileService' 
-import { getOwnedGroups, getJoinedGroups } from '@/service/conversationService'
-import { addMembers,removeMembers,getConversationDetail   } from '@/service/conversationService'
-import { getBlockedList, blockUser,unblockUser  } from '@/service/blockService' 
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+} from "vue";
+import ProfileModal from "./MessageNewDetail.vue";
+import GroupForm from "./GroupForm.vue";
+import GroupEditModal from "./GroupEditModal.vue";
+import { getAccountDetail } from "@/service/profileService";
+import { getOwnedGroups, getJoinedGroups } from "@/service/conversationService";
+import {
+  addMembers,
+  removeMembers,
+  getConversationDetail,
+} from "@/service/conversationService";
+import { getBlockedList, blockUser, unblockUser } from "@/service/blockService";
 
 // import { sendMessageToConversation } from '@/service/messageService'
 
-import { getAcceptedFriends } from '@/service/friendService'
-import { getMessages }        from '@/service/messageService'
-import { useRouter } from 'vue-router'
-import socket from '@/socket'
-const bottomRef = ref(null)
-const showConfirmRemove = ref(false)
-const memberToRemove = ref(null)
+import { getAcceptedFriends } from "@/service/friendService";
+import { getMessages } from "@/service/messageService";
+import { useRouter } from "vue-router";
+import socket from "@/socket";
+const bottomRef = ref(null);
+const showConfirmRemove = ref(false);
+const memberToRemove = ref(null);
 function confirmRemoveMember(member) {
-  memberToRemove.value = member
-  showConfirmRemove.value = true
+  memberToRemove.value = member;
+  showConfirmRemove.value = true;
 }
-const showBlockListModal = ref(false)
+const showBlockListModal = ref(false);
 
 const blockedUsers = ref([
-  { id: 1, name: 'Quang', avatar: 'https://i.imgur.com/your-avatar.png' },
-  { id: 2, name: 'Quang', avatar: 'https://i.imgur.com/your-avatar.png' },
-  { id: 3, name: 'Quang', avatar: 'https://i.imgur.com/your-avatar.png' }
-])
+  { id: 1, name: "Quang", avatar: "https://i.imgur.com/your-avatar.png" },
+  { id: 2, name: "Quang", avatar: "https://i.imgur.com/your-avatar.png" },
+  { id: 3, name: "Quang", avatar: "https://i.imgur.com/your-avatar.png" },
+]);
 
 async function goToBlockedList() {
   try {
-    const res = await getBlockedList(loggedInAccountId.value)
-    const raw = res?.data?.data?.blockedList || []
+    const res = await getBlockedList(loggedInAccountId.value);
+    const raw = res?.data?.data?.blockedList || [];
 
-    console.log('📦 Danh sách người bị chặn từ BE:', raw)
+    console.log("📦 Danh sách người bị chặn từ BE:", raw);
 
-    blockedUsers.value = raw.map(user => ({
+    blockedUsers.value = raw.map((user) => ({
       id: user.id,
-      name: user.profile?.fullname || user.username || 'Không rõ',
-      avatar: user.profile?.avatarUrl || require('@/assets/avata.jpg')
-    }))
+      name: user.profile?.fullname || user.username || "Không rõ",
+      avatar: user.profile?.avatarUrl || require("@/assets/avata.jpg"),
+    }));
 
-    showBlockListModal.value = true
-    showUserSidebar.value = false
+    showBlockListModal.value = true;
+    showUserSidebar.value = false;
   } catch (err) {
-    console.error('❌ Không thể tải danh sách chặn:', err)
-    alert('Lỗi khi tải danh sách chặn')
+    console.error("❌ Không thể tải danh sách chặn:", err);
+    alert("Lỗi khi tải danh sách chặn");
   }
 }
 async function unblockUserHandler(id) {
   try {
-    await unblockUser(loggedInAccountId.value, id)
+    await unblockUser(loggedInAccountId.value, id);
 
-    blockedUsers.value = blockedUsers.value.filter(u => u.id !== id)
+    blockedUsers.value = blockedUsers.value.filter((u) => u.id !== id);
 
     // (tuỳ chọn) Thông báo
-    alert('Đã bỏ chặn thành công!')
+    alert("Đã bỏ chặn thành công!");
   } catch (err) {
-    console.error('❌ Không thể bỏ chặn:', err)
-    alert(err?.response?.data?.message || 'Lỗi khi bỏ chặn.')
+    console.error("❌ Không thể bỏ chặn:", err);
+    alert(err?.response?.data?.message || "Lỗi khi bỏ chặn.");
   }
 }
 
-const activeTab= ref('friends')
+const activeTab = ref("friends");
 function handleKeydown(e) {
   // Shift để xuống dòng
-  if (e.key === 'Shift' && !e.ctrlKey && !e.altKey && !e.metaKey) {
-    e.preventDefault()
-    messageInput.value += '\n'
-    autoResize()
-    return
+  if (e.key === "Shift" && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault();
+    messageInput.value += "\n";
+    autoResize();
+    return;
   }
 
   // Enter để gửi
-  if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-    e.preventDefault()
-    sendMessage()
-    return
+  if (
+    e.key === "Enter" &&
+    !e.shiftKey &&
+    !e.ctrlKey &&
+    !e.altKey &&
+    !e.metaKey
+  ) {
+    e.preventDefault();
+    sendMessage();
+    return;
   }
 }
 function autoResize() {
   nextTick(() => {
-    const el = textInput.value
+    const el = textInput.value;
     if (el) {
-      const lineHeight = 22  
-      const minRows = 1
-      const maxRows = 4 
+      const lineHeight = 22;
+      const minRows = 1;
+      const maxRows = 4;
 
-      el.style.height = 'auto'             
-      const rows = Math.floor(el.scrollHeight / lineHeight)
+      el.style.height = "auto";
+      const rows = Math.floor(el.scrollHeight / lineHeight);
 
-      const finalRows = Math.min(Math.max(rows, minRows), maxRows)
-      el.style.height = finalRows * lineHeight + 'px'
+      const finalRows = Math.min(Math.max(rows, minRows), maxRows);
+      el.style.height = finalRows * lineHeight + "px";
     }
-  })
+  });
 }
 watch(activeTab, (newTab) => {
-  if (newTab === 'friends' && friends.value.length) {
-    const firstFriend = friends.value[0]
-    selectedId.value = firstFriend.id
-    selectedConversationId.value = Number(firstFriend.conversationId)
-    socket.emit('join room', `conversation_${selectedConversationId.value}`)
-    loadMessages()
+  if (newTab === "friends" && friends.value.length) {
+    const firstFriend = friends.value[0];
+    selectedId.value = firstFriend.id;
+    selectedConversationId.value = Number(firstFriend.conversationId);
+    socket.emit("join room", `conversation_${selectedConversationId.value}`);
+    loadMessages();
   }
 
-  if (newTab === 'groups' && groups.value.length) {
-    const firstGroup = groups.value[0]
-    selectedId.value = firstGroup.id
-    selectedConversationId.value = Number(firstGroup.conversationId)
-    socket.emit('join room', `conversation_${selectedConversationId.value}`)
-    loadMessages()
+  if (newTab === "groups" && groups.value.length) {
+    const firstGroup = groups.value[0];
+    selectedId.value = firstGroup.id;
+    selectedConversationId.value = Number(firstGroup.conversationId);
+    socket.emit("join room", `conversation_${selectedConversationId.value}`);
+    loadMessages();
   }
-})
+});
 async function removeConfirmedMember() {
-  const member = memberToRemove.value
-  if (!member) return
+  const member = memberToRemove.value;
+  if (!member) return;
   try {
     await removeMembers({
       conversationId: selectedConversationId.value,
       ownerId: loggedInAccountId.value,
-      ids: [member.id]
-    })
+      ids: [member.id],
+    });
 
-    const grp = groups.value.find(g => g.id === selectedId.value)
+    const grp = groups.value.find((g) => g.id === selectedId.value);
     if (grp) {
-      grp.members = grp.members.filter(m => Number(m.accountId) !== Number(member.id))
+      grp.members = grp.members.filter(
+        (m) => Number(m.accountId) !== Number(member.id)
+      );
     }
 
-    members.value = members.value.filter(m => Number(m.id) !== Number(member.id))
-    showConfirmRemove.value = false
-    memberToRemove.value = null
+    members.value = members.value.filter(
+      (m) => Number(m.id) !== Number(member.id)
+    );
+    showConfirmRemove.value = false;
+    memberToRemove.value = null;
   } catch (err) {
-    console.error('❌ Xoá thất bại:', err)
-    showConfirmRemove.value = false
-    memberToRemove.value = null
+    console.error("❌ Xoá thất bại:", err);
+    showConfirmRemove.value = false;
+    memberToRemove.value = null;
   }
 }
 
 function scrollToBottom() {
   nextTick(() => {
-    bottomRef.value?.scrollIntoView({ behavior: 'smooth' })
-  })
+    bottomRef.value?.scrollIntoView({ behavior: "smooth" });
+  });
 }
-const router = useRouter()
+const router = useRouter();
 
 function goToFriendList() {
-  router.push('/friendlist')
+  router.push("/friendlist");
 }
 function toggleEmojiPicker() {
   // bật / tắt
   showEmojiPicker.value = !showEmojiPicker.value;
 }
 function addEmoji(emoji) {
-  messageInput.value += emoji
+  messageInput.value += emoji;
 }
-function isEmojiOnly(text = '') {
-  return text.trim() !== '' &&
-         /^[\p{Emoji_Presentation}\u200d\s]+$/u.test(text.trim());
+function isEmojiOnly(text = "") {
+  return (
+    text.trim() !== "" &&
+    /^[\p{Emoji_Presentation}\u200d\s]+$/u.test(text.trim())
+  );
 }
 function handleClickOutsideEmoji(e) {
   if (
     showEmojiPicker.value &&
-    !e.target.closest('.emoji-picker') &&
-    !e.target.closest('.emoji-btn')
+    !e.target.closest(".emoji-picker") &&
+    !e.target.closest(".emoji-btn")
   ) {
     showEmojiPicker.value = false;
   }
 }
-const showBlockConfirm = ref(false)
+const showBlockConfirm = ref(false);
 
 function handleBlockUser() {
-  showBlockConfirm.value = true
+  showBlockConfirm.value = true;
 }
 async function confirmBlockUser() {
-    console.log('⚠️ blockerId:', loggedInAccountId.value)
-  console.log('⚠️ blockedId:', current.value.id)
+  console.log("⚠️ blockerId:", loggedInAccountId.value);
+  console.log("⚠️ blockedId:", current.value.id);
   try {
-    await blockUser(loggedInAccountId.value, current.value.id)
+    await blockUser(loggedInAccountId.value, current.value.id);
 
     blockedUsers.value.push({
       id: current.value.id,
       name: current.value.name,
-      avatar: current.value.avatar || require('@/assets/avata.jpg')
-    })
+      avatar: current.value.avatar || require("@/assets/avata.jpg"),
+    });
 
-    showBlockConfirm.value = false
-    alert(`Đã chặn ${current.value.name}`)
+    showBlockConfirm.value = false;
+    alert(`Đã chặn ${current.value.name}`);
   } catch (err) {
-    console.error('❌ Lỗi khi chặn người dùng:', err)
-    alert('Không thể chặn người dùng này.')
+    console.error("❌ Lỗi khi chặn người dùng:", err);
+    alert("Không thể chặn người dùng này.");
   }
 }
 
 function cancelBlockUser() {
-  showBlockConfirm.value = false
+  showBlockConfirm.value = false;
 }
 
-
-onMounted(() => document.addEventListener('click', handleClickOutsideEmoji));
+onMounted(() => document.addEventListener("click", handleClickOutsideEmoji));
 onBeforeUnmount(() =>
-  document.removeEventListener('click', handleClickOutsideEmoji)
+  document.removeEventListener("click", handleClickOutsideEmoji)
 );
 // onMounted(() => socket.on('chat message', handleIncomingMessage))
-onBeforeUnmount(() => socket.off('chat message', handleIncomingMessage))
+onBeforeUnmount(() => socket.off("chat message", handleIncomingMessage));
 
 function handleIncomingMessage(msg) {
-  if (`${msg.conversationId}` !== `${selectedConversationId.value}`) return
+  if (`${msg.conversationId}` !== `${selectedConversationId.value}`) return;
 
-  const url = msg.content || ''
-  const isImage = msg.type === 'image' || /\.(jpe?g|png|gif|webp|avif)$/i.test(url)
-  const isVideo = msg.type === 'video' || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url)
-  const isFile  = msg.type === 'file'
+  const url = msg.content || "";
+  const isImage =
+    msg.type === "image" || /\.(jpe?g|png|gif|webp|avif)$/i.test(url);
+  const isVideo =
+    msg.type === "video" || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
+  const isFile = msg.type === "file";
 
-  const fromMe = String(msg.senderId) === String(loggedInAccountId.value)
+  const fromMe = String(msg.senderId) === String(loggedInAccountId.value);
 
   if (fromMe && pendingUploads.value.has(url)) {
-    messages.value = messages.value.filter(t =>
-      !(t.clientTempId && (t.image === url || t.video === url || t.file?.url === url))
-    )
-    pendingUploads.value.delete(url)
+    messages.value = messages.value.filter(
+      (t) =>
+        !(
+          t.clientTempId &&
+          (t.image === url || t.video === url || t.file?.url === url)
+        )
+    );
+    pendingUploads.value.delete(url);
   }
 
-  const fallbackName = decodeURIComponent(url.split('/').pop() || 'Tập tin')
+  const fallbackName = decodeURIComponent(url.split("/").pop() || "Tập tin");
 
   messages.value.push({
-    id:        msg.id || Date.now(),
-    chatId:    Number(msg.conversationId),
-    senderId:  Number(msg.senderId),
+    id: msg.id || Date.now(),
+    chatId: Number(msg.conversationId),
+    senderId: Number(msg.senderId),
     fromMe,
-    text:      msg.type === 'text' ? msg.content : '',
+    text: msg.type === "text" ? msg.content : "",
 
-    image:     isImage ? url : null,
-    video:     isVideo ? url : null,
-    file: isFile ? {
-      name: msg.originFilename?.trim() || fallbackName,
-      size: msg.size || 'Không rõ',
-      url
-    } : null,
+    image: isImage ? url : null,
+    video: isVideo ? url : null,
+    file: isFile
+      ? {
+          name: msg.originFilename?.trim() || fallbackName,
+          size: msg.size || "Không rõ",
+          url,
+        }
+      : null,
 
-    type:      isImage ? 'image' : isVideo ? 'video' : isFile ? 'file' : 'text',
-    createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date()
-  })
+    type: isImage ? "image" : isVideo ? "video" : isFile ? "file" : "text",
+    createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+  });
 
-  scrollToBottom()
+  scrollToBottom();
 }
 
 function goToUserProfile() {
-  console.log('✅ Đã click Hồ sơ người dùng')
-  showProfileModal.value = true
-  showUserSidebar.value = false
+  console.log("✅ Đã click Hồ sơ người dùng");
+  showProfileModal.value = true;
+  showUserSidebar.value = false;
 }
 
+const loggedInAccountId = ref(Number(localStorage.getItem("accountId")));
+const user = ref([]);
+const groupMembers = ref([]);
+const friends = ref([]);
+const groups = ref([]);
 
-const loggedInAccountId = ref(Number(localStorage.getItem('accountId')))
-const user              = ref([])
-const groupMembers = ref([])
-const friends   = ref([])               
-const groups = ref([])
-
-const messages  = ref([])               // load khi chọn cuộc trò chuyện
-const members   = ref([])               // danh sách thành viên nhóm (nếu cần)
+const messages = ref([]); // load khi chọn cuộc trò chuyện
+const members = ref([]); // danh sách thành viên nhóm (nếu cần)
 
 /* ---------- UI STATE ---------- */
-const selectedId          = ref(null)
-const showProfileModal    = ref(false)
-const showProfilePanel    = ref(false)
-const showUserSidebar     = ref(false)
-const showGroupForm       = ref(false)
-const showEditGroupModal  = ref(false)
-const showGroupModal      = ref(false)
-const showAddModal        = ref(false)
-const showEmojiPicker     = ref(false)
-const showSearch          = ref(false)
-const pendingUploads = ref(new Set()) 
+const selectedId = ref(null);
+const showProfileModal = ref(false);
+const showProfilePanel = ref(false);
+const showUserSidebar = ref(false);
+const showGroupForm = ref(false);
+const showEditGroupModal = ref(false);
+const showGroupModal = ref(false);
+const showAddModal = ref(false);
+const showEmojiPicker = ref(false);
+const showSearch = ref(false);
+const pendingUploads = ref(new Set());
 /* ---------- INPUT / SEARCH ---------- */
-const messageInput = ref('')
-const searchText   = ref('')
-const addSearch    = ref('')
-const searchQuery  = ref('')
+const messageInput = ref("");
+const searchText = ref("");
+const addSearch = ref("");
+const searchQuery = ref("");
 
 /* ---------- REFS DOM ---------- */
-const avatarWrapper = ref(null)
-const fileInput     = ref(null)
-const textInput = ref(null)
-const isGroupLoading = ref(false)
+const avatarWrapper = ref(null);
+const fileInput = ref(null);
+const textInput = ref(null);
+const isGroupLoading = ref(false);
 
 const emojis = ref([
-  '😊','😂','😍','🤣','😎','😢','😡','👍','👎','🎉','😴','🤔','😘','🥰','🤩','😇',
-  '🤤','😱','😷','🥳','🤯','🧐','🤮','🤗','🤫','🤭','👏','🙌','🦄','💩','👻','💀',
-  '👽','🤖','🎃','😺','😼','🙈','🙉','🙊','🐶','🐱','🐻','🦊','🐼','🐨','🐯','🦁',
-])
+  "😊",
+  "😂",
+  "😍",
+  "🤣",
+  "😎",
+  "😢",
+  "😡",
+  "👍",
+  "👎",
+  "🎉",
+  "😴",
+  "🤔",
+  "😘",
+  "🥰",
+  "🤩",
+  "😇",
+  "🤤",
+  "😱",
+  "😷",
+  "🥳",
+  "🤯",
+  "🧐",
+  "🤮",
+  "🤗",
+  "🤫",
+  "🤭",
+  "👏",
+  "🙌",
+  "🦄",
+  "💩",
+  "👻",
+  "💀",
+  "👽",
+  "🤖",
+  "🎃",
+  "😺",
+  "😼",
+  "🙈",
+  "🙉",
+  "🙊",
+  "🐶",
+  "🐱",
+  "🐻",
+  "🦊",
+  "🐼",
+  "🐨",
+  "🐯",
+  "🦁",
+]);
 const current = computed(() => {
-  const list = activeTab.value === 'friends' ? friends.value : groups.value
-  return list.find(i => i.id === selectedId.value) || {}
-})
+  const list = activeTab.value === "friends" ? friends.value : groups.value;
+  return list.find((i) => i.id === selectedId.value) || {};
+});
 
 const filteredMembers = computed(() =>
   members.value
-    .filter(m => m.role !== 'admin') // ⚠️ loại bỏ admin
-    .filter(m =>
-      m.name.toLowerCase().includes(searchText.value.toLowerCase()))
-)
-
+    .filter((m) => m.role !== "admin") // ⚠️ loại bỏ admin
+    .filter((m) =>
+      m.name.toLowerCase().includes(searchText.value.toLowerCase())
+    )
+);
 
 // const filteredFriendsToAdd = computed(() =>
 //   friends.value.filter(f =>
@@ -819,417 +1027,470 @@ const filteredMembers = computed(() =>
 // )
 
 const currentMessages = computed(() =>
-  messages.value.filter(m => m.chatId === Number(selectedConversationId.value))
-)
+  messages.value.filter(
+    (m) => m.chatId === Number(selectedConversationId.value)
+  )
+);
 async function loadGroupMembers(conversationId) {
   try {
-    const res = await getConversationDetail(conversationId)
-    const raw = res?.data?.data?.members || []
+    const res = await getConversationDetail(conversationId);
+    const raw = res?.data?.data?.members || [];
 
-    groupMembers.value = raw.map(m => ({
+    groupMembers.value = raw.map((m) => ({
       id: m.accountId,
       name: m.username,
-      avatar: m.avatarUrl || require('@/assets/avata.jpg'),
-      role: m.role
-    }))
+      avatar: m.avatarUrl || require("@/assets/avata.jpg"),
+      role: m.role,
+    }));
   } catch (err) {
-    console.error('❌ Lỗi khi tải thành viên nhóm:', err)
-    groupMembers.value = []
+    console.error("❌ Lỗi khi tải thành viên nhóm:", err);
+    groupMembers.value = [];
   }
 }
-const selectedConversationId = ref(null)
-
+const selectedConversationId = ref(null);
 
 const filteredMessages = computed(() => {
-  if (!searchQuery.value) return currentMessages.value
-  const q = searchQuery.value.toLowerCase()
-  return currentMessages.value.filter(m => m.text?.toLowerCase().includes(q))
-})
+  if (!searchQuery.value) return currentMessages.value;
+  const q = searchQuery.value.toLowerCase();
+  return currentMessages.value.filter((m) => m.text?.toLowerCase().includes(q));
+});
 
 function getSender(msg) {
-  const friend = friends.value.find(f => f.id === msg.senderId)
-  return friend ? {
-    name: friend.profile?.fullname || friend.name || 'Không rõ',
-    avatar: friend.profile?.avatarUrl || friend.avatar
-  } : null
+  const friend = friends.value.find((f) => f.id === msg.senderId);
+  return friend
+    ? {
+        name: friend.profile?.fullname || friend.name || "Không rõ",
+        avatar: friend.profile?.avatarUrl || friend.avatar,
+      }
+    : null;
 }
-const prettySize = s => {
-  if (!s || s === 'Không rõ') return '(Không rõ)'
-  return `(${s})`
+const prettySize = (s) => {
+  if (!s || s === "Không rõ") return "(Không rõ)";
+  return `(${s})`;
+};
+
+function toggleSearch() {
+  showSearch.value = !showSearch.value;
+  if (!showSearch.value) searchQuery.value = "";
 }
-
-
-function toggleSearch()        { showSearch.value = !showSearch.value; if (!showSearch.value) searchQuery.value = '' }
-function toggleProfilePanel()  { showProfilePanel.value = !showProfilePanel.value }
-function toggleUserSidebar()   { showUserSidebar.value  = !showUserSidebar.value }
-function closeProfileModal()   { showProfileModal.value = false }
-function closeGroupForm()      { showGroupForm.value    = false }
-function openEditGroupModal()  { showEditGroupModal.value = true }
-function closeEditGroupModal() { showEditGroupModal.value = false }
+function toggleProfilePanel() {
+  showProfilePanel.value = !showProfilePanel.value;
+}
+function toggleUserSidebar() {
+  showUserSidebar.value = !showUserSidebar.value;
+}
+function closeProfileModal() {
+  showProfileModal.value = false;
+}
+function closeGroupForm() {
+  showGroupForm.value = false;
+}
+function openEditGroupModal() {
+  showEditGroupModal.value = true;
+}
+function closeEditGroupModal() {
+  showEditGroupModal.value = false;
+}
 async function selectFriend(id) {
   // Xác định hiện đang ở tab nào
-  const source = activeTab.value === 'friends' ? friends.value : groups.value
-  const selected = source.find(item => item.id === id)
+  const source = activeTab.value === "friends" ? friends.value : groups.value;
+  const selected = source.find((item) => item.id === id);
 
   if (!selected) {
-    console.warn('⚠️ Không tìm thấy item với ID:', id)
-    return
+    console.warn("⚠️ Không tìm thấy item với ID:", id);
+    return;
   }
 
-  selectedId.value = id
+  selectedId.value = id;
 
   // Bảo đảm mọi item đều có conversationId
   if (!selected.conversationId) {
     // sinh tạm một ID hoặc gọi API tạo nhóm
-    selected.conversationId = Date.now()
+    selected.conversationId = Date.now();
   }
 
-  selectedConversationId.value = Number(selected.conversationId)
-  if (activeTab.value === 'groups') {
-  await loadGroupMembers(selected.conversationId)
-  members.value = [...groupMembers.value]
-}
-
+  selectedConversationId.value = Number(selected.conversationId);
+  if (activeTab.value === "groups") {
+    await loadGroupMembers(selected.conversationId);
+    members.value = [...groupMembers.value];
+  }
 
   // Tham gia phòng socket tương ứng
-  socket.emit('join room', `conversation_${selectedConversationId.value}`)
-  console.log('🟢 Join room:', `conversation_${selectedConversationId.value}`)
+  socket.emit("join room", `conversation_${selectedConversationId.value}`);
+  console.log("🟢 Join room:", `conversation_${selectedConversationId.value}`);
 
-  loadMessages()      // gọi API / hoặc tạo stub tin nhắn cho nhóm
+  loadMessages(); // gọi API / hoặc tạo stub tin nhắn cho nhóm
 }
 
 async function addToGroup(friendId) {
-  const groupId = selectedConversationId.value
-  const ownerId = loggedInAccountId.value
+  const groupId = selectedConversationId.value;
+  const ownerId = loggedInAccountId.value;
 
   const payload = {
     conversationId: String(groupId),
-    ownerId:        String(ownerId),
-    ids:            [String(friendId)]
-  }
+    ownerId: String(ownerId),
+    ids: [String(friendId)],
+  };
 
   try {
-    console.log('📦 Gửi request thêm thành viên:', payload)
+    console.log("📦 Gửi request thêm thành viên:", payload);
 
-    await addMembers(payload)
+    await addMembers(payload);
 
-    const grp = groups.value.find(g => g.id === selectedId.value)
-    const friend = friends.value.find(f => f.id === friendId)
+    const grp = groups.value.find((g) => g.id === selectedId.value);
+    const friend = friends.value.find((f) => f.id === friendId);
 
     if (grp && friend) {
       grp.members.push({
         accountId: friend.id,
         avatarUrl: friend.avatar,
-        username:  friend.name,
-        role:      'member'
-      })
+        username: friend.name,
+        role: "member",
+      });
     }
 
-    addSearch.value = ''
+    addSearch.value = "";
   } catch (err) {
-    console.error('❌ Thêm thành viên thất bại:', err)
-    console.log('📨 Lỗi từ server:', err?.response?.data)
-    alert(`Không thể thêm thành viên: ${err?.response?.data?.message || 'Lỗi máy chủ'}`)
+    console.error("❌ Thêm thành viên thất bại:", err);
+    console.log("📨 Lỗi từ server:", err?.response?.data);
+    alert(
+      `Không thể thêm thành viên: ${
+        err?.response?.data?.message || "Lỗi máy chủ"
+      }`
+    );
   }
 }
 
 const friendsToAdd = computed(() => {
-  if (activeTab.value !== 'groups') return []
+  if (activeTab.value !== "groups") return [];
 
   // nhóm đang mở
-  const grp = groups.value.find(g => g.id === selectedId.value)
-  const memberIds = new Set((grp?.members || []).map(m => Number(m.accountId)))
+  const grp = groups.value.find((g) => g.id === selectedId.value);
+  const memberIds = new Set(
+    (grp?.members || []).map((m) => Number(m.accountId))
+  );
 
   // chỉ lấy bạn bè chưa có trong memberIds + filter theo addSearch
-  return friends.value
-    .filter(f =>
+  return friends.value.filter(
+    (f) =>
       !memberIds.has(f.id) &&
       (f.name.toLowerCase().includes(addSearch.value.toLowerCase()) ||
-       String(f.id).includes(addSearch.value))
-    )
-})
+        String(f.id).includes(addSearch.value))
+  );
+});
 function sendMessage() {
-  const text = messageInput.value.trim()
-  if (!text || !selectedConversationId.value) return
+  const text = messageInput.value.trim();
+  if (!text || !selectedConversationId.value) return;
 
   const payload = {
     conversationId: Number(selectedConversationId.value),
-    senderId:       Number(loggedInAccountId.value),
-    content:        text,
-    originFilename:"",
-    size:"",
-    type:           "text",
-  }
+    senderId: Number(loggedInAccountId.value),
+    content: text,
+    originFilename: "",
+    size: "",
+    type: "text",
+  };
 
-  socket.emit("chat message", payload)  // chỉ emit thôi
-  messageInput.value = ''
-  const el = textInput.value
-  if (el) el.style.height = 'auto'
-  nextTick(() => autoResize())
+  socket.emit("chat message", payload); // chỉ emit thôi
+  messageInput.value = "";
+  const el = textInput.value;
+  if (el) el.style.height = "auto";
+  nextTick(() => autoResize());
 }
 
-function triggerFileDialog() { fileInput.value?.click() }
+function triggerFileDialog() {
+  fileInput.value?.click();
+}
 
-import axios from 'axios'
+import axios from "axios";
 
 async function handleFileSelect(e) {
-  const file = e.target.files?.[0]
-  if (!file) return
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('upload_preset', 'chat_up')
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "chat_up");
 
   try {
     const { data } = await axios.post(
-      'https://api.cloudinary.com/v1_1/drniqvbgy/auto/upload',
+      "https://api.cloudinary.com/v1_1/drniqvbgy/auto/upload",
       formData
-    )
+    );
 
-    const url     = data.secure_url
-    const isImage = file.type.startsWith('image/')
-    const isVideo = file.type.startsWith('video/')
-    const tempId  = Date.now()
+    const url = data.secure_url;
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    const tempId = Date.now();
 
     /* Ghi nhận URL đang chờ echo */
-    pendingUploads.value.add(url)
+    pendingUploads.value.add(url);
 
     /* Push tin nhắn tạm */
     messages.value.push({
       id: tempId,
       chatId: Number(selectedConversationId.value),
       fromMe: true,
-      image:  isImage ? url : null,
-      video:  isVideo ? url : null,
-      file:  !isImage && !isVideo
-               ? { name: file.name, size: formatSize(file.size), url }
-               : null,
-      text: '',
-      type:  isImage ? 'image' : isVideo ? 'video' : 'file',
+      image: isImage ? url : null,
+      video: isVideo ? url : null,
+      file:
+        !isImage && !isVideo
+          ? { name: file.name, size: formatSize(file.size), url }
+          : null,
+      text: "",
+      type: isImage ? "image" : isVideo ? "video" : "file",
       createdAt: new Date(),
-      clientTempId: tempId
-    })
+      clientTempId: tempId,
+    });
 
-    scrollToBottom()
+    scrollToBottom();
 
     /* Gửi thật lên server */
-    socket.emit('chat message', {
+    socket.emit("chat message", {
       conversationId: Number(selectedConversationId.value),
-      senderId:       Number(loggedInAccountId.value),
-      type:           isImage ? 'image' : isVideo ? 'video' : 'file',
-      content:        url,
-      originFilename: file.name,  // thêm dòng này
-      size:           formatSize(file.size)
-    })
+      senderId: Number(loggedInAccountId.value),
+      type: isImage ? "image" : isVideo ? "video" : "file",
+      content: url,
+      originFilename: file.name, // thêm dòng này
+      size: formatSize(file.size),
+    });
   } catch (err) {
-    console.error('❌ Upload lỗi:', err)
-    alert('Không thể upload file, thử lại.')
+    console.error("❌ Upload lỗi:", err);
+    alert("Không thể upload file, thử lại.");
   } finally {
-    e.target.value = ''
+    e.target.value = "";
   }
 }
 function formatSize(bytes) {
   return bytes > 1024 * 1024
-    ? (bytes / 1024 / 1024).toFixed(2) + ' MB'
-    : (bytes / 1024).toFixed(2) + ' KB'
+    ? (bytes / 1024 / 1024).toFixed(2) + " MB"
+    : (bytes / 1024).toFixed(2) + " KB";
 }
 
-async function loadMessages () {
-  console.log('[loadMessages] tab =', activeTab.value, 'conversationId =', selectedConversationId.value)
+async function loadMessages() {
+  console.log(
+    "[loadMessages] tab =",
+    activeTab.value,
+    "conversationId =",
+    selectedConversationId.value
+  );
 
   try {
-    const res = await getMessages({ conversationId: selectedConversationId.value })
-    console.log('[loadMessages] raw response =', res)
+    const res = await getMessages({
+      conversationId: selectedConversationId.value,
+    });
+    console.log("[loadMessages] raw response =", res);
 
     const rawMessages = Array.isArray(res?.data?.messages)
       ? res.data.messages
-      : []
+      : [];
 
     if (!rawMessages.length) {
-      console.warn('[loadMessages] Không có message nào')
-      messages.value = []
-      return
+      console.warn("[loadMessages] Không có message nào");
+      messages.value = [];
+      return;
     }
 
-    const isFileUrl = (url = '') =>
-      /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|txt)$/i.test(url)
+    const isFileUrl = (url = "") =>
+      /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|txt)$/i.test(url);
 
-    messages.value = rawMessages.map(m => {
-      console.log('[loadMessages] filename:', m.originFilename)
-      const url = m.content || ''
-      const isImage = m.type === 'image' || /\.(jpe?g|png|gif|webp)$/i.test(url)
-      const isVideo = m.type === 'video' || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url)
-      const isFile  = m.type === 'file' || (m.type === 'text' && isFileUrl(url))
+    messages.value = rawMessages.map((m) => {
+      console.log("[loadMessages] filename:", m.originFilename);
+      const url = m.content || "";
+      const isImage =
+        m.type === "image" || /\.(jpe?g|png|gif|webp)$/i.test(url);
+      const isVideo =
+        m.type === "video" || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
+      const isFile = m.type === "file" || (m.type === "text" && isFileUrl(url));
 
       return {
-        id:        m.id,
-        chatId:    Number(selectedConversationId.value),
-        senderId:  Number(m.senderId),
-        fromMe:    String(m.senderId) === String(loggedInAccountId.value),
-        text:      (!isImage && !isVideo && !isFile && m.type === 'text') ? m.content : '',
-        image:     isImage ? url : null,
-        video:     isVideo ? url : null,
-        file: isFile && url ? {
-          name: typeof m.originFilename === 'string' && m.originFilename.trim().length > 0
-            ? m.originFilename.trim()
-            : decodeURIComponent(url.split('/').pop()) || 'Không rõ tên',
-          size: m.size || 'Không rõ',
-          url
-        } : null,
-        type:      isImage ? 'image' : isVideo ? 'video' : isFile ? 'file' : 'text',
-        createdAt: m.createdAt
-      }
-    })
-    console.log('[loadMessages] message example =', rawMessages[0])
-    console.log('[loadMessages] mapped =', messages.value)
-    await nextTick()
-    scrollToBottom()
+        id: m.id,
+        chatId: Number(selectedConversationId.value),
+        senderId: Number(m.senderId),
+        fromMe: String(m.senderId) === String(loggedInAccountId.value),
+        text:
+          !isImage && !isVideo && !isFile && m.type === "text" ? m.content : "",
+        image: isImage ? url : null,
+        video: isVideo ? url : null,
+        file:
+          isFile && url
+            ? {
+                name:
+                  typeof m.originFilename === "string" &&
+                  m.originFilename.trim().length > 0
+                    ? m.originFilename.trim()
+                    : decodeURIComponent(url.split("/").pop()) ||
+                      "Không rõ tên",
+                size: m.size || "Không rõ",
+                url,
+              }
+            : null,
+        type: isImage ? "image" : isVideo ? "video" : isFile ? "file" : "text",
+        createdAt: m.createdAt,
+      };
+    });
+    console.log("[loadMessages] message example =", rawMessages[0]);
+    console.log("[loadMessages] mapped =", messages.value);
+    await nextTick();
+    scrollToBottom();
   } catch (err) {
-    console.error('❌ [loadMessages] Lỗi khi tải tin nhắn:', err)
-    messages.value = []
+    console.error("❌ [loadMessages] Lỗi khi tải tin nhắn:", err);
+    messages.value = [];
   }
 }
 function handleClickOutside(e) {
-  if (avatarWrapper.value &&
-      !avatarWrapper.value.contains(e.target) &&
-      !e.target.closest('.user-sidebar')) {
-    showUserSidebar.value = false
+  if (
+    avatarWrapper.value &&
+    !avatarWrapper.value.contains(e.target) &&
+    !e.target.closest(".user-sidebar")
+  ) {
+    showUserSidebar.value = false;
   }
 }
 
 onMounted(async () => {
-  document.addEventListener('click', e => {
-    if (avatarWrapper.value &&
-        !avatarWrapper.value.contains(e.target) &&
-        !e.target.closest('.user-sidebar')) {
-      showUserSidebar.value = false
+  document.addEventListener("click", (e) => {
+    if (
+      avatarWrapper.value &&
+      !avatarWrapper.value.contains(e.target) &&
+      !e.target.closest(".user-sidebar")
+    ) {
+      showUserSidebar.value = false;
     }
-  })
+  });
 
   try {
     /* USER + FRIENDS ----------------------------- */
-    const me = await getAccountDetail(loggedInAccountId.value)
-    const profile = me?.profile || {}
+    const me = await getAccountDetail(loggedInAccountId.value);
+    const profile = me?.profile || {};
     user.value = {
-      avatar: profile.avatarUrl || require('@/assets/avata.jpg'),
-      name:   profile.fullname   || profile.username || 'Người dùng'
-    }
+      avatar: profile.avatarUrl || require("@/assets/avata.jpg"),
+      name: profile.fullname || profile.username || "Người dùng",
+    };
 
-    const rawFriends = await getAcceptedFriends(loggedInAccountId.value)
-    const others = await Promise.all(rawFriends.map(async f => {
-      try {
-        const d = await getAccountDetail(f.id)
-        return { ...f, profile: d.profile }
-      } catch { return { ...f, profile: null } }
-    }))
+    const rawFriends = await getAcceptedFriends(loggedInAccountId.value);
+    const others = await Promise.all(
+      rawFriends.map(async (f) => {
+        try {
+          const d = await getAccountDetail(f.id);
+          return { ...f, profile: d.profile };
+        } catch {
+          return { ...f, profile: null };
+        }
+      })
+    );
 
     friends.value = others
-      .filter(f => String(f.id) !== String(loggedInAccountId.value))
-      .map(f => ({
-        id:    f.id,
-        name:  f.profile?.fullname || f.username,
-        avatar:f.profile?.avatarUrl || require('@/assets/avata.jpg'),
-        desc:  '',
+      .filter((f) => String(f.id) !== String(loggedInAccountId.value))
+      .map((f) => ({
+        id: f.id,
+        name: f.profile?.fullname || f.username,
+        avatar: f.profile?.avatarUrl || require("@/assets/avata.jpg"),
+        desc: "",
         conversationId: f.conversationId,
-        online: Math.random() < 0.5
-      }))
+        online: Math.random() < 0.5,
+      }));
 
     /* GROUPS ------------------------------------ */
     const [owned, joined] = await Promise.all([
       getOwnedGroups(loggedInAccountId.value),
-      getJoinedGroups(loggedInAccountId.value)
-    ])
+      getJoinedGroups(loggedInAccountId.value),
+    ]);
     const merged = [
       ...(Array.isArray(owned?.data?.data) ? owned.data.data : []),
-      ...(Array.isArray(joined?.data?.data) ? joined.data.data : [])
-    ]
+      ...(Array.isArray(joined?.data?.data) ? joined.data.data : []),
+    ];
     groups.value = merged.reduce((acc, g) => {
-      if (!acc.some(x => x.conversationId === g.conversationId))
+      if (!acc.some((x) => x.conversationId === g.conversationId))
         acc.push({
-          id:             Number(g.conversationId),
-          name:           g.name,
-          avatar:         g.groupAvatar || require('@/assets/avata.jpg'),
-          desc:           `${g.members?.length || 0} thành viên`,
+          id: Number(g.conversationId),
+          name: g.name,
+          avatar: g.groupAvatar || require("@/assets/avata.jpg"),
+          desc: `${g.members?.length || 0} thành viên`,
           conversationId: g.conversationId,
-          online:         false,
-          members:        g.members 
-        })
-      return acc
-    }, [])
-    isGroupLoading.value = false
-    if (activeTab.value === 'friends' && friends.value.length) {
-      selectFriend(friends.value[0].id)
-    } else if (activeTab.value === 'groups' && groups.value.length) {
-      selectFriend(groups.value[0].id)
+          online: false,
+          members: g.members,
+        });
+      return acc;
+    }, []);
+    isGroupLoading.value = false;
+    if (activeTab.value === "friends" && friends.value.length) {
+      selectFriend(friends.value[0].id);
+    } else if (activeTab.value === "groups" && groups.value.length) {
+      selectFriend(groups.value[0].id);
     }
     /* AUTO SELECT FIRST FRIEND ------------------ */
     if (friends.value.length) {
-      selectedId.value            = friends.value[0].id
-      selectedConversationId.value= Number(friends.value[0].conversationId)
-      socket.emit('join room', `conversation_${selectedConversationId.value}`)
-      await loadMessages()
+      selectedId.value = friends.value[0].id;
+      selectedConversationId.value = Number(friends.value[0].conversationId);
+      socket.emit("join room", `conversation_${selectedConversationId.value}`);
+      await loadMessages();
     }
   } catch (err) {
-    console.error('❌ Không thể tải dữ liệu:', err)
+    console.error("❌ Không thể tải dữ liệu:", err);
   }
 
-  socket.on('chat message', handleIncomingMessage)
-})
+  socket.on("chat message", handleIncomingMessage);
+});
 const isGroupAdmin = computed(() => {
-  if (activeTab.value !== 'groups') return false
+  if (activeTab.value !== "groups") return false;
 
   // tìm nhóm đang mở
-  const grp = groups.value.find(g => g.id === selectedId.value)
-  if (!grp || !Array.isArray(grp.members)) return false
+  const grp = groups.value.find((g) => g.id === selectedId.value);
+  if (!grp || !Array.isArray(grp.members)) return false;
 
   // tìm chính mình trong mảng members của nhóm
-  return grp.members.some(m =>
-    String(m.accountId) === String(loggedInAccountId.value) &&
-    m.role === 'admin'
-  )
-})
+  return grp.members.some(
+    (m) =>
+      String(m.accountId) === String(loggedInAccountId.value) &&
+      m.role === "admin"
+  );
+});
 async function leaveGroup() {
-  const grp = groups.value.find(g => g.id === selectedId.value)
-  if (!grp || !Array.isArray(grp.members)) return
+  const grp = groups.value.find((g) => g.id === selectedId.value);
+  if (!grp || !Array.isArray(grp.members)) return;
 
   // ✅ Tìm admin hiện tại của nhóm
-  const admin = grp.members.find(m => m.role === 'admin')
+  const admin = grp.members.find((m) => m.role === "admin");
   if (!admin) {
-    alert('Không tìm thấy quản trị viên nhóm để xác thực yêu cầu.')
-    return
+    alert("Không tìm thấy quản trị viên nhóm để xác thực yêu cầu.");
+    return;
   }
 
   try {
     await removeMembers({
       conversationId: selectedConversationId.value,
-      ownerId:        admin.accountId,                   // ⚠️ phải là ID của admin
-      ids:            [loggedInAccountId.value]          // ID của chính mình
-    })
+      ownerId: admin.accountId, // ⚠️ phải là ID của admin
+      ids: [loggedInAccountId.value], // ID của chính mình
+    });
 
     // ✅ Xoá nhóm khỏi giao diện
-    groups.value = groups.value.filter(g => g.id !== selectedId.value)
+    groups.value = groups.value.filter((g) => g.id !== selectedId.value);
 
     // ✅ Reset trạng thái
-    selectedId.value = null
-    selectedConversationId.value = null
-    messages.value = []
+    selectedId.value = null;
+    selectedConversationId.value = null;
+    messages.value = [];
 
-    alert('Bạn đã rời khỏi nhóm thành công.')
-
+    alert("Bạn đã rời khỏi nhóm thành công.");
   } catch (err) {
-    console.error('❌ Không thể rời nhóm:', err)
-    console.log('Server response:', err?.response?.data)
-    alert(`Không thể rời nhóm: ${err?.response?.data?.message || 'Lỗi máy chủ'}`)
+    console.error("❌ Không thể rời nhóm:", err);
+    console.log("Server response:", err?.response?.data);
+    alert(
+      `Không thể rời nhóm: ${err?.response?.data?.message || "Lỗi máy chủ"}`
+    );
   }
 }
 
 onBeforeUnmount(() => {
-  socket.off('chat message', handleIncomingMessage)
-})
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
+  socket.off("chat message", handleIncomingMessage);
+});
+onBeforeUnmount(() =>
+  document.removeEventListener("click", handleClickOutside)
+);
 </script>
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap");
 * {
   margin: 0;
   padding: 0;
@@ -1239,7 +1500,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   height: 100%;
   margin: 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 .icons-sidebar {
   width: 60px;
@@ -1248,11 +1509,11 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 2px 0 12px rgba(0,0,0,0.4);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
   border: none;
 }
 .icons-sidebar .sidebar-nav {
-  margin-top:1.5rem;
+  margin-top: 1.5rem;
 }
 .icons-sidebar .sidebar-nav ul {
   list-style: none;
@@ -1289,20 +1550,17 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   margin-left: auto;
   margin-right: 10px;
   margin-bottom: 10px;
-  
-    
-
 }
-.sidebar-top{
+.sidebar-top {
   display: flex;
-  margin-top:20px;
+  margin-top: 20px;
 }
 .sidebar {
   background: #f9f9f9;
   padding: 0 1rem 1rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
   border-right: 1px solid #000;
 }
 .sidebar:not(.icons-sidebar) {
@@ -1313,7 +1571,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   align-items: center;
   margin-top: 20px;
   gap: 60px;
-  margin-left:10px;
+  margin-left: 10px;
 }
 .search-bar .input-wrapper {
   position: relative;
@@ -1337,8 +1595,8 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   outline: none;
 }
 .search-bar input:focus {
-  border-color: #007BFF; 
-  background-color: #f0f8ff; 
+  border-color: #007bff;
+  background-color: #f0f8ff;
 }
 .search-bar .add-btn {
   width: 8px;
@@ -1479,7 +1737,6 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .chat-header .header-right {
   display: flex;
   align-items: center;
-  
 }
 .chat-header .icon-btn {
   width: 32px;
@@ -1521,8 +1778,8 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   flex-direction: column;
   align-items: flex-end; /* Đẩy nội dung bên trong về phải */
-  max-width: 50%;        /* Giới hạn chiều rộng khối tin nhắn */
-  margin-left: auto;     /* Căn cả block sang phải */
+  max-width: 50%; /* Giới hạn chiều rộng khối tin nhắn */
+  margin-left: auto; /* Căn cả block sang phải */
 }
 
 .msg {
@@ -1628,7 +1885,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   line-height: 1;
 }
 .input-container .icon-btn:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 50%;
 }
 .emoji-picker {
@@ -1640,7 +1897,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 8px;
   overflow-y: auto;
   z-index: 100;
@@ -1723,8 +1980,12 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   margin-right: 8px;
   background-size: contain;
 }
-.icon-phone { background-image: url('@/assets/phone.png'); }
-.icon-location { background-image: url('@/assets/trangchu.png'); }
+.icon-phone {
+  background-image: url("@/assets/phone.png");
+}
+.icon-location {
+  background-image: url("@/assets/trangchu.png");
+}
 .file-list {
   flex: 1;
 }
@@ -1742,7 +2003,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .icon-file {
   width: 20px;
   height: 20px;
-  background-image: url('@/assets/file-pdf.png');
+  background-image: url("@/assets/file-pdf.png");
   background-size: contain;
   margin-right: 8px;
 }
@@ -1754,7 +2015,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .icon-download {
   width: 20px;
   height: 20px;
-  background-image: url('@/assets/download.png');
+  background-image: url("@/assets/download.png");
   background-size: contain;
 }
 .delete-btn {
@@ -1779,15 +2040,15 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 }
 .user-sidebar {
   position: absolute;
-  top: 20px;                 
-  left: 70px;              
+  top: 20px;
+  left: 70px;
   width: 200px;
   background: #fff;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   border-radius: 12px;
-  z-index: 1000;         
+  z-index: 1000;
   padding-top: 10px;
 }
 
@@ -1899,7 +2160,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .group-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1911,7 +2172,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   max-width: 95%;
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .group-modal-header {
   display: flex;
@@ -1973,7 +2234,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1rem;
-  gap:120px;
+  gap: 120px;
 }
 .search-wrapper input {
   width: 200px;
@@ -2008,8 +2269,14 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 }
 
 @keyframes pop {
-  0%   { transform: scale(0.9); opacity: 0.8; }
-  100% { transform: scale(1);   opacity: 1; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 .chat-textarea {
   flex: 1;
@@ -2019,14 +2286,14 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   font-size: 14px;
   resize: none;
   background: transparent;
-  line-height: 22px;            /* đảm bảo khớp với JS */
+  line-height: 22px; /* đảm bảo khớp với JS */
   color: #333;
   overflow-y: auto;
   white-space: pre-wrap;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 
-  height: 22px;                 /* 1 dòng */
-  max-height: calc(22px * 4);   /* tối đa 4 dòng */
+  height: 22px; /* 1 dòng */
+  max-height: calc(22px * 4); /* tối đa 4 dòng */
 }
 .group-modal-overlay {
   position: fixed;
@@ -2118,7 +2385,6 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   transition: background 0.2s ease;
 }
 
-
 /* Huỷ (nút đầu tiên) */
 /* .group-buttons-horizontal button:first-child {
   background-color: #ecf0f1;
@@ -2157,7 +2423,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.25s ease-out;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .group-modal-header {
@@ -2243,5 +2509,4 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .unblock-btn:hover {
   background-color: #c0392b;
 }
-
 </style>

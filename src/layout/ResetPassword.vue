@@ -1,6 +1,17 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
+      <!-- Notification component -->
+      <transition-group name="fade" tag="div" class="notification-container">
+        <div 
+          v-for="notification in notifications" 
+          :key="notification.id"
+          :class="['notification', notification.type]"
+        >
+          {{ notification.message }}
+        </div>
+      </transition-group>
+
       <img src="@/assets/lgo.png" alt="" class="logo" />
       <p>Gặp sự cố khi đăng nhập?</p>
       <p>Nhập email đã liên kết để đăng nhập vào tài khoản.</p>
@@ -35,9 +46,22 @@ import { useRouter } from 'vue-router'
 import Toastify from 'toastify-js'
 import 'toastify-js/src/toastify.css'
 
+
 const router = useRouter()
 const contact = ref('')
 const emailError = ref('')
+const notifications = ref([])
+
+// Notification handler
+const addNotification = (message, type = 'success') => {
+  const id = Date.now()
+  notifications.value.push({ id, message, type })
+  
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    notifications.value = notifications.value.filter(n => n.id !== id)
+  }, 3000)
+}
 
 const validateEmail = () => {
   const email = contact.value.trim()
@@ -57,6 +81,7 @@ const validateEmail = () => {
 const sendLink = () => {
   if (!validateEmail()) return
 
+
   // Thông báo bằng toast thay vì alert
   Toastify({
     text: `🔔 Mã OTP đã được gửi tới: ${contact.value.trim()}`,
@@ -71,6 +96,7 @@ const sendLink = () => {
   setTimeout(() => {
     router.push('/verificationCode')
   }, 800)
+
 }
 </script>
 
@@ -79,6 +105,7 @@ const sendLink = () => {
 * {
   font-family: 'Roboto', sans-serif;
 }
+
 .auth-container {
   position: fixed;
   top: 0;
@@ -88,10 +115,9 @@ const sendLink = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden; /* Ẩn phần thừa khi scale ảnh */
+  overflow: hidden;
 }
 
-/* Pseudo-element ::before chịu trách nhiệm hiển thị và làm mờ hình nền */
 .auth-container::before {
   content: "";
   position: absolute;
@@ -103,20 +129,55 @@ const sendLink = () => {
   background-size: cover;
 }
 
-/* Phần hộp form (auth-box) nằm ở trên lớp blur */
 .auth-box {
   position: relative;
-  z-index: 1;               /* Luôn luôn “trên” pseudo-element */
+  z-index: 1;
   background-color: #EEEEEE;
   border-radius: 12px;
   padding: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: center;
   width: 400px;
-  /* Nếu muốn form hơi “nổi” hơn, có thể thêm backdrop hoặc border:
-     border: 1px solid rgba(0,0,0,0.05);
-  */
 }
+
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification.success {
+  background-color: #4caf50;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
 .logo {
   width: 125px;
   margin: 0 auto -4rem;
@@ -130,7 +191,6 @@ const sendLink = () => {
   margin-bottom: 1rem;
 }
 
-/* === Wrapper giữ input + button cùng max-width 320px === */
 .form-wrapper {
   width: 100%;
   max-width: 320px;
@@ -143,20 +203,18 @@ const sendLink = () => {
   margin-bottom: 1rem;
 }
 
-/* Input y hệt Login */
 .input-group input {
   width: 100%;
-  height: 45px;               /* Cao 45px */
-  padding: 0 10px;            /* Chỉ padding trái/phải */
+  height: 45px;
+  padding: 0 10px;
   font-size: 1rem;
-  border: 1px solid #000000;  /* Viền màu vàng giống login */
-  border-radius: 4px;         /* Bo góc 4px */
+  border: 1px solid #000000;
+  border-radius: 4px;
   background: #f9f9f9;
   outline: none;
   box-sizing: border-box;
 }
 
-/* Khi input có lỗi */
 .input-group input.error-input {
   border-color: #ef4444;
 }
@@ -168,15 +226,14 @@ const sendLink = () => {
   text-align: left;
 }
 
-/* Nút Gửi mã OTP giống Login */
 .btn {
   width: 100%;
-  max-width: 320px;    /* Ngang tối đa 320px */
-  height: 45px;        /* Cao 45px */
-  margin: 0 auto;      /* Căn giữa */
+  max-width: 320px;
+  height: 45px;
+  margin: 0 auto;
   display: block;
   border: none;
-  border-radius: 4px;  /* Bo góc 4px */
+  border-radius: 4px;
   background-color: #dc77b2;
   color: #fff;
   font-size: 1rem;
@@ -188,7 +245,6 @@ const sendLink = () => {
   background-color: #dc77b2;
 }
 
-/* Link Trở về */
 .back {
   display: block;
   margin-top: 1rem;
