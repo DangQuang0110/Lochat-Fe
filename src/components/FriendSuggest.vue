@@ -47,7 +47,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import layout from '@/layout/SideBarContact.vue'
-import { getRandomAccounts } from '@/service/accountService'
+import { getSuggestedAccounts } from '@/service/accountService'
 import { sendFriendRequest, getAcceptedFriends } from '@/service/friendService'
 
 /* -------- state -------- */
@@ -68,25 +68,26 @@ const addNotification = (message, type = 'success') => {
   }, 3000)
 }
 
-/* -------- fetch gợi ý -------- */
 onMounted(async () => {
   try {
     const [suggestions, accepted] = await Promise.all([
-      getRandomAccounts(20),            // lấy 20 người random
-      getAcceptedFriends(loggedInAccountId) // lấy danh sách bạn bè
+      getSuggestedAccounts(loggedInAccountId),
+      getAcceptedFriends(loggedInAccountId)
     ])
 
     currentFriends.value = accepted.map(f => f.id)
 
     friends.value = suggestions.filter(u =>
-      u.id !== loggedInAccountId && !currentFriends.value.includes(u.id)
+      u.id !== loggedInAccountId &&
+      !currentFriends.value.includes(u.id) &&
+      u.username?.toLowerCase() !== 'toilaadmin' &&
+      u.fullname?.toLowerCase() !== 'admin'
     )
   } catch (err) {
     console.error('Không load được gợi ý liên hệ:', err)
     addNotification('Không load được gợi ý liên hệ', 'error')
   }
 })
-
 /* -------- lọc theo ô search -------- */
 const filteredFriends = computed(() => {
   const kw = searchText.value.toLowerCase()
