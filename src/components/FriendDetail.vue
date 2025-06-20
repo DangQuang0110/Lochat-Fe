@@ -50,8 +50,49 @@
 
 <script setup>
 /* global defineProps, defineEmits */
-defineProps(['user'])
-const emit = defineEmits(['close'])
+import { ref, watchEffect } from 'vue'
+import { getAccountDetail } from '@/service/profileService'
+import hinhImg from '@/assets/avata.jpg'
+
+// 1️⃣ Nhận prop accountId
+const props = defineProps({
+  accountId: { type: [String, Number], required: true }
+})
+const emit  = defineEmits(['close', 'unfriend'])
+
+// 2️⃣ State hiển thị
+const user = ref({
+  id: '',
+  name: '',
+  avatar: hinhImg,
+  cover : '',
+  bio   : '',
+  phone : '',
+  isFriend: true
+})
+
+// 3️⃣ Mỗi khi accountId thay đổi ⇒ gọi API
+watchEffect(async () => {
+  if (!props.accountId) return
+  try {
+    const res      = await getAccountDetail(props.accountId)
+    // hỗ trợ cả 2 dạng trả về
+    const root     = res?.data ?? res
+    const profile  = root.profile ?? {}
+
+    user.value = {
+      id     : root.id,
+      name   : profile.fullname || root.username || 'Không rõ',
+      avatar : profile.avatarUrl || hinhImg,
+      cover  : profile.coverUrl  || '',
+      bio    : profile.bio       || '',
+      phone  : root.phoneNumber  || 'Chưa cập nhật',
+      isFriend: true
+    }
+  } catch (err) {
+    console.error('❌ Không thể tải thông tin tài khoản:', err)
+  }
+})
 </script>
 
 

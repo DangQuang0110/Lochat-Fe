@@ -18,7 +18,7 @@ export async function updateProfile(profileId, data, avatarFile, coverFile) {
   if (avatarFile) formData.append('avatar', avatarFile)
   if (coverFile) formData.append('cover', coverFile)
 
-  const res = await apiService.put(`/api/v1/profiles/${profileId}`, formData, {
+  const res = await apiService.patch(`/api/v1/profiles/${profileId}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 

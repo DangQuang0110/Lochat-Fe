@@ -19,7 +19,7 @@
           
           <!-- Avatar positioned over cover -->
           <div class="avatar-section">
-            <img :src="profile.avatar || '/icons/default-avatar.png'" :alt="profile.name" class="avatar" />
+          <img :src="profile.avatar" :alt="profile.name" class="avatar" />
           </div>
         </div>
 
@@ -88,18 +88,34 @@
           </div>
 
           <div class="form-group">
-            <label for="avatar-upload">Ảnh đại diện</label>
-            <div class="avatar-placeholder" @click="triggerAvatarInput">
-              <input id="avatar-upload" type="file" accept="image/*" ref="avatarInput" @change="handleAvatarUpload" aria-label="Tải lên ảnh đại diện" />
-              <div v-if="!editData.avatar" class="avatar-icon">📷</div>
-              <img v-else :src="editData.avatar" alt="Ảnh đại diện xem trước" class="avatar-preview" />
-            </div>
-          </div>
+                      <label for="avatar-upload">Ảnh đại diện</label>
+                      <div class="avatar-placeholder" @click="triggerAvatarInput">
+                        <input 
+                          id="avatar-upload" 
+                          type="file" 
+                          accept="image/*" 
+                          ref="avatarInput" 
+                          @change="handleAvatarUpload" 
+                          style="display: none;"
+                          aria-label="Tải lên ảnh đại diện" 
+                        />
+                        <div v-if="!editData.avatar" class="avatar-icon">📷</div>
+                        <img v-else :src="editData.avatar" alt="Ảnh đại diện xem trước" class="avatar-preview" />
+                      </div>
+                    </div>
 
-          <div class="form-group">
+<div class="form-group">
             <label for="cover-upload">Ảnh bìa</label>
             <div class="cover-placeholder" @click="triggerCoverInput">
-              <input id="cover-upload" type="file" accept="image/*" ref="coverInput" @change="handleCoverUpload" aria-label="Tải lên ảnh bìa" />
+              <input 
+                id="cover-upload" 
+                type="file" 
+                accept="image/*" 
+                ref="coverInput" 
+                @change="handleCoverUpload" 
+                style="display: none;"
+                aria-label="Tải lên ảnh bìa" 
+              />
               <div v-if="!editData.cover" class="cover-icon">📸</div>
               <img v-else :src="editData.cover" alt="Ảnh bìa xem trước" class="cover-preview" />
             </div>
@@ -153,7 +169,7 @@ export default {
         name: 'Gia Phong',
         avatar: '',
         cover: '',
-        bio: 'Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản và sự cố gắng.',
+        bio: '',
         phone: '0369620631',
         profileId: ''
       },
@@ -172,9 +188,9 @@ export default {
         const profile = data.profile || {}
         this.profile = {
           name: profile.fullname || data.username || 'Gia Phong',
-          avatar: profile.avatarUrl || '/assets/cau.jpg',
-          cover: profile.coverUrl || '',
-          bio: profile.bio || 'Sinh ra và lớn lên trong một gia đình bình thường, Phong đã sớm học được những giá trị sống cơ bản và sự cố gắng.',
+          avatar: profile.avatarUrl || require('@/assets/avata.jpg'),
+          cover: profile.coverUrl || require('@/assets/avata.jpg'),
+          bio: profile.bio || '',
           phone: data.phoneNumber || '0369620631',
           profileId: profile.id || ''
         }
@@ -372,12 +388,11 @@ export default {
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #ffffff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   background: #ffffff;
+  margin-bottom:-25px;
 }
 
-/* Profile Info */
 .profile-info {
   text-align: center;
   padding: 0 20px 20px;
@@ -432,10 +447,11 @@ export default {
 }
 
 .info-label {
-  font-size: 12px;
+  font-size: 16px;
   color: #666;
   margin-bottom: 4px;
   font-weight: 500;
+  font-weight: bold;
 }
 
 .info-value {
@@ -443,7 +459,10 @@ export default {
   color: #333;
   line-height: 1.4;
   word-wrap: break-word;
+  justify-content: center;
+  margin-top:10px;
 }
+
 
 /* Edit Section */
 .edit-section {
