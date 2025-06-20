@@ -2346,13 +2346,11 @@ onBeforeUnmount(() => {
 }
 
 .search-message-input {
-  width: 100%;
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 20px;
   outline: none;
   font-size: 14px;
-  margin-left: -12px;
 }
 .user-sidebar {
   position: absolute;
