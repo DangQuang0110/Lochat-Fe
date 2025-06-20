@@ -64,3 +64,15 @@ export async function sendFriendRequest(senderId, receiverId) {
     throw err
   }
 }
+
+
+// Tìm bạn bè theo số điện thoại 
+export const findFriendByPhone = async(phoneNumber)=>{
+  try {
+    const response = await apiService.get(`/api/v1/accounts?phone=${phoneNumber}`)
+  return response.data
+  } catch (error) {
+    console.log("Lỗi rồi bạn ơ: ", error)
+    throw error
+  }
+}
