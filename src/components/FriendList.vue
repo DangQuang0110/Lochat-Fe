@@ -150,10 +150,10 @@ const openDetail = (friend) => {
   }
 }
 
-/* 4) Huỷ kết bạn – giữ nguyên */
+
 const handleUnfriend = async (friendId) => {
   try {
-    await unfriend({ senderId: Number(accountId), receiverId: friendId })
+    await unfriend({ senderId: Number(accountId), receiverId: Number(friendId) })
     Toastify({
       text: '✅ Đã huỷ kết bạn.',
       duration: 3000, close: true, gravity: 'top', position: 'right',

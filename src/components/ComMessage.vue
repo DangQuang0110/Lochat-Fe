@@ -411,7 +411,7 @@
             </li>
           </ul>
         </div>
-        <button class="delete-btn">Xóa đoạn tin nhắn</button>
+        <!-- <button class="delete-btn">Xóa đoạn tin nhắn</button> -->
       </div>
       <div v-else class="panel-content">
         <div class="profile-info">
@@ -465,9 +465,8 @@
           class="delete-btn"
           @click="handleDeleteChat"
         >
-          Xóa đoạn tin nhắn
         </button>
-        <button v-else class="delete-btn leave-btn" @click="leaveGroup">
+        <button v-else class="delete-btn-leave-btn" @click="leaveGroup">
           Rời nhóm
         </button>
       </div>
@@ -2330,7 +2329,7 @@ onBeforeUnmount(() => {
   background-image: url("@/assets/download.png");
   background-size: contain;
 }
-.delete-btn {
+.delete-btn-leave-btn {
   margin-top: auto;
   background: #ff3b30;
   color: #fff;
@@ -2342,13 +2341,11 @@ onBeforeUnmount(() => {
 }
 
 .search-message-input {
-  width: 100%;
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 20px;
   outline: none;
   font-size: 14px;
-  margin-left: -12px;
 }
 .user-sidebar {
   position: absolute;
