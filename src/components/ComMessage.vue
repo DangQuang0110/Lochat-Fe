@@ -41,13 +41,13 @@
             alt="Tìm kiếm"
             class="search-icon"
           />
-          <input type="text" placeholder="Tìm kiếm" style="
-    padding-right: 0px;
-    padding-left: 28px;
-" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm"
+            style="padding-right: 0px; padding-left: 28px"
+          />
         </div>
         <button class="add-btnm" @click="showAddFriendPopup = true">+</button>
-
       </div>
       <div class="tab-section">
         <button
@@ -151,14 +151,27 @@
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
                   <div v-if="msg.file" class="file-attach">
                     <span class="file-icon">
-                      <img src="@/assets/file.png" alt="File icon" class="clip-icon" />
+                      <img
+                        src="@/assets/file.png"
+                        alt="File icon"
+                        class="clip-icon"
+                      />
                     </span>
                     <div class="file-info">
                       <p class="file-name">{{ msg.file.name }}</p>
                       <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                     </div>
-                    <a :href="msg.file.url" target="_blank" class="download-btn" title="Tải xuống">
-                      <img src="@/assets/tai.png" alt="Download" class="download-icon" />
+                    <a
+                      :href="msg.file.url"
+                      target="_blank"
+                      class="download-btn"
+                      title="Tải xuống"
+                    >
+                      <img
+                        src="@/assets/tai.png"
+                        alt="Download"
+                        class="download-icon"
+                      />
                     </a>
                   </div>
                   <template v-if="msg.image || msg.video">
@@ -198,14 +211,27 @@
                 <!-- FILE -->
                 <div v-if="msg.file" class="file-attach">
                   <span class="file-icon">
-                    <img src="@/assets/file.png" alt="File icon" class="clip-icon" />
+                    <img
+                      src="@/assets/file.png"
+                      alt="File icon"
+                      class="clip-icon"
+                    />
                   </span>
                   <div class="file-info">
                     <p class="file-name">{{ msg.file.name }}</p>
                     <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                   </div>
-                  <a :href="msg.file.url" target="_blank" class="download-btn" title="Tải xuống">
-                    <img src="@/assets/tai.png" alt="Download" class="download-icon" />
+                  <a
+                    :href="msg.file.url"
+                    target="_blank"
+                    class="download-btn"
+                    title="Tải xuống"
+                  >
+                    <img
+                      src="@/assets/tai.png"
+                      alt="Download"
+                      class="download-icon"
+                    />
                   </a>
                 </div>
 
@@ -231,7 +257,7 @@
                   :class="[
                     'msg',
                     'from-me',
-                    isEmojiOnly(msg.text) ? 'emoji-only' : ''
+                    isEmojiOnly(msg.text) ? 'emoji-only' : '',
                   ]"
                 >
                   <span>{{ msg.text }}</span>
@@ -253,16 +279,28 @@
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
                   <div v-if="msg.file" class="file-attach">
                     <span class="file-icon">
-                      <img src="@/assets/file.png" alt="File icon" class="clip-icon" />
+                      <img
+                        src="@/assets/file.png"
+                        alt="File icon"
+                        class="clip-icon"
+                      />
                     </span>
                     <div class="file-info">
                       <p class="file-name">{{ msg.file.name }}</p>
                       <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                     </div>
-                    <a :href="msg.file.url" target="_blank" class="download-btn" title="Tải xuống">
-                      <img src="@/assets/tai.png" alt="Download" class="download-icon" />
+                    <a
+                      :href="msg.file.url"
+                      target="_blank"
+                      class="download-btn"
+                      title="Tải xuống"
+                    >
+                      <img
+                        src="@/assets/tai.png"
+                        alt="Download"
+                        class="download-icon"
+                      />
                     </a>
-
                   </div>
                   <template v-if="msg.image || msg.video">
                     <img
@@ -286,8 +324,10 @@
                       isEmojiOnly(msg.text) ? 'emoji-only' : '',
                     ]"
                   >
-                    <span :class="{'text-deleted': msg.isDeleted}">
-                      {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
+                    <span :class="{ 'text-deleted': msg.isDeleted }">
+                      {{
+                        msg.isDeleted ? "Tin nhắn đã được thu hồi" : msg.text
+                      }}
                     </span>
                   </div>
                 </div>
@@ -295,15 +335,28 @@
               <div v-else class="msg-block align-right">
                 <div v-if="msg.file" class="file-attach">
                   <span class="file-icon">
-                      <img src="@/assets/file.png" alt="File icon" class="clip-icon" />
-                    </span>
+                    <img
+                      src="@/assets/file.png"
+                      alt="File icon"
+                      class="clip-icon"
+                    />
+                  </span>
                   <div class="file-info">
                     <p class="file-name">{{ msg.file.name }}</p>
                     <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                   </div>
-                  <a :href="msg.file.url" target="_blank" class="download-btn" title="Tải xuống">
-                      <img src="@/assets/tai.png" alt="Download" class="download-icon" />
-                    </a>
+                  <a
+                    :href="msg.file.url"
+                    target="_blank"
+                    class="download-btn"
+                    title="Tải xuống"
+                  >
+                    <img
+                      src="@/assets/tai.png"
+                      alt="Download"
+                      class="download-icon"
+                    />
+                  </a>
                 </div>
                 <template v-if="msg.image || msg.video">
                   <img
@@ -327,8 +380,8 @@
                     isEmojiOnly(msg.text) ? 'emoji-only' : '',
                   ]"
                 >
-                  <span :class="{'text-deleted': msg.isDeleted}">
-                    {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
+                  <span :class="{ 'text-deleted': msg.isDeleted }">
+                    {{ msg.isDeleted ? "Tin nhắn đã được thu hồi" : msg.text }}
                   </span>
                 </div>
               </div>
@@ -587,7 +640,12 @@
     <div
       v-if="showContextMenu"
       class="context-menu"
-      :style="{ top: contextMenuPosition.y + 'px', left: contextMenuPosition.x + 'px', position: 'fixed', zIndex: 2000 }"
+      :style="{
+        top: contextMenuPosition.y + 'px',
+        left: contextMenuPosition.x + 'px',
+        position: 'fixed',
+        zIndex: 2000,
+      }"
     >
       <ul>
         <li @click="deleteMessage">Xóa tin nhắn</li>
@@ -671,115 +729,144 @@
     </div>
   </div>
 
-
   <!-- Thêm bạn bè -->
- <!-- Add Friend Popup -->
-<div
-  v-if="showAddFriendPopup"
-  class="group-modal-overlay"
-  @click.self="showAddFriendPopup = false"
->
-  <div class="group-modal small-popup">
-    <div class="group-modal-header">
-      <h3 style="color: #e53935">🔴 Thêm bạn bè</h3>
-      <button class="close-btn" @click="showAddFriendPopup = false">×</button>
-    </div>
-    <div class="group-modal-body" style="gap: 10px">
-      <!-- input và nút tìm kiếm -->
-      <div class="search-wrapper">
-        <input
-          type="text" style="padding-right: 144px;"
-          v-model="friendSearchInput"
-          placeholder="Nhập số điện thoại"
-        />
-        <button
-          class="btn search-btn" style="border-radius: 6px; background-color: #3b6eee;color: #ffffff; height: 22px;"
-          :disabled="loadingSearch"
-          @click="handleSearchFriend"
-        >
-          {{ loadingSearch ? 'Đang tìm...' : 'Tìm kiếm' }}
-        </button>
+  <!-- Add Friend Popup -->
+  <div
+    v-if="showAddFriendPopup"
+    class="group-modal-overlay"
+    @click.self="showAddFriendPopup = false"
+  >
+    <div class="group-modal small-popup">
+      <div class="group-modal-header">
+        <h3 style="color: #e53935">🔴 Thêm bạn bè</h3>
+        <button class="close-btn" @click="showAddFriendPopup = false">×</button>
       </div>
-
-      <!-- thông báo lỗi -->
-      <div v-if="errorSearch" class="error-msg">{{ errorSearch }}</div>
-
-      <!-- hiển thị kết quả -->
-      <div
-        v-if="foundFriend"
-        class="found-friend"
-        style="display: flex; align-items: center; gap: 12px; margin-top: 10px"
-      >
-        <img
-          :src="foundFriend.avatar"
-          class="avatar"
-          style="width: 40px; height: 40px; border-radius: 50%"
-        />
-        <strong>{{ foundFriend.name }}</strong>
-        <div style="margin-left: auto; display: flex; gap: 6px">
-         <!-- trong phần popup Add Friend -->
-<button class="btn primary" style="height: 22px;" @click="onClickAdd">
-  Kết bạn
-</button>
-          <button class="btn" style="height: 22px;margin-right: 0px;width: 130px;padding-left: 10px;padding-right: 10px;border-radius: 6px;" @click="viewFriendProfile">
-            Xem thông tin
+      <div class="group-modal-body" style="gap: 10px">
+        <!-- input và nút tìm kiếm -->
+        <div class="search-wrapper">
+          <input
+            type="text"
+            style="padding-right: 144px"
+            v-model="friendSearchInput"
+            placeholder="Nhập số điện thoại"
+          />
+          <button
+            class="btn search-btn"
+            style="
+              border-radius: 6px;
+              background-color: #3b6eee;
+              color: #ffffff;
+              height: 22px;
+            "
+            :disabled="loadingSearch"
+            @click="handleSearchFriend"
+          >
+            {{ loadingSearch ? "Đang tìm..." : "Tìm kiếm" }}
           </button>
+        </div>
+
+        <!-- thông báo lỗi -->
+        <div v-if="errorSearch" class="error-msg">{{ errorSearch }}</div>
+
+        <!-- hiển thị kết quả -->
+        <div
+          v-if="foundFriend"
+          class="found-friend"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+          "
+        >
+          <img
+            :src="foundFriend.avatar"
+            class="avatar"
+            style="width: 40px; height: 40px; border-radius: 50%"
+          />
+          <strong>{{ foundFriend.name }}</strong>
+          <div style="margin-left: auto; display: flex; gap: 6px">
+            <!-- trong phần popup Add Friend -->
+            <button
+              class="btn primary"
+              style="height: 22px"
+              @click="onClickAdd"
+            >
+              Kết bạn
+            </button>
+            <button
+              class="btn"
+              style="
+                height: 22px;
+                margin-right: 0px;
+                width: 130px;
+                padding-left: 10px;
+                padding-right: 10px;
+                border-radius: 6px;
+              "
+              @click="viewFriendProfile"
+            >
+              Xem thông tin
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-<!-- Friend Info Popup -->
-<div
-  v-if="showFriendProfilePopup"
-  class="group-modal-overlay"
-  @click.self="closeFriendProfile"
->
-  <div class="group-modal small-popup">
-    <div class="group-modal-header">
-      <h3>Hồ sơ bạn bè</h3>
-      <button class="close-btn" @click="closeFriendProfile">×</button>
-    </div>
-    <div class="group-modal-body friend-profile-body">
-      <!-- cover -->
-      <div
-        class="cover"
-        :style="`background-image: url(${friendProfile.coverUrl});`"
-      />
-
-      <!-- avatar & tên -->
-      <div class="avatar-container">
-        <img
-          :src="friendProfile.avatarUrl"
-          class="avatar-large"
-          alt="avatar"
+  <!-- Friend Info Popup -->
+  <div
+    v-if="showFriendProfilePopup"
+    class="group-modal-overlay"
+    @click.self="closeFriendProfile"
+  >
+    <div class="group-modal small-popup">
+      <div class="group-modal-header">
+        <h3>Hồ sơ bạn bè</h3>
+        <button class="close-btn" @click="closeFriendProfile">×</button>
+      </div>
+      <div class="group-modal-body friend-profile-body">
+        <!-- cover -->
+        <div
+          class="cover"
+          :style="`background-image: url(${friendProfile.coverUrl});`"
         />
-      </div>
-      <h3 class="friend-name">{{ friendProfile.fullname }}</h3>
 
-      <!-- thông tin cá nhân -->
-      <h4 class="section-title">Thông tin cá nhân</h4>
-      <p class="bio">
-        {{ friendProfile.bio || 'Chưa cập nhật tiểu sử' }}
-      </p>
-      <div class="detail-item">
-        <i class="icon-phone"></i>
-        <span>{{ friendProfile.phoneNumber }}</span>
-      </div>
+        <!-- avatar & tên -->
+        <div class="avatar-container">
+          <img
+            :src="friendProfile.avatarUrl"
+            class="avatar-large"
+            alt="avatar"
+          />
+        </div>
+        <h3 class="friend-name">{{ friendProfile.fullname }}</h3>
 
-      <!-- hành động -->
-      <div class="action-buttons">
-        <button class="btn primary" style="margin-right: 90px;" @click="onClickAdd">
-          Kết bạn
-        </button>
-        <button class="btn" @click="closeFriendProfile">
-          Hủy
-        </button>
+        <!-- thông tin cá nhân -->
+        <h4 class="section-title">Thông tin cá nhân</h4>
+        <p class="bio">
+          {{ friendProfile.bio || "Chưa cập nhật tiểu sử" }}
+        </p>
+        <div class="detail-item">
+          <i class="icon-phone"></i>
+          <span>{{ friendProfile.phoneNumber }}</span>
+        </div>
+
+        <!-- hành động -->
+        <div class="action-buttons">
+          <button
+            class="btn primary"
+            style="margin-right: 90px"
+            @click="onClickAdd"
+          >
+            Kết bạn
+          </button>
+          <button class="btn" @click="closeFriendProfile">Hủy</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </template>
+
 <script setup>
 import {
   ref,
@@ -800,112 +887,114 @@ import {
   getConversationDetail,
 } from "@/service/conversationService";
 import { getBlockedList, blockUser, unblockUser } from "@/service/blockService";
-import { getAcceptedFriends, findFriendByPhone,sendFriendRequest } from "@/service/friendService";
+import {
+  getAcceptedFriends,
+  findFriendByPhone,
+  sendFriendRequest,
+} from "@/service/friendService";
 import { getMessages, delMessage } from "@/service/messageService";
 import { useRouter } from "vue-router";
 import socket from "@/socket";
-import defaultAvatar from '@/assets/avata.jpg' 
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
-
-
+import defaultAvatar from "@/assets/avata.jpg";
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 
 const bottomRef = ref(null);
 const showConfirmRemove = ref(false);
-const foundFriendRaw           = ref(null) 
+const foundFriendRaw = ref(null);
 const memberToRemove = ref(null);
-const showAddFriendPopup = ref(false)
-const friendSearchInput = ref('')
-const foundFriend = ref(null) // object: { name, avatar }
-const loadingSearch        = ref(false)
-const errorSearch          = ref(null)
-const showFriendProfilePopup   = ref(false)
-const friendProfile            = ref({
-  fullname: '',
-  avatarUrl: '',
-  coverUrl: '',
-  phoneNumber: '',
-  bio: ''
-})
+const showAddFriendPopup = ref(false);
+const friendSearchInput = ref("");
+const foundFriend = ref(null); // object: { name, avatar }
+const loadingSearch = ref(false);
+const errorSearch = ref(null);
+const showFriendProfilePopup = ref(false);
+const friendProfile = ref({
+  fullname: "",
+  avatarUrl: "",
+  coverUrl: "",
+  phoneNumber: "",
+  bio: "",
+});
 
-
-
-
-// tìm bạn bè qua số điện thoại 
+// tìm bạn bè qua số điện thoại
 async function handleSearchFriend() {
-  if (!friendSearchInput.value) return
-  loadingSearch.value = true
-  errorSearch.value   = null
-  foundFriend.value   = null
+  if (!friendSearchInput.value) return;
+  loadingSearch.value = true;
+  errorSearch.value = null;
+  foundFriend.value = null;
 
   try {
-    const res = await findFriendByPhone(friendSearchInput.value)
-    const list = res.data || []
+    const res = await findFriendByPhone(friendSearchInput.value);
+    const list = res.data || [];
     if (list.length > 0) {
-      const user = list[0]
+      const user = list[0];
       foundFriend.value = {
-         id:     user.id, 
-        name:   user.profile.fullname || user.username,
-        avatar: user.profile.avatarUrl || defaultAvatar
-      }
-       foundFriendRaw.value = user.profile
-       foundFriendRaw.value.phoneNumber= user.phoneNumber
-       foundFriendRaw.value.username = user.username
+        id: user.id,
+        name: user.profile.fullname || user.username,
+        avatar: user.profile.avatarUrl || defaultAvatar,
+      };
+      foundFriendRaw.value = user.profile;
+      foundFriendRaw.value.phoneNumber = user.phoneNumber;
+      foundFriendRaw.value.username = user.username;
     } else {
-      errorSearch.value = 'Không tìm thấy người dùng'
+      errorSearch.value = "Không tìm thấy người dùng";
     }
   } catch (err) {
-    errorSearch.value = err.response?.data?.message || 'Lỗi khi tìm kiếm'
+    errorSearch.value = err.response?.data?.message || "Lỗi khi tìm kiếm";
   } finally {
-    loadingSearch.value = false
+    loadingSearch.value = false;
   }
 }
 // Gửi lời mời kết bạn
 async function onClickAdd() {
-  if (!foundFriend.value) return
+  if (!foundFriend.value) return;
 
   // Lấy senderId từ localStorage
-  const meId = localStorage.getItem('userId') || localStorage.getItem('accountId')
+  const meId =
+    localStorage.getItem("userId") || localStorage.getItem("accountId");
   if (!meId) {
-    alert('Chưa có thông tin userId trong localStorage!')
-    return
-  } 
+    toast.caution("Chưa có thông tin ID người dùng!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
+    return;
+  }
 
   try {
-    await sendFriendRequest(meId, foundFriend.value.id)
-    toast.success('Gửi lời mời kết bạn thành công!', {
-          autoClose: 2000,
-          position: toast.POSITION.TOP_RIGHT,
-        });
-    showAddFriendPopup.value = false
+    await sendFriendRequest(meId, foundFriend.value.id);
+    toast.success("Gửi lời mời kết bạn thành công!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
+    showAddFriendPopup.value = false;
   } catch {
-    toast.error('Gửi lời mời kết bạn thất bại!', {
-          autoClose: 2000,
-          position: toast.POSITION.TOP_RIGHT,
-        });
+    toast.error("Gửi lời mời kết bạn thất bại!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
   }
 }
 
 function viewFriendProfile() {
-  const u = foundFriendRaw.value
-  console.log("check u:", u)
+  const u = foundFriendRaw.value;
+  console.log("check u:", u);
   friendProfile.value = {
-    fullname:    u.fullname || u.username,
-    avatarUrl:   u.avatarUrl || defaultAvatar,
-    coverUrl:    u.coverUrl    || defaultAvatar, 
+    fullname: u.fullname || u.username,
+    avatarUrl: u.avatarUrl || defaultAvatar,
+    coverUrl: u.coverUrl || defaultAvatar,
     phoneNumber: u.phoneNumber,
-    bio:         u.bio
-  }
-  console.log('lỗi nè ----',friendProfile.value )
-    // eslint-disable-next-line no-debugger
-  debugger
-  showFriendProfilePopup.value = true
-
+    bio: u.bio,
+  };
+  console.log("lỗi nè ----", friendProfile.value);
+  // eslint-disable-next-line no-debugger
+  debugger;
+  showFriendProfilePopup.value = true;
 }
 
 // đóng profile popup
 function closeFriendProfile() {
-  showFriendProfilePopup.value = false
+  showFriendProfilePopup.value = false;
 }
 
 function confirmRemoveMember(member) {
@@ -938,7 +1027,10 @@ async function goToBlockedList() {
     showUserSidebar.value = false;
   } catch (err) {
     console.error("❌ Không thể tải danh sách chặn:", err);
-    alert("Lỗi khi tải danh sách chặn");
+    toast.error("Lỗi khi tải danh sách chặn!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
   }
 }
 
@@ -946,10 +1038,16 @@ async function unblockUserHandler(id) {
   try {
     await unblockUser(loggedInAccountId.value, id);
     blockedUsers.value = blockedUsers.value.filter((u) => u.id !== id);
-    alert("Đã bỏ chặn thành công!");
+    toast.success("Đã bỏ chặn thành công!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
   } catch (err) {
     console.error("❌ Không thể bỏ chặn:", err);
-    alert(err?.response?.data?.message || "Lỗi khi bỏ chặn.");
+    toast.error("Lỗi khi bỏ chặn!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
   }
 }
 
@@ -1088,10 +1186,21 @@ async function confirmBlockUser() {
       avatar: current.value.avatar || require("@/assets/avata.jpg"),
     });
     showBlockConfirm.value = false;
-    alert(`Đã chặn ${current.value.name}`);
+    if (!current.value.id) {
+      toast.warning(
+        `Đã chặn ${current.value.name} - Chưa có thông tin ID người dùng!`,
+        {
+          autoClose: 2000,
+          position: toast.POSITION.TOP_RIGHT,
+        }
+      );
+    }
   } catch (err) {
     console.error("❌ Lỗi khi chặn người dùng:", err);
-    alert("Không thể chặn người dùng này.");
+    toast.caution("Chưa có thông tin ID người dùng!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
   }
 }
 
@@ -1378,10 +1487,14 @@ async function addToGroup(friendId) {
   } catch (err) {
     console.error("❌ Thêm thành viên thất bại:", err);
     console.log("📨 Lỗi từ server:", err?.response?.data);
-    alert(
+    toast.error(
       `Không thể thêm thành viên: ${
         err?.response?.data?.message || "Lỗi máy chủ"
-      }`
+      }`,
+      {
+        autoClose: 2000,
+        position: toast.POSITION.TOP_RIGHT, // hoặc vị trí tuỳ thích
+      }
     );
   }
 }
@@ -1466,7 +1579,10 @@ async function handleFileSelect(e) {
     });
   } catch (err) {
     console.error("❌ Upload lỗi:", err);
-    alert("Không thể upload file, thử lại.");
+    toast.error("Không thể upload files vui lòng thử lại!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
   } finally {
     e.target.value = "";
   }
@@ -1502,35 +1618,49 @@ async function loadMessages() {
     messages.value = rawMessages.map((m) => {
       const isDeleted = m.isDeleted === true;
       const url = m.content || "";
-      
-      const isImage = !isDeleted && (
-        m.type === "image" || /\.(jpe?g|png|gif|webp)$/i.test(url)
-      );
-      const isVideo = !isDeleted && (
-        m.type === "video" || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url)
-      );
-      const isFile = !isDeleted && (
-        m.type === "file" || (m.type === "text" && isFileUrl(url))
-      );
+
+      const isImage =
+        !isDeleted &&
+        (m.type === "image" || /\.(jpe?g|png|gif|webp)$/i.test(url));
+      const isVideo =
+        !isDeleted &&
+        (m.type === "video" || /\.(mp4|webm|ogg|mov|m4v)$/i.test(url));
+      const isFile =
+        !isDeleted &&
+        (m.type === "file" || (m.type === "text" && isFileUrl(url)));
 
       return {
         id: m.id,
         chatId: Number(selectedConversationId.value),
         senderId: Number(m.senderId),
         fromMe: String(m.senderId) === String(loggedInAccountId.value),
-        text: isDeleted ? "Tin nhắn đã thu hồi" : (
-          !isImage && !isVideo && !isFile && m.type === "text" ? m.content : ""
-        ),
+        text: isDeleted
+          ? "Tin nhắn đã thu hồi"
+          : !isImage && !isVideo && !isFile && m.type === "text"
+          ? m.content
+          : "",
         image: isImage ? url : null,
         video: isVideo ? url : null,
-        file: isFile && url ? {
-          name: m.originFilename?.trim() || decodeURIComponent(url.split("/").pop()) || "Không rõ tên",
-          size: m.size || "Không rõ",
-          url,
-        } : null,
-        type: isDeleted ? "deleted" : (
-          isImage ? "image" : isVideo ? "video" : isFile ? "file" : "text"
-        ),
+        file:
+          isFile && url
+            ? {
+                name:
+                  m.originFilename?.trim() ||
+                  decodeURIComponent(url.split("/").pop()) ||
+                  "Không rõ tên",
+                size: m.size || "Không rõ",
+                url,
+              }
+            : null,
+        type: isDeleted
+          ? "deleted"
+          : isImage
+          ? "image"
+          : isVideo
+          ? "video"
+          : isFile
+          ? "file"
+          : "text",
         isDeleted,
         createdAt: m.createdAt,
       };
@@ -1571,38 +1701,38 @@ onMounted(async () => {
       avatar: profile.avatarUrl || require("@/assets/avata.jpg"),
       name: profile.fullname || profile.username || "Người dùng",
     };
-// Gửi identify ngay sau khi socket connect
-socket.emit("identify", Number(loggedInAccountId.value));
+    // Gửi identify ngay sau khi socket connect
+    socket.emit("identify", Number(loggedInAccountId.value));
 
-// ✅ Ép server gửi lại danh sách online sau 500ms nếu chưa có
-setTimeout(() => {
-  socket.emit("get online users");
-}, 500);
+    // ✅ Ép server gửi lại danh sách online sau 500ms nếu chưa có
+    setTimeout(() => {
+      socket.emit("get online users");
+    }, 500);
 
-// 🔽 Tiếp tục lấy danh sách bạn bè và gán profile
-const rawFriends = await getAcceptedFriends(loggedInAccountId.value);
-const others = await Promise.all(
-  rawFriends.map(async (f) => {
-    try {
-      const d = await getAccountDetail(f.id);
-      return { ...f, profile: d.profile };
-    } catch {
-      return { ...f, profile: null };
-    }
-  })
-);
+    // 🔽 Tiếp tục lấy danh sách bạn bè và gán profile
+    const rawFriends = await getAcceptedFriends(loggedInAccountId.value);
+    const others = await Promise.all(
+      rawFriends.map(async (f) => {
+        try {
+          const d = await getAccountDetail(f.id);
+          return { ...f, profile: d.profile };
+        } catch {
+          return { ...f, profile: null };
+        }
+      })
+    );
 
-// ✅ Gán lại friends list
-friends.value = others
-  .filter((f) => String(f.id) !== String(loggedInAccountId.value))
-  .map((f) => ({
-    id: f.id,
-    name: f.profile?.fullname || f.username,
-    avatar: f.profile?.avatarUrl || require("@/assets/avata.jpg"),
-    desc: "",
-    conversationId: f.conversationId,
-    online: false, // mặc định là offline, sẽ cập nhật sau từ socket
-  }));
+    // ✅ Gán lại friends list
+    friends.value = others
+      .filter((f) => String(f.id) !== String(loggedInAccountId.value))
+      .map((f) => ({
+        id: f.id,
+        name: f.profile?.fullname || f.username,
+        avatar: f.profile?.avatarUrl || require("@/assets/avata.jpg"),
+        desc: "",
+        conversationId: f.conversationId,
+        online: false, // mặc định là offline, sẽ cập nhật sau từ socket
+      }));
 
     /* GROUPS ------------------------------------ */
     const [owned, joined] = await Promise.all([
@@ -1653,17 +1783,15 @@ friends.value = others
       g.online = g.members?.some((m) => onlineSet.has(m.accountId));
     });
   });
-// socket.on("connect", () => {
-//   console.log("✅ Socket connected:", socket.id);
+  // socket.on("connect", () => {
+  //   console.log("✅ Socket connected:", socket.id);
 
-//   // Gửi identify NGAY KHI connect
-//   const accountId = localStorage.getItem("accountId");
-//   if (accountId) {
-//     socket.emit("identify", parseInt(accountId));
-//   }
-// });
-
-
+  //   // Gửi identify NGAY KHI connect
+  //   const accountId = localStorage.getItem("accountId");
+  //   if (accountId) {
+  //     socket.emit("identify", parseInt(accountId));
+  //   }
+  // });
 });
 
 const isGroupAdmin = computed(() => {
@@ -1682,7 +1810,10 @@ async function leaveGroup() {
   if (!grp || !Array.isArray(grp.members)) return;
   const admin = grp.members.find((m) => m.role === "admin");
   if (!admin) {
-    alert("Không tìm thấy quản trị viên nhóm để xác thực yêu cầu.");
+    toast.error("Không tìm thấy quản trị viên nhóm để xác thực yêu cầu!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
     return;
   }
   try {
@@ -1695,12 +1826,19 @@ async function leaveGroup() {
     selectedId.value = null;
     selectedConversationId.value = null;
     messages.value = [];
-    alert("Bạn đã rời khỏi nhóm thành công.");
+    toast.success("Bạn đã rời khỏi nhóm thành công!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
   } catch (err) {
     console.error("❌ Không thể rời nhóm:", err);
     console.log("Server response:", err?.response?.data);
-    alert(
-      `Không thể rời nhóm: ${err?.response?.data?.message || "Lỗi máy chủ"}`
+    toast.caution(
+      `Không thể rời nhóm: ${err?.response?.data?.message || "Lỗi máy chủ"}`,
+      {
+        autoClose: 2000,
+        position: toast.POSITION.TOP_RIGHT,
+      }
     );
   }
 }
@@ -1723,7 +1861,7 @@ function handleRightClickMessage(event, msg) {
 
   // Đợi context menu render xong để lấy kích thước
   nextTick(() => {
-    const menu = document.querySelector('.context-menu');
+    const menu = document.querySelector(".context-menu");
     let x = event.clientX;
     let y = event.clientY;
     if (menu) {
@@ -1744,11 +1882,11 @@ function handleRightClickMessage(event, msg) {
 
 async function deleteMessage() {
   if (!selectedMessage.value) return;
-  
+
   const body = {
     ownerId: String(loggedInAccountId.value),
     conversationId: String(selectedConversationId.value),
-    messageId: selectedMessage.value.id
+    messageId: selectedMessage.value.id,
   };
 
   try {
@@ -1757,34 +1895,32 @@ async function deleteMessage() {
     await loadMessages();
     showContextMenu.value = false;
   } catch (err) {
-    
-    toast.error('Không thể xóa tin nhắn!', {
-          autoClose: 2000,
-          position: toast.POSITION.TOP_RIGHT,
-        });
+    toast.error("Không thể xóa tin nhắn!", {
+      autoClose: 2000,
+      position: toast.POSITION.TOP_RIGHT,
+    });
   }
 }
 
 function handleClickOutsideContextMenu(event) {
-  if (!event.target.closest('.context-menu')) {
+  if (!event.target.closest(".context-menu")) {
     showContextMenu.value = false;
   }
 }
 function logout() {
-  localStorage.removeItem("accountId");   
-  socket.disconnect();                        
-  router.push("/");                       
+  localStorage.removeItem("accountId");
+  socket.disconnect();
+  router.push("/");
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutsideContextMenu);
+  document.addEventListener("click", handleClickOutsideContextMenu);
 });
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutsideContextMenu);
+  document.removeEventListener("click", handleClickOutsideContextMenu);
 });
 </script>
-<style scoped >
-
+<style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap");
 * {
   margin: 0;
@@ -1798,7 +1934,7 @@ onBeforeUnmount(() => {
   font-family: "Roboto", sans-serif;
 }
 .download-icon {
-  width: 14px;     /* Hoặc 12px nếu muốn nhỏ hơn nữa */
+  width: 14px; /* Hoặc 12px nếu muốn nhỏ hơn nữa */
   height: 14px;
   object-fit: contain;
   display: inline-block;
@@ -1837,9 +1973,9 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 .clip-icon {
-  width: 14px;           /* Kích thước nhỏ gọn, có thể điều chỉnh */
+  width: 14px; /* Kích thước nhỏ gọn, có thể điều chỉnh */
   height: 14px;
-  object-fit: contain;   /* Đảm bảo không méo hình */
+  object-fit: contain; /* Đảm bảo không méo hình */
   display: inline-block;
 }
 .add-btnn {
@@ -2450,13 +2586,13 @@ onBeforeUnmount(() => {
 .group-buttons-horizontal-n {
   display: flex;
   flex-direction: column;
-  gap: 10px; 
+  gap: 10px;
   margin-top: 6px;
 }
 .group-buttons-horizontal-b {
   display: flex;
   flex-direction: column;
-  gap: 10px; 
+  gap: 10px;
   margin-top: 6px;
 }
 .group-btn-icon {
@@ -2689,7 +2825,7 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  color:white;
+  color: white;
   transition: background-color 0.2s ease;
 }
 .group-btn-icon-delete-n {
@@ -2828,7 +2964,7 @@ onBeforeUnmount(() => {
   color: white;
   border: none;
   padding: 6px 16px;
-  border-radius: 8px; 
+  border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
   font-weight: 500;
@@ -2841,7 +2977,7 @@ onBeforeUnmount(() => {
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   min-width: 120px;
   padding: 4px 0;
 }
@@ -2869,7 +3005,7 @@ onBeforeUnmount(() => {
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   min-width: 120px;
   padding: 4px 0;
 }
@@ -2919,7 +3055,9 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
-.small-popup { max-width: 460px; }
+.small-popup {
+  max-width: 460px;
+}
 
 .friend-profile-body {
   display: flex;
@@ -2998,12 +3136,10 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   cursor: pointer;
   font-size: 0.9rem;
-  
-    margin-right: 10px;
 
+  margin-right: 10px;
 }
 .add-btnm:hover {
   background: #eff6ff;
 }
-
 </style>
