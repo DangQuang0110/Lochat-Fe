@@ -146,14 +146,16 @@
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
                   <div v-if="msg.file" class="file-attach">
-                    <span class="file-icon">📎</span>
+                    <span class="file-icon">
+                      <img src="@/assets/file.png" alt="File icon" class="clip-icon" />
+                    </span>
                     <div class="file-info">
                       <p class="file-name">{{ msg.file.name }}</p>
                       <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                     </div>
-                    <a :href="msg.file.url" target="_blank" class="download-btn"
-                      >⬇️</a
-                    >
+                    <a :href="msg.file.url" target="_blank" class="download-btn" title="Tải xuống">
+                      <img src="@/assets/tai.png" alt="Download" class="download-icon" />
+                    </a>
                   </div>
                   <template v-if="msg.image || msg.video">
                     <img
@@ -185,16 +187,21 @@
                 </div>
               </div>
               <div v-else class="msg-block align-right">
+                <!-- FILE -->
                 <div v-if="msg.file" class="file-attach">
-                  <span class="file-icon">📎</span>
+                  <span class="file-icon">
+                    <img src="@/assets/file.png" alt="File icon" class="clip-icon" />
+                  </span>
                   <div class="file-info">
                     <p class="file-name">{{ msg.file.name }}</p>
                     <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                   </div>
-                  <a :href="msg.file.url" target="_blank" class="download-btn"
-                    >⬇️</a
-                  >
+                  <a :href="msg.file.url" target="_blank" class="download-btn" title="Tải xuống">
+                    <img src="@/assets/tai.png" alt="Download" class="download-icon" />
+                  </a>
                 </div>
+
+                <!-- IMAGE / VIDEO -->
                 <template v-if="msg.image || msg.video">
                   <img
                     v-if="msg.image"
@@ -209,17 +216,25 @@
                     style="max-width: 200px; border-radius: 8px"
                   ></video>
                 </template>
+
+                <!-- TEXT -->
                 <div
+                  v-if="msg.text && !msg.isDeleted"
                   :class="[
                     'msg',
-                    msg.fromMe ? 'from-me' : 'from-other',
-                    isEmojiOnly(msg.text) ? 'emoji-only' : '',
-                    msg.isDeleted ? 'deleted-message' : ''
+                    'from-me',
+                    isEmojiOnly(msg.text) ? 'emoji-only' : ''
                   ]"
                 >
-                  <span :class="{'text-deleted': msg.isDeleted}">
-                    {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
-                  </span>
+                  <span>{{ msg.text }}</span>
+                </div>
+
+                <!-- DELETED MESSAGE -->
+                <div
+                  v-else-if="msg.isDeleted"
+                  class="msg from-me deleted-message"
+                >
+                  <span class="text-deleted">Tin nhắn đã được thu hồi</span>
                 </div>
               </div>
             </template>
@@ -229,14 +244,17 @@
                 <div class="msg-block">
                   <div class="sender-name">{{ getSender(msg)?.name }}</div>
                   <div v-if="msg.file" class="file-attach">
-                    <span class="file-icon">📎</span>
+                    <span class="file-icon">
+                      <img src="@/assets/file.png" alt="File icon" class="clip-icon" />
+                    </span>
                     <div class="file-info">
                       <p class="file-name">{{ msg.file.name }}</p>
                       <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                     </div>
-                    <a :href="msg.file.url" target="_blank" class="download-btn"
-                      >⬇️</a
-                    >
+                    <a :href="msg.file.url" target="_blank" class="download-btn" title="Tải xuống">
+                      <img src="@/assets/tai.png" alt="Download" class="download-icon" />
+                    </a>
+
                   </div>
                   <template v-if="msg.image || msg.video">
                     <img
@@ -268,14 +286,16 @@
               </div>
               <div v-else class="msg-block align-right">
                 <div v-if="msg.file" class="file-attach">
-                  <span class="file-icon">📎</span>
+                  <span class="file-icon">
+                      <img src="@/assets/file.png" alt="File icon" class="clip-icon" />
+                    </span>
                   <div class="file-info">
                     <p class="file-name">{{ msg.file.name }}</p>
                     <p class="file-size">{{ prettySize(msg.file.size) }}</p>
                   </div>
-                  <a :href="msg.file.url" target="_blank" class="download-btn"
-                    >⬇️</a
-                  >
+                  <a :href="msg.file.url" target="_blank" class="download-btn" title="Tải xuống">
+                      <img src="@/assets/tai.png" alt="Download" class="download-icon" />
+                    </a>
                 </div>
                 <template v-if="msg.image || msg.video">
                   <img
@@ -504,12 +524,12 @@
           <button class="close-btn" @click="showGroupModal = false">×</button>
         </div>
         <div class="group-modal-body">
-          <input
+          <!-- <input
             type="text"
             v-model="searchText"
             placeholder="Quản lí nhóm"
             class="group-search"
-          />
+          /> -->
           <ul class="member-list">
             <li
               v-for="member in filteredMembers"
@@ -583,12 +603,12 @@
           <strong>{{ memberToRemove?.name }}</strong> khỏi nhóm không?
         </p>
         <div
-          class="group-buttons-horizontal"
+          class="group-buttons-horizontal-b"
           style="justify-content: flex-end; margin-top: 20px"
         >
           <button
             @click="showConfirmRemove = false"
-            class="group-btn-icon-delete"
+            class="group-btn-icon-delete-n"
           >
             Huỷ
           </button>
@@ -610,7 +630,7 @@
           Bạn có chắc chắn muốn chặn <strong>{{ current.name }}</strong
           >?
         </p>
-        <div class="group-buttons-horizontal">
+        <div class="group-buttons-horizontal-n">
           <button @click="cancelBlockUser" class="btn cancel-btn">Huỷ</button>
           <button @click="confirmBlockUser" class="btn danger-btn">Chặn</button>
         </div>
@@ -1533,6 +1553,12 @@ function handleClickOutsideContextMenu(event) {
     showContextMenu.value = false;
   }
 }
+function logout() {
+  localStorage.removeItem("accountId");   
+  socket.disconnect();                        
+  router.push("/");                       
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutsideContextMenu);
 });
@@ -1553,6 +1579,12 @@ onBeforeUnmount(() => {
   height: 100%;
   margin: 0;
   font-family: "Roboto", sans-serif;
+}
+.download-icon {
+  width: 14px;     /* Hoặc 12px nếu muốn nhỏ hơn nữa */
+  height: 14px;
+  object-fit: contain;
+  display: inline-block;
 }
 .icons-sidebar {
   width: 60px;
@@ -1586,6 +1618,12 @@ onBeforeUnmount(() => {
   width: 24px;
   height: 24px;
   cursor: pointer;
+}
+.clip-icon {
+  width: 14px;           /* Kích thước nhỏ gọn, có thể điều chỉnh */
+  height: 14px;
+  object-fit: contain;   /* Đảm bảo không méo hình */
+  display: inline-block;
 }
 .add-btnn {
   width: 46px;
@@ -1639,7 +1677,7 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 .search-bar input {
-  width: 94%;
+  width: 110%;
   padding: 8px 12px 8px 36px;
   border: 1px solid #000;
   border-radius: 20px;
@@ -1655,7 +1693,7 @@ onBeforeUnmount(() => {
   height: 16px;
   border: none;
   border-radius: 50%;
-  background: #3b6eee;
+  /* background: #3b6eee; */
   color: #fff;
   font-size: 20px;
   line-height: 1;
@@ -1869,10 +1907,15 @@ onBeforeUnmount(() => {
 .file-attach {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
-  padding: 8px;
-  border-radius: 8px;
-  gap: 8px;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f1f3ff 100%);
+  border: 1px solid #e1e8ff;
+  border-radius: 12px;
+  margin: 8px 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 .file-icon {
   font-size: 18px;
@@ -2025,6 +2068,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
+  font-size: 14px;
 }
 .detail-item i {
   width: 20px;
@@ -2187,10 +2231,16 @@ onBeforeUnmount(() => {
   margin-left: 8px;
   cursor: pointer;
 }
-.group-buttons-horizontal {
+.group-buttons-horizontal-n {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 10px; 
+  margin-top: 6px;
+}
+.group-buttons-horizontal-b {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; 
   margin-top: 6px;
 }
 .group-btn-icon {
@@ -2243,9 +2293,9 @@ onBeforeUnmount(() => {
   line-height: 1;
   cursor: pointer;
 }
-.group-modal-body {
+/* .group-modal-body {
   padding: 1rem;
-}
+} */
 .group-search {
   width: 95%;
   padding: 0.5rem 0.75rem;
@@ -2284,7 +2334,7 @@ onBeforeUnmount(() => {
 }
 .search-wrapper {
   display: flex;
-  justify-content: flex-end;
+  /* justify-content: flex-end; */
   margin-bottom: 1rem;
   gap: 120px;
 }
@@ -2409,7 +2459,7 @@ onBeforeUnmount(() => {
   margin: 0;
 }
 
-.group-buttons-horizontal {
+.group-buttons-horizontal-n {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -2417,6 +2467,16 @@ onBeforeUnmount(() => {
 }
 
 .group-btn-icon-delete {
+  background: red;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  color:white;
+  transition: background-color 0.2s ease;
+}
+.group-btn-icon-delete-n {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
@@ -2432,7 +2492,7 @@ onBeforeUnmount(() => {
   background-color: white;
   border: 1px solid white;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -2490,17 +2550,16 @@ onBeforeUnmount(() => {
 }
 
 .group-modal-body {
-  padding: 20px;
   font-size: 16px;
   color: #333;
 }
 
-.group-buttons-horizontal {
+/* .group-buttons-horizontal {
   display: flex;
   justify-content: flex-end;
-  gap: 12px; /* khoảng cách giữa hai nút */
+  gap: 12px;
   margin-top: 20px;
-}
+} */
 
 .btn {
   padding: 8px 20px;

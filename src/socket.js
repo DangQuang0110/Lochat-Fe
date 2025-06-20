@@ -1,7 +1,7 @@
 // src/socket.js   (hoặc đường dẫn bạn đặt)
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:8082", {
+const socket = io("http://localhost:8081", {
   transports: ["websocket"],
   auth: { token: localStorage.getItem("accessToken") },
 });
