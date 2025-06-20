@@ -14,7 +14,7 @@
           <span>Chặn người dùng</span>
         </li>
       </ul>
-      <button class="logout-btn">
+      <button class="logout-btn" @click="handleLogout">
         <img src="@/assets/logout.png" class="icon" />
         <span>Đăng xuất</span>
       </button>
@@ -101,6 +101,9 @@
 import { ref, computed, onMounted } from "vue";
 import { getListAccount, banUser, unbanUser } from "@/service/AdminService/AdminSer";
 import defaultAvatar from "@/assets/avata.jpg";
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const users = ref([]);
 const notification = ref({ show: false, message: '', type: '' });
@@ -109,6 +112,15 @@ const sortOrder = ref("name-asc");
 const currentPage = ref(1);
 const pageSize = 6;
 
+
+const handleLogout = () => {
+  // Xóa thông tin lưu trong localStorage
+  localStorage.removeItem('accountId')
+  localStorage.removeItem('user')
+
+  // Chuyển về trang đăng nhập
+  router.push('/')
+}
 // Sắp xếp
 const sorted = computed(() => {
   return [...users.value].sort((a, b) => {

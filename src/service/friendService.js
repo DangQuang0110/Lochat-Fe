@@ -42,7 +42,7 @@ export const getSentFriendRequests = async (accountId) => {
 export const unfriend = async ({ senderId, receiverId }) => {
   try {
     await apiService.delete('/api/v1/friendShips/', {
-      data: { senderId, receiverId } // 💡 axios cần `data` khi dùng DELETE
+      data: { senderId:senderId, receiverId:receiverId } 
     })
   } catch (err) {
     console.error('❌ Lỗi khi huỷ kết bạn:', err)
