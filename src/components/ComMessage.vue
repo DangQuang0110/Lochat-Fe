@@ -41,9 +41,12 @@
             alt="Tìm kiếm"
             class="search-icon"
           />
-          <input type="text" placeholder="Tìm kiếm" />
+          <input type="text" placeholder="Tìm kiếm" style="
+    padding-right: 0px;
+    padding-left: 28px;
+" />
         </div>
-        <button class="add-btn" @click="showAddFriendPopup = true">+</button>
+        <button class="add-btnm" @click="showAddFriendPopup = true">+</button>
 
       </div>
       <div class="tab-section">
@@ -2040,6 +2043,7 @@ onBeforeUnmount(() => {
   color: #777;
   margin-top: 2px;
 }
+
 .chat-header .header-right {
   display: flex;
   align-items: center;
@@ -2989,6 +2993,21 @@ onBeforeUnmount(() => {
 .btn.primary {
   background: #0047ff;
   color: #fff;
+}
+.add-btnm {
+  background: transparent;
+  border: 1px solid #1d4ed8;
+  color: #1d4ed8;
+  padding: 0.3rem 0.6rem;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.9rem;
+  
+    margin-right: 10px;
+
+}
+.add-btnm:hover {
+  background: #eff6ff;
 }
 
 </style>
