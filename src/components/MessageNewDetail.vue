@@ -19,7 +19,7 @@
           
           <!-- Avatar positioned over cover -->
           <div class="avatar-section">
-          <img :src="profile.avatar" :alt="profile.name" class="avatar" />
+            <img :src="profile.avatar" :alt="profile.name" class="avatar" />
           </div>
         </div>
 
@@ -35,10 +35,7 @@
           <!-- Bio Item -->
           <div class="info-item">
             <div class="info-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+              <img src="@/assets/bio.png" alt="Bio icon" width="20" height="20" />
             </div>
             <div class="info-content">
               <div class="info-label">Tiểu sử</div>
@@ -49,9 +46,7 @@
           <!-- Phone Item -->
           <div class="info-item">
             <div class="info-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
+              <img src="@/assets/phone.png" alt="Phone icon" width="20" height="20" />
             </div>
             <div class="info-content">
               <div class="info-value">{{ profile.phone || 'Chưa có số điện thoại.' }}</div>
@@ -62,10 +57,7 @@
         <!-- Edit Button -->
         <div class="edit-section">
           <button class="edit-btn" @click="startEditing" aria-label="Chỉnh sửa hồ sơ">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
+            
             Chỉnh sửa thông tin cá nhân
           </button>
         </div>
@@ -88,32 +80,30 @@
           </div>
 
           <div class="form-group">
-                      <label for="avatar-upload">Ảnh đại diện</label>
-                      <div class="avatar-placeholder" @click="triggerAvatarInput">
-                        <input 
-                          id="avatar-upload" 
-                          type="file" 
-                          accept="image/*" 
-                          ref="avatarInput" 
-                          @change="handleAvatarUpload" 
-                          style="display: none;"
-                          aria-label="Tải lên ảnh đại diện" 
-                        />
-                        <div v-if="!editData.avatar" class="avatar-icon">📷</div>
-                        <img v-else :src="editData.avatar" alt="Ảnh đại diện xem trước" class="avatar-preview" />
-                      </div>
-                    </div>
+            <label for="avatar-upload">Ảnh đại diện</label>
+            <div class="avatar-placeholder" @click="triggerAvatarInput">
+              <input 
+                id="avatar-upload" 
+                type="file" 
+                accept="image/*" 
+                ref="avatarInput" 
+                @change="handleAvatarUpload" 
+                style="display: none;"
+                aria-label="Tải lên ảnh đại diện" 
+              />
+              <div v-if="!editData.avatar" class="avatar-icon">📷</div>
+              <img v-else :src="editData.avatar" alt="Ảnh đại diện xem trước" class="avatar-preview" />
+            </div>
+          </div>
 
-<div class="form-group">
+          <div class="form-group">
             <label for="cover-upload">Ảnh bìa</label>
             <div class="cover-placeholder" @click="triggerCoverInput">
               <input 
-                id="cover-upload" 
-                type="file" 
+                id="file" 
                 accept="image/*" 
                 ref="coverInput" 
                 @change="handleCoverUpload" 
-                style="display: none;"
                 aria-label="Tải lên ảnh bìa" 
               />
               <div v-if="!editData.cover" class="cover-icon">📸</div>
@@ -123,17 +113,7 @@
 
           <div class="form-group">
             <label for="bio">Giới thiệu</label>
-            <textarea id="bio" v-model="editData.bio" placeholder="Viết một vài dòng giới thiệu về bản thân..." rows="4" class="bio-textarea" aria-label="Giới thiệu bản thân"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Thông tin liên hệ</label>
-            <div class="info-group">
-              <div>
-                <label for="phone">Số điện thoại</label>
-                <input id="phone" type="tel" v-model="editData.phone" placeholder="Nhập số điện thoại" aria-label="Số điện thoại" />
-              </div>
-            </div>
+            <textarea id="bio" v-model="editData.bio" placeholder="Viết một vài dòng giới thiệu về bản thân..." rows="bio-textarea" aria-label="Giới thiệu bản thân"></textarea>
           </div>
 
           <div class="form-actions">
@@ -189,7 +169,7 @@ export default {
         this.profile = {
           name: profile.fullname || data.username || 'Gia Phong',
           avatar: profile.avatarUrl || require('@/assets/avata.jpg'),
-          cover: profile.coverUrl || require('@/assets/avata.jpg'),
+          cover: profile.coverUrl || '',
           bio: profile.bio || '',
           phone: data.phoneNumber || '0369620631',
           profileId: profile.id || ''
@@ -220,7 +200,7 @@ export default {
     },
     triggerCoverInput() {
       this.$refs.coverInput.click()
-    },
+      },
     handleAvatarUpload(e) {
       const file = e.target.files[0]
       if (file) {
@@ -390,7 +370,7 @@ export default {
   object-fit: cover;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   background: #ffffff;
-  margin-bottom:-25px;
+  margin-bottom: -25px;
 }
 
 .profile-info {
@@ -414,14 +394,13 @@ export default {
   font-size: 16px;
   font-weight: 600;
   color: #333;
-  margin: 0 0 16px;
+  margin: 0 0 1px;
 }
 
 .info-item {
   display: flex;
   align-items: flex-start;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+
 }
 
 .info-item:last-child {
@@ -438,12 +417,15 @@ export default {
   justify-content: center;
   margin-right: 12px;
   flex-shrink: 0;
- 
 }
 
 .info-content {
   flex: 1;
   min-width: 0;
+}
+element.style {
+  width: 341px;
+  height: 46px;
 }
 
 .info-label {
@@ -460,14 +442,13 @@ export default {
   line-height: 1.4;
   word-wrap: break-word;
   justify-content: center;
-  margin-top:10px;
+  margin-top: 10px;
 }
-
 
 /* Edit Section */
 .edit-section {
   padding: 20px;
-  background: #f9f9f9;
+  background: #fff;
 }
 
 .edit-btn {
