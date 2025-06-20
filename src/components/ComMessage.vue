@@ -43,7 +43,8 @@
           />
           <input type="text" placeholder="Tìm kiếm" />
         </div>
-        <button class="add-btn"></button>
+        <button class="add-btn" @click="showAddFriendPopup = true">+</button>
+
       </div>
       <div class="tab-section">
         <button
@@ -643,7 +644,120 @@
       </div>
     </div>
   </div>
+
+
+  <!-- Thêm bạn bè -->
+ <!-- Add Friend Popup -->
+<div
+  v-if="showAddFriendPopup"
+  class="group-modal-overlay"
+  @click.self="showAddFriendPopup = false"
+>
+  <div class="group-modal small-popup">
+    <div class="group-modal-header">
+      <h3 style="color: #e53935">🔴 Thêm bạn bè</h3>
+      <button class="close-btn" @click="showAddFriendPopup = false">×</button>
+    </div>
+    <div class="group-modal-body" style="gap: 10px">
+      <!-- input và nút tìm kiếm -->
+      <div class="search-wrapper">
+        <input
+          type="text" style="padding-right: 144px;"
+          v-model="friendSearchInput"
+          placeholder="Nhập số điện thoại"
+        />
+        <button
+          class="btn search-btn" style="border-radius: 6px; background-color: #3b6eee;color: #ffffff; height: 22px;"
+          :disabled="loadingSearch"
+          @click="handleSearchFriend"
+        >
+          {{ loadingSearch ? 'Đang tìm...' : 'Tìm kiếm' }}
+        </button>
+      </div>
+
+      <!-- thông báo lỗi -->
+      <div v-if="errorSearch" class="error-msg">{{ errorSearch }}</div>
+
+      <!-- hiển thị kết quả -->
+      <div
+        v-if="foundFriend"
+        class="found-friend"
+        style="display: flex; align-items: center; gap: 12px; margin-top: 10px"
+      >
+        <img
+          :src="foundFriend.avatar"
+          class="avatar"
+          style="width: 40px; height: 40px; border-radius: 50%"
+        />
+        <strong>{{ foundFriend.name }}</strong>
+        <div style="margin-left: auto; display: flex; gap: 6px">
+         <!-- trong phần popup Add Friend -->
+<button class="btn primary" style="height: 22px;" @click="onClickAdd">
+  Kết bạn
+</button>
+          <button class="btn" style="height: 22px;margin-right: 0px;width: 130px;padding-left: 10px;padding-right: 10px;border-radius: 6px;" @click="viewFriendProfile">
+            Xem thông tin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Friend Info Popup -->
+<div
+  v-if="showFriendProfilePopup"
+  class="group-modal-overlay"
+  @click.self="closeFriendProfile"
+>
+  <div class="group-modal small-popup">
+    <div class="group-modal-header">
+      <h3>Hồ sơ bạn bè</h3>
+      <button class="close-btn" @click="closeFriendProfile">×</button>
+    </div>
+    <div class="group-modal-body friend-profile-body">
+      <!-- cover -->
+      <div
+        class="cover"
+        :style="`background-image: url(${friendProfile.coverUrl});`"
+      />
+
+      <!-- avatar & tên -->
+      <div class="avatar-container">
+        <img
+          :src="friendProfile.avatarUrl"
+          class="avatar-large"
+          alt="avatar"
+        />
+      </div>
+      <h3 class="friend-name">{{ friendProfile.fullname }}</h3>
+
+      <!-- thông tin cá nhân -->
+      <h4 class="section-title">Thông tin cá nhân</h4>
+      <p class="bio">
+        {{ friendProfile.bio || 'Chưa cập nhật tiểu sử' }}
+      </p>
+      <div class="detail-item">
+        <i class="icon-phone"></i>
+        <span>{{ friendProfile.phoneNumber }}</span>
+      </div>
+
+      <!-- hành động -->
+      <div class="action-buttons">
+        <button class="btn primary" style="margin-right: 90px;" @click="onClickAdd">
+          Kết bạn
+        </button>
+        <button class="btn" @click="closeFriendProfile">
+          Hủy
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 </template>
+
+ 
 
 <script setup>
 import {
@@ -665,14 +779,113 @@ import {
   getConversationDetail,
 } from "@/service/conversationService";
 import { getBlockedList, blockUser, unblockUser } from "@/service/blockService";
-import { getAcceptedFriends } from "@/service/friendService";
+import { getAcceptedFriends, findFriendByPhone,sendFriendRequest } from "@/service/friendService";
 import { getMessages, delMessage } from "@/service/messageService";
 import { useRouter } from "vue-router";
 import socket from "@/socket";
+import defaultAvatar from '@/assets/avata.jpg' 
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+
+
 
 const bottomRef = ref(null);
 const showConfirmRemove = ref(false);
+const foundFriendRaw           = ref(null) 
 const memberToRemove = ref(null);
+const showAddFriendPopup = ref(false)
+const friendSearchInput = ref('')
+const foundFriend = ref(null) // object: { name, avatar }
+const loadingSearch        = ref(false)
+const errorSearch          = ref(null)
+const showFriendProfilePopup   = ref(false)
+const friendProfile            = ref({
+  fullname: '',
+  avatarUrl: '',
+  coverUrl: '',
+  phoneNumber: '',
+  bio: ''
+})
+
+
+
+
+// tìm bạn bè qua số điện thoại 
+async function handleSearchFriend() {
+  if (!friendSearchInput.value) return
+  loadingSearch.value = true
+  errorSearch.value   = null
+  foundFriend.value   = null
+
+  try {
+    const res = await findFriendByPhone(friendSearchInput.value)
+    const list = res.data || []
+    if (list.length > 0) {
+      const user = list[0]
+      foundFriend.value = {
+         id:     user.id, 
+        name:   user.profile.fullname || user.username,
+        avatar: user.profile.avatarUrl || defaultAvatar
+      }
+       foundFriendRaw.value = user.profile
+       foundFriendRaw.value.phoneNumber= user.phoneNumber
+       foundFriendRaw.value.username = user.username
+    } else {
+      errorSearch.value = 'Không tìm thấy người dùng'
+    }
+  } catch (err) {
+    errorSearch.value = err.response?.data?.message || 'Lỗi khi tìm kiếm'
+  } finally {
+    loadingSearch.value = false
+  }
+}
+// Gửi lời mời kết bạn
+async function onClickAdd() {
+  if (!foundFriend.value) return
+
+  // Lấy senderId từ localStorage
+  const meId = localStorage.getItem('userId') || localStorage.getItem('accountId')
+  if (!meId) {
+    alert('Chưa có thông tin userId trong localStorage!')
+    return
+  } 
+
+  try {
+    await sendFriendRequest(meId, foundFriend.value.id)
+    toast.success('Gửi lời mời kết bạn thành công!', {
+          autoClose: 2000,
+          position: toast.POSITION.TOP_RIGHT,
+        });
+    showAddFriendPopup.value = false
+  } catch {
+    toast.error('Gửi lời mời kết bạn thất bại!', {
+          autoClose: 2000,
+          position: toast.POSITION.TOP_RIGHT,
+        });
+  }
+}
+
+function viewFriendProfile() {
+  const u = foundFriendRaw.value
+  console.log("check u:", u)
+  friendProfile.value = {
+    fullname:    u.fullname || u.username,
+    avatarUrl:   u.avatarUrl || defaultAvatar,
+    coverUrl:    u.coverUrl    || defaultAvatar, 
+    phoneNumber: u.phoneNumber,
+    bio:         u.bio
+  }
+  console.log('lỗi nè ----',friendProfile.value )
+    // eslint-disable-next-line no-debugger
+  debugger
+  showFriendProfilePopup.value = true
+
+}
+
+// đóng profile popup
+function closeFriendProfile() {
+  showFriendProfilePopup.value = false
+}
 
 function confirmRemoveMember(member) {
   memberToRemove.value = member;
@@ -1523,8 +1736,11 @@ async function deleteMessage() {
     await loadMessages();
     showContextMenu.value = false;
   } catch (err) {
-    console.error("❌ Lỗi khi xóa tin nhắn:", err);
-    alert("Không thể xóa tin nhắn!");
+    
+    toast.error('Không thể xóa tin nhắn!', {
+          autoClose: 2000,
+          position: toast.POSITION.TOP_RIGHT,
+        });
   }
 }
 
@@ -1540,7 +1756,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutsideContextMenu);
 });
 </script>
-<style scoped>
+<style scoped >
 
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap");
 * {
@@ -2612,9 +2828,108 @@ onBeforeUnmount(() => {
   background: #f5f5f5;
 }
 .text-deleted {
-  color: #888;
+  color: #ffffff;
   font-style: italic;
   font-size: 13px;
+}
+.small-popup {
+  max-width: 450px;
+}
+.search-wrapper input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.search-wrapper {
+  display: flex;
+  gap: 10px;
+}
+.btn.primary {
+  background-color: #0047ff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+.btn {
+  background-color: #eee;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.small-popup { max-width: 460px; }
+
+.friend-profile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.cover {
+  width: 100%;
+  height: 100px;
+  background-size: cover;
+  background-position: center;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.avatar-container {
+  display: flex;
+  justify-content: center;
+  margin-top: -24px;
+}
+
+.avatar-large {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.friend-name {
+  text-align: center;
+  margin: 8px 0;
+}
+
+.section-title {
+  margin: 12px 0 4px;
+  font-weight: bold;
+}
+
+.bio {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background: #eee;
+}
+
+.btn.primary {
+  background: #0047ff;
+  color: #fff;
 }
 
 </style>
