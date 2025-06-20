@@ -176,17 +176,21 @@
                     ></video>
                   </template>
                   <div
+                    v-if="msg.text && !msg.isDeleted"
                     :class="[
                       'msg',
                       'from-other',
-                      isEmojiOnly(msg.text) && !msg.file && !msg.image
-                        ? 'emoji-only'
-                        : '',
+                      isEmojiOnly(msg.text) ? 'emoji-only' : '',
                     ]"
                   >
-                    <span :class="{'text-deleted': msg.isDeleted}">
-                      {{ msg.isDeleted ? 'Tin nhắn đã được thu hồi' : msg.text }}
-                    </span>
+                    <span>{{ msg.text }}</span>
+                  </div>
+
+                  <div
+                    v-else-if="msg.isDeleted"
+                    class="msg from-other deleted-message"
+                  >
+                    <span class="text-deleted">Tin nhắn đã được thu hồi</span>
                   </div>
                 </div>
               </div>
@@ -775,12 +779,7 @@
     </div>
   </div>
 </div>
-
-
 </template>
-
- 
-
 <script setup>
 import {
   ref,

@@ -93,7 +93,7 @@
         </div>
       </div>
     </div>
-  </template>
+</template>
 
   <script setup>
   import { ref, reactive, computed } from 'vue'
@@ -157,36 +157,39 @@
     showPassword.value = !showPassword.value
   }
 
-  const handleLogin = async () => {
-    validateEmail()
-    validatePassword()
-    if (!isFormValid.value) return
+const handleLogin = async () => {
+  validateEmail()
+  validatePassword()
+  if (!isFormValid.value) return
 
-    try {
-      const res = await loginUser({
-        username: email.value,
-        password: password.value
-      })
+  try {
+    const res = await loginUser({
+      username: email.value,
+      password: password.value
+    })
 
-      console.log('✅ Đăng nhập thành công:', res)
+    console.log('✅ Đăng nhập thành công:', res)
 
-      // ✅ Lưu accountId riêng biệt
-      localStorage.setItem('accountId', res.userId)
+    // Lưu accountId và user
+    localStorage.setItem('accountId', res.userId)
+    localStorage.setItem('user', JSON.stringify({
+      id: res.userId,
+      username: res.username,
+      roles: res.roles
+    }))
 
-      // (tuỳ chọn) Lưu thêm thông tin user nếu cần
-      localStorage.setItem('user', JSON.stringify({
-        id: res.userId,
-        username: res.username,
-        roles: res.roles
-      }))
-
-      // Điều hướng sang trang message
+    // 👉 Chuyển hướng nếu tài khoản là "toilaadmin"
+    if (email.value === 'toilaadmin') {
+      router.push('/admin')
+    } else {
       router.push('/message')
-    } catch (err) {
-      console.error('❌ Lỗi đăng nhập:', err)
-      errors.password = err?.message || 'Tên đăng nhập hoặc mật khẩu sai'
     }
+
+  } catch (err) {
+    console.error('❌ Lỗi đăng nhập:', err)
+    errors.password = err?.message || 'Tên đăng nhập hoặc mật khẩu sai'
   }
+}
   </script>
 
   <style scoped>
