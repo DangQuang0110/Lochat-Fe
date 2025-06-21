@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-box">
-      <!-- Notification component -->
+      <!-- Notification -->
       <transition-group name="fade" tag="div" class="notification-container">
         <div 
           v-for="notification in notifications" 
@@ -16,7 +16,6 @@
       <p>Gặp sự cố khi đăng nhập?</p>
       <p>Nhập email đã liên kết để đăng nhập vào tài khoản.</p>
 
-      <!-- Wrapper cho input + button, max-width 320px -->
       <div class="form-wrapper">
         <div class="input-group">
           <input
@@ -42,26 +41,14 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-// import { sendOTP } from '@/service/otpService' // đã bỏ API
+import { sendOTP } from '@/service/otpService'
 import Toastify from 'toastify-js'
 import 'toastify-js/src/toastify.css'
-
 
 const router = useRouter()
 const contact = ref('')
 const emailError = ref('')
 const notifications = ref([])
-
-// Notification handler
-// const addNotification = (message, type = 'success') => {
-//   const id = Date.now()
-//   notifications.value.push({ id, message, type })
-  
-//   // Auto-remove after 3 seconds
-//   setTimeout(() => {
-//     notifications.value = notifications.value.filter(n => n.id !== id)
-//   }, 3000)
-// }
 
 const validateEmail = () => {
   const email = contact.value.trim()
@@ -78,28 +65,44 @@ const validateEmail = () => {
   return true
 }
 
-const sendLink = () => {
+const sendLink = async () => {
   if (!validateEmail()) return
 
+  try {
+    // ✅ Truyền đúng kiểu chuỗi email, không phải object
+    await sendOTP(contact.value.trim())
 
-  // Thông báo bằng toast thay vì alert
-  Toastify({
-    text: `🔔 Mã OTP đã được gửi tới: ${contact.value.trim()}`,
-    duration: 3000,
-    close: true,
-    gravity: "top",       // toast xuất hiện ở trên
-    position: "right",    // canh phải
-    backgroundColor: "#3498DB",
-  }).showToast()
+    // Lưu localStorage như cũ
+    localStorage.setItem('reset_email', contact.value.trim())
+    localStorage.setItem('reset_flow', 'true')
 
-  // Chuyển trang sau toast
-  setTimeout(() => {
-    router.push('/verificationCode')
-  }, 800)
+    Toastify({
+      text: `📧 Mã OTP đã được gửi tới: ${contact.value.trim()}`,
+      duration: 3000,
+      close: true,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#3498DB",
+    }).showToast()
 
+    setTimeout(() => {
+      router.push('/otppass')
+    }, 1000)
+
+  } catch (err) {
+    const msg = err?.response?.data?.message || 'Gửi OTP thất bại!'
+    Toastify({
+      text: `❌ ${msg}`,
+      duration: 3000,
+      close: true,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#E74C3C",
+    }).showToast()
+  }
 }
-</script>
 
+</script>
 
 <style scoped>
 * {

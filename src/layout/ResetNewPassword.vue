@@ -14,9 +14,9 @@
 
       <img src="@/assets/lgo.png" alt="" class="logo" />
       <h1>Thay đổi mật khẩu</h1>
-      <p class="sub-text">Vui lòng nhập mật khẩu cũ và mật khẩu mới để cập nhật tài khoản</p>
+      <p class="sub-text">Vui lòng nhập mật khẩu mới để cập nhật tài khoản</p>
 
-      <label>Mật khẩu cũ</label>
+      <!-- <label>Mật khẩu cũ</label>
       <div class="input-group password-group">
         <input
           :type="showOldPassword ? 'text' : 'password'"
@@ -58,7 +58,7 @@
           </svg>
         </span>
       </div>
-      <div v-if="oldPasswordError" class="error-message">{{ oldPasswordError }}</div>
+      <div v-if="oldPasswordError" class="error-message">{{ oldPasswordError }}</div> -->
 
       <label>Mật khẩu mới</label>
       <div class="input-group password-group">
@@ -161,128 +161,78 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Toastify from 'toastify-js'
 import 'toastify-js/src/toastify.css'
+import { resetPassword } from '@/service/authService'   /* ⭐ mới */
 
 const router = useRouter()
 
-const oldPassword = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const showOldPassword = ref(false)
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
-const oldPasswordError = ref('')
-const passwordError = ref('')
+// ⬇️ các biến reactive cũ
+const password           = ref('')
+const confirmPassword    = ref('')
+const showPassword       = ref(false)
+const showConfirmPassword= ref(false)
+const passwordError      = ref('')
 const confirmPasswordError = ref('')
-const notifications = ref([])
 
-// Notification handler
-// const addNotification = (message, type = 'success') => {
-//   const id = Date.now()
-//   notifications.value.push({ id, message, type })
-  
-//   // Auto-remove after 3 seconds
-//   setTimeout(() => {
-//     notifications.value = notifications.value.filter(n => n.id !== id)
-//   }, 3000)
-// }
-
-const validateOldPassword = () => {
-  if (!oldPassword.value) {
-    oldPasswordError.value = 'Vui lòng nhập mật khẩu cũ'
-    return false
-  }
-  const pwd = oldPassword.value
-  if (pwd.length < 8 || pwd.length > 15) {
-    oldPasswordError.value = 'Mật khẩu cũ phải từ 8 đến 15 ký tự'
-    return false
-  }
-  if (!/[A-Z]/.test(pwd)) {
-    oldPasswordError.value = 'Mật khẩu cũ phải có ít nhất 1 chữ cái in hoa'
-    return false
-  }
-  if (!/[0-9]/.test(pwd)) {
-    oldPasswordError.value = 'Mật khẩu cũ phải có ít nhất 1 chữ số'
-    return false
-  }
-  if (!/[!@#$%^&*]/.test(pwd)) {
-    oldPasswordError.value = 'Mật khẩu cũ phải có ít nhất 1 ký tự đặc biệt (!@#$%^&*)'
-    return false
-  }
-  oldPasswordError.value = ''
-  return true
-}
-
+// ──────────────────── VALIDATE ────────────────────
 const validatePassword = () => {
-  if (!password.value) {
-    passwordError.value = 'Vui lòng nhập mật khẩu mới'
-    return false
-  }
   const pwd = password.value
-  if (pwd.length < 8 || pwd.length > 15) {
-    passwordError.value = 'Mật khẩu mới phải từ 8 đến 15 ký tự'
-    return false
-  }
-  if (!/[A-Z]/.test(pwd)) {
-    passwordError.value = 'Mật khẩu mới phải có ít nhất 1 chữ cái in hoa'
-    return false
-  }
-  if (!/[0-9]/.test(pwd)) {
-    passwordError.value = 'Mật khẩu mới phải có ít nhất 1 chữ số'
-    return false
-  }
-  if (!/[!@#$%^&*]/.test(pwd)) {
-    passwordError.value = 'Mật khẩu mới phải có ít nhất 1 ký tự đặc biệt (!@#$%^&*)'
-    return false
-  }
-  if (pwd === oldPassword.value && oldPassword.value) {
-    passwordError.value = 'Mật khẩu mới không được trùng với mật khẩu cũ'
-    return false
-  }
-  passwordError.value = ''
-  return true
+  if (!pwd)                     return setError(passwordError, 'Vui lòng nhập mật khẩu mới')
+  if (pwd.length < 8 || pwd.length > 15)  return setError(passwordError, 'Mật khẩu mới phải 8–15 ký tự')
+  if (!/[A-Z]/.test(pwd))       return setError(passwordError, 'Phải có ít nhất 1 chữ in hoa')
+  if (!/[0-9]/.test(pwd))       return setError(passwordError, 'Phải có ít nhất 1 số')
+  if (!/[!@#$%^&*]/.test(pwd))  return setError(passwordError, 'Phải có 1 ký tự đặc biệt (!@#$%^&*)')
+  passwordError.value = '' ; return true
 }
 
 const validateConfirmPassword = () => {
-  if (!confirmPassword.value) {
-    confirmPasswordError.value = 'Vui lòng nhập lại mật khẩu mới'
-    return false
-  }
-  if (confirmPassword.value !== password.value) {
-    confirmPasswordError.value = 'Mật khẩu xác nhận không khớp'
-    return false
-  }
-  confirmPasswordError.value = ''
-  return true
+  if (!confirmPassword.value)               return setError(confirmPasswordError, 'Vui lòng nhập lại mật khẩu')
+  if (confirmPassword.value !== password.value) return setError(confirmPasswordError, 'Mật khẩu xác nhận không khớp')
+  confirmPasswordError.value = '' ; return true
 }
 
-const isFormValid = computed(() => {
-  return (
-    validateOldPassword() &&
-    validatePassword() &&
-    validateConfirmPassword()
-  )
-})
+const setError = (refErr, msg) => { refErr.value = msg; return false }
 
-const handleReset = () => {
-  const okOld = validateOldPassword()
-  const okNew = validatePassword()
-  const okConfirm = validateConfirmPassword()
+const isFormValid = computed(() =>
+  validatePassword() && validateConfirmPassword()
+)
 
-  if (okOld && okNew && okConfirm) {
+// ───────────────────── SUBMIT ─────────────────────
+const handleReset = async () => {
+  const okPwd = validatePassword()
+  const okCfm = validateConfirmPassword()
+  if (!okPwd || !okCfm) return
+
+  // Email lấy lại ở bước “Quên mật khẩu” – lúc đó ta đã lưu vào localStorage
+  const email = localStorage.getItem('reset_email')
+  if (!email) {
     Toastify({
-      text: "✅ Đặt lại mật khẩu thành công!",
-      duration: 3000,
-      close: true,
-      gravity: "top",
-      position: "right",
-      backgroundColor: "#27AE60",
+      text: '⚠️ Không tìm thấy email reset, hãy quay lại bước “Quên mật khẩu”.',
+      duration: 4000, gravity:'top', position:'right', backgroundColor:'#F39C12', close:true,
+    }).showToast()
+    return
+  }
+
+  try {
+    await resetPassword({
+      email,
+      password: password.value,
+      confirmPassword: confirmPassword.value,
+    })
+
+    Toastify({
+      text: '✅ Đặt lại mật khẩu thành công! Vui lòng đăng nhập.',
+      duration: 3000, gravity:'top', position:'right', backgroundColor:'#27AE60', close:true,
     }).showToast()
 
-    // Chuyển về trang đăng nhập sau khi toast hiển thị
-    setTimeout(() => {
-      router.push('/')
-    }, 2000)
+    // xóa email đã dùng & chuyển trang
+    localStorage.removeItem('reset_email')
+    setTimeout(() => router.push('/'), 2000)
 
+  } catch (err) {
+    Toastify({
+      text: `❌ Đặt lại mật khẩu thất bại: ${err?.message || err}`,
+      duration: 4000, gravity:'top', position:'right', backgroundColor:'#E74C3C', close:true,
+    }).showToast()
   }
 }
 </script>
@@ -402,7 +352,7 @@ label {
   height: 45px;
   padding: 0 10px;
   font-size: 1rem;
-  color: #dc77b2;
+  
   border: 1px solid #FFFFFF;
   border-radius: 4px;
   background: #FFFFFF;

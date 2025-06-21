@@ -51,3 +51,16 @@ export const logoutUser = () => {
   localStorage.removeItem('user')
   delete apiService.defaults.headers.common['Authorization']
 }
+export const resetPassword = async ({ email, password, confirmPassword }) => {
+  try {
+    const res = await apiService.put('/api/v1/auth/resetPassword', {
+      email,
+      password,
+      confirmPassword,
+    })
+    return res.data
+  } catch (err) {
+    console.error('❌ Lỗi reset mật khẩu:', err.response?.data || err)
+    throw err.response?.data ?? err
+  }
+}

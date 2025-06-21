@@ -16,6 +16,7 @@ import GroupManagement from '@/components/GroupManagement.vue'
 import GroupForm from '@/components/GroupForm.vue'
 import GroupEditModal from '@/components/GroupEditModal.vue'
 import AdminPage from '@/components/AdminPage.vue'
+import OtpPass from '@/layout/VerificationCodePassword.vue'
 
 const routes = [
   {
@@ -62,6 +63,11 @@ const routes = [
     path: '/addfriend',
     name: 'AddFriend',
     component: AddFriend
+  },
+  {
+    path:'/otppass',
+    name:'OtpPass',
+    component: OtpPass
   },
   {
     path: '/messagenew',
