@@ -266,6 +266,8 @@ const handleLogin = async () => {
   h2 {
     color: #dc77b2; /* màu hồng pastel giống trong hình */
     margin-bottom: 1rem;
+    margin-top: 30px;
+    font-size: 30px;
   }
   /* Đảm bảo tất cả phần tử con của .right-side (form, input, nút, ...) đều có z-index cao hơn */
   .right-side > * {
@@ -285,7 +287,7 @@ const handleLogin = async () => {
   margin-bottom: 0.5rem;
   width: 100%;
   max-width: 320px;
-  min-height: 90px; /* CỐ ĐỊNH chiều cao để không giật khi label thay đổi */
+  min-height: 70px; /* CỐ ĐỊNH chiều cao để không giật khi label thay đổi */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

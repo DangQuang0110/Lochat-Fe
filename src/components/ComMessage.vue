@@ -42,6 +42,7 @@
             class="search-icon"
           />
           <input
+            v-model="sidebarSearch"
             type="text"
             placeholder="Tìm kiếm"
             style="padding-right: 0px; padding-left: 28px"
@@ -74,7 +75,7 @@
       </div>
       <div class="friend-section">
         <div
-          v-for="item in activeTab === 'friends' ? friends : groups"
+          v-for="item in activeTab === 'friends' ? displayedFriends : displayedGroups"
           :key="item.id"
           class="friend-item"
           :class="{ active: selectedId === item.id }"
@@ -451,7 +452,7 @@
             <span>{{ current.phone || "Chưa cập nhật" }}</span>
           </div>
           <div class="detail-item">
-            <i class="icon-location"></i>
+            <img src="@/assets/image.png" alt="Blocked User Icon" width="20" height="20" />
             <button class="block-btn" @click="handleBlockUser">
               Chặn người dùng
             </button>
@@ -1137,6 +1138,22 @@ function scrollToBottom() {
     bottomRef.value?.scrollIntoView({ behavior: "smooth" });
   });
 }
+const sidebarSearch = ref("");
+const displayedFriends = computed(() => {
+  if (!sidebarSearch.value.trim()) return friends.value;
+  const q = sidebarSearch.value.toLowerCase();
+  return friends.value.filter((f) =>
+    f.name.toLowerCase().includes(q)
+  );
+});
+
+const displayedGroups = computed(() => {
+  if (!sidebarSearch.value.trim()) return groups.value;
+  const q = sidebarSearch.value.toLowerCase();
+  return groups.value.filter((g) =>
+    g.name.toLowerCase().includes(q)
+  );
+});
 
 const router = useRouter();
 
@@ -1934,8 +1951,8 @@ onBeforeUnmount(() => {
   font-family: "Roboto", sans-serif;
 }
 .download-icon {
-  width: 14px; /* Hoặc 12px nếu muốn nhỏ hơn nữa */
-  height: 14px;
+  width: 20px; /* Hoặc 12px nếu muốn nhỏ hơn nữa */
+  height: 20px;
   object-fit: contain;
   display: inline-block;
 }
@@ -1973,8 +1990,8 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 .clip-icon {
-  width: 14px; /* Kích thước nhỏ gọn, có thể điều chỉnh */
-  height: 14px;
+  width: 20px; /* Kích thước nhỏ gọn, có thể điều chỉnh */
+  height: 20px;
   object-fit: contain; /* Đảm bảo không méo hình */
   display: inline-block;
 }
